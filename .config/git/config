@@ -1,0 +1,9 @@
+# Git user configuration file.
+[user]
+	name = Manuel Farzini
+	email = manuel.farzini@gmail.com
+[core]
+	editor = true
+	excludesFile = /Users/manuelfarzini/.config/git/ignore
+[init]
+	defaultBranch = main
