@@ -33,12 +33,9 @@ eval "$(zoxide init zsh)"
 
 ### Fzf
 source <(fzf --zsh)
-### Fzf-tab
 autoload -U compinit; compinit
 source ~/.config/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh
-### Fzf-tab-source
 source ~/.config/zsh/plugins/fzf-tab-source/fzf-tab-source.plugin.zsh
-### Fzf colors
 export FZF_DEFAULT_OPTS="
   --color=fg:#1f2333,bg:#f7f7f1,hl:#c78707
   --color=fg+:#1f2333,bg+:#f7f7f1,hl+:#7b8b07
