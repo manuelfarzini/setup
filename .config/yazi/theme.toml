@@ -1,0 +1,123 @@
+[mgr]
+# root
+cwd = { fg = "#8c6142", bold = true }
+# find
+find_keyword = { fg = "#ffffff", bg = "#26261c" }
+find_positon = { fg = "#ffffff", bg = "#26261c" }
+# marker
+marker_marked = { fg = "#757559", bg = "#757559" }
+marker_selected = { fg = "#26261c", bg = "#26261c" }
+marker_copied = { fg = "#9ea75b", bg = "#9ea75b" }
+marker_cut = { fg = "#c6983b", bg = "#c6983b" }
+count_copied = { fg = "#26261c", bg = "#9ea75b" }
+count_cut = { fg = "#26261c", bg = "#c6983b" }
+# border
+border_style = { fg = "#a9a98a" }
+
+[indicator]
+parent = { fg = "#26261c", bg = "#e8e8db", bold = true }
+current = { fg = "#26261c", bg = "#e8e8db", bold = true }
+preview = { fg = "#26261c", bg = "#e8e8db", bold = true }
+
+[mode]
+normal_main = { fg = "#26261c", bg = "#e8e8db", bold = true }
+normal_alt = { fg = "#f3f3eb", bg = "#626246", bold = false }
+select_main = { fg = "#26261c", bg = "#e8e8db", bold = true }
+select_alt = { fg = "#f3f3eb", bg = "#626246", bold = false }
+unset_main = { fg = "#26261c", bg = "#e8e8db", bold = true }
+unset_alt = { fg = "#f3f3eb", bg = "#626246", bold = false }
+
+[status]
+overall = { fg = "#26261c", bg = "#dedecc" }
+# progress
+progress_label = { fg = "#26261c", bg = "#e8e8db", bold = false }
+progress_normal = { fg = "#26261c", bg = "#e8e8db", bold = false }
+progress_error = { fg = "#26261c", bg = "#e8e8db", bold = false }
+# permissions
+# perm_t = { fg = "#626246" }
+perm_read = { fg = "#626246" }
+perm_write = { fg = "#626246" }
+perm_exec = { fg = "#626246" }
+perm_sep = { fg = "#26261c" }
+
+[which]
+mask = { fg = "#9d9d68" }
+
+[filetype]
+rules = [
+	# files
+	{ url = "*", fg = "#26261c" },
+	# directories
+	{ url = "*/", fg = "#626246", bold = true },
+]
+
+[icon]
+dirs = [
+    { name = "Desktop", text = "", fg = "#626246" }, 
+    { name = "Documents", text = "", fg = "#626246" }, 
+    { name = "Downloads", text = "", fg = "#626246" }, 
+    { name = "Library", text = "", fg = "#626246" }, 
+    { name = "Movies", text = "", fg = "#626246" }, 
+    { name = "Music", text = "", fg = "#626246" }, 
+    { name = "Personal", text = "", fg = "#626246" },
+    { name = "Pictures", text = "", fg = "#626246" }, 
+]
+prepend_conds = [
+    { if = "dir", text = "", fg = "#626246" }, 
+]
+# prepend_dirs = [
+#     { name = "Desktop", text = "", fg = "#626246" }, 
+# ]
+prepend_exts = [
+	{ name = "rs", text = "", fg = "#26261c" },
+	{ name = "lua", text = "", fg = "#26261c" },
+	{ name = "txt", text = "", fg = "#26261c" },
+	{ name = "json", text = "", fg = "#26261c" },
+	{ name = "md", text = "", fg = "#26261c" },
+	{ name = "pdf", text = "", fg = "#26261c" },
+	{ name = "go", text = "󰟓", fg = "#26261c" },
+	{ name = "c", text = "", fg = "#26261c" },
+	{ name = "cc", text = "", fg = "#26261c" },
+	{ name = "cpp", text = "", fg = "#26261c" },
+	{ name = "c++", text = "", fg = "#26261c" },
+	{ name = "js", text = "", fg = "#26261c" },
+	{ name = "py", text = "󰌠", fg = "#26261c" },
+	{ name = "png", text = "", fg = "#26261c" },
+	{ name = "jpg", text = "", fg = "#26261c" },
+	{ name = "ini", text = "", fg = "#26261c" },
+	{ name = "toml", text = "", fg = "#26261c" },
+	{ name = "config", text = "", fg = "#26261c" },
+	{ name = "mp3", text = "", fg = "#26261c" },
+	{ name = "wav", text = "󰥛", fg = "#26261c" },
+	{ name = "zip", text = "", fg = "#26261c" },
+	{ name = "sh", text = "", fg = "#26261c" },
+	{ name = "mov", text = "", fg = "#26261c" },
+	{ name = "mp4", text = "", fg = "#26261c" },
+	# orphan symbolic links
+	{ name = "*", is = "orphan", text = "", fg = "#26261c" },
+] 
+
+# zfore        = "#000000",
+# zback        = "#ffffff",
+# fore         = "#26261c",
+# back         = "#f3f3eb",
+# line         = "#efefe5",
+# select_bg    = "#bbd0df",
+# vm_bg        = "#ceceb3",
+# value1       = "#7b8b07",
+# value2       = "#c88a07",
+# type         = "#626246",
+# keyword      = "#694c5f",
+# path         = "#7d1211",
+# preproc      = "#c3c09a",
+# macro        = "#7a4f20",
+# comment1     = "#af9c78",
+# comment2     = "#997f51",
+# note         = "#97bea9",
+# error        = "#464ea3",
+# warn         = "#7ea8cf",
+# green_value  = "#7b8b07",
+# orange_value = "#c88a07",
+# red_path     = "#7d1211",
+# orange_teles = "#b55e0b",
+# orange_mason = "#ec9216",

@@ -1,0 +1,134 @@
+# SF Mono
+font-family = SF Mono
+font-family-bold = SF Mono
+font-family-italic = SF Mono
+font-style = Medium
+font-style-bold = Bold
+font-style-italic = Heavy
+adjust-cell-width = 0%
+adjust-cell-height = 20%
+font-size = 11.5
+adjust-underline-position = 3
+font-thicken = true
+font-thicken-strength=255
+
+#---------------------------------------------------------------------------------------------------------
+
+# PragmataPro
+# font-family = PragmataPro
+# font-style = Regular
+# font-family-bold = PragmataPro
+# adjust-cell-width = 15%
+# adjust-cell-height = 15%
+# font-size = 13.5
+# adjust-underline-position = 3
+# font-thicken = true
+# font-thicken-strength=255
+# font-feature = -dlig
+
+# # Liga Suisse
+# font-family = Liga Suisse
+# font-style = Regular
+# font-family-bold = Suisse Intl Mono
+# adjust-cell-width = -10%
+# adjust-cell-height = 5%
+# font-size = 12.8
+# adjust-underline-position = 6
+# font-thicken = true
+# font-thicken-strength=255
+
+# # Latin Modern
+# font-family = Latin Modern Mono
+# font-style = 8 Regular
+# font-style-bold = 10 Bold
+# adjust-cell-width = -4%
+# adjust-cell-height = 10%
+# font-size = 14
+# adjust-underline-position = 5
+# font-thicken = true
+# font-thicken-strength=0
+
+# # SuisseIntlMono
+# font-family = Suisse Intl Mono
+# font-style = Regular
+# adjust-cell-width = -10%
+# adjust-cell-height = 5%
+# font-size = 12.8
+# adjust-underline-position = 6
+# font-thicken = true
+# font-thicken-strength=255
+
+title = " "
+
+term = xterm-256color
+cursor-style-blink = false
+macos-titlebar-style = hidden
+
+# Main colors
+foreground = 26261c
+background = f3f3eb
+
+bold-color = bright
+
+# Normal colors
+palette = 0=#b3b390
+palette = 1=#747453
+palette = 2=#7b8b07
+palette = 3=#26261c
+palette = 4=#747453
+palette = 5=#c68909
+palette = 6=#747453
+palette = 7=#26261c
+
+# Bright colors
+palette = 8=#b3b390
+palette = 9=#931514
+palette = 10=#931514
+palette = 11=#26261c
+palette = 12=#626246
+palette = 13=#c27070
+palette = 14=#626246
+palette = 15=#b3b390
+
+
+# ------------------------------
+# zfore    = "#000000",
+# zback    = "#ffffff",
+# fore     = "#1a1a13",
+# back     = "#f3f3eb",
+# line     = "#efefe5",
+# sel_bg   = "#cedce5",
+# vm_bg    = "#ceceb3",
+# value1   = "#849200",
+# value2   = "#cf8f0b",
+# value3   = "#c68909",
+# type     = "#626246",
+# keyword  = "#6b4a65",
+# path     = "#c68909",
+# preproc  = "#aeaf9f",
+# macro    = "#6d4a00",
+# comment1 = "#a8977a",
+# comment2 = "#a88c5b",
+# note     = "#8d9a0c",
+# error    = "#931514",
+# warn     = "#c27070",
+# param   = "#505a8f",
+# green_value  = "#849200",
+# orange_value = "#cf8f0b",
+# red_path     = "#7d1211",
+# orange_teles = "#b55e0b",
+# orange_mason = "#ec9216",
+# flash_match  = "#858566",
+# flash_label  = "#3c067c",
+
+# grey1 = "#5c5c42",
+# grey2 = "#999971",
+# grey3 = "#ceceb3",
+# grey4 = "#dedecc",
+
+# green1 = "#406d17",
+# green2 = "#778f27",
+# green3 = "#a7b142",
+# green4 = "#a8c939",
+# orange3 = "#ec9216",
+

@@ -1,0 +1,91 @@
+# ~/.config/aerospace/aerospace.toml
+
+config-version = 2
+
+default-root-container-layout = 'tiles'
+default-root-container-orientation = 'auto'
+persistent-workspaces = ['1', '2', '3', '4', '5', '6', '7']
+
+on-focus-changed = ['move-mouse window-lazy-center']
+
+[key-mapping]
+preset = 'qwerty'
+
+[gaps]
+inner.horizontal = 8
+inner.vertical = 8
+outer.left = 8
+outer.bottom = 8
+outer.top = 8
+outer.right = 8
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'System Settings'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'Calculator'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'Karabiner-Elements'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'QuickTime Player'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'UTM'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'AppCleaner'
+run = 'layout floating'
+
+[mode.main.binding]
+ctrl-alt-h = 'focus left'
+ctrl-alt-j = 'focus down'
+ctrl-alt-k = 'focus up'
+ctrl-alt-l = 'focus right'
+
+cmd-ctrl-h = 'swap left'
+cmd-ctrl-j = 'swap down'
+cmd-ctrl-k = 'swap up'
+cmd-ctrl-l = 'swap right'
+
+alt-cmd-h = 'join-with left'
+alt-cmd-l = 'join-with right'
+
+ctrl-alt-cmd-h = 'resize width -20'
+ctrl-alt-cmd-j = 'resize height +20'
+ctrl-alt-cmd-k = 'resize height -20'
+ctrl-alt-cmd-l = 'resize width +20'
+
+ctrl-alt-n = 'layout horizontal vertical'
+ctrl-alt-m = 'fullscreen --no-outer-gaps'
+ctrl-alt-u = 'balance-sizes'
+ctrl-alt-p = 'exec-and-forget aerospace focus-back-and-forth || aerospace workspace-back-and-forth'
+ctrl-alt-r = 'reload-config'
+
+alt-1 = 'workspace 1'
+alt-2 = 'workspace 2'
+alt-3 = 'workspace 3'
+alt-4 = 'workspace 4'
+alt-5 = 'workspace 5'
+alt-6 = 'workspace 6'
+alt-7 = 'workspace 7'
+
+ctrl-alt-i = 'workspace prev'
+ctrl-alt-o = 'workspace next'
+
+alt-shift-1 = 'move-node-to-workspace 1'
+alt-shift-2 = 'move-node-to-workspace 2'
+alt-shift-3 = 'move-node-to-workspace 3'
+alt-shift-4 = 'move-node-to-workspace 4'
+alt-shift-5 = 'move-node-to-workspace 5'
+alt-shift-6 = 'move-node-to-workspace 6'
+alt-shift-7 = 'move-node-to-workspace 7'
+
+alt-shift-i = 'move-node-to-workspace prev'
+alt-shift-o = 'move-node-to-workspace next'

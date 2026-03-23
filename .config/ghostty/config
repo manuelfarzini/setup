@@ -1,0 +1,15 @@
+# Complementary config files
+config-file = config-bindings
+config-file = config-theme
+
+# Misc
+quit-after-last-window-closed = true
+confirm-close-surface = false
+
+# Link
+# XXX: waiting to be implemented, in roadmap
+# link = link-url
+link-url = true
+
+# Option as alt
+macos-option-as-alt = true

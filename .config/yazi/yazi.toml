@@ -1,0 +1,41 @@
+[mgr]
+ratio = [2, 5, 5]
+linemode = "mtime"
+show_simlink = true
+scrolloff = 10
+
+[preview]
+wrap = "yes"
+tab_size = 2
+max_width = 1000
+max_height = 1000
+image_delay = 0
+image_quality = 50
+
+
+[opener]
+edit = [
+	# { run = '${EDITOR:-vi} "$@"', desc = "$EDITOR", block = true, for = "unix" },
+	{ run = 'nvim "$@"', desc = "nvim", block = true, for = "unix" },
+]
+open = [
+	{ run = 'open "$@"', desc = "open", for = "macos" },
+]
+reveal = [
+	{ run = 'xdg-open "$(dirname "$1")"', desc = "reveal", for = "linux" },
+	{ run = 'open -R "$1"', desc = "reveal", for = "macos" },
+	{ run = '''exiftool "$1"; echo "Press enter to exit"; read _''', block = true, desc = "show EXIF", for = "unix" },
+]
+# extract = [
+# 	{ run = 'ya pub extract --list "$@"', desc = "extract here", for = "unix" },
+# ]
+term = [
+    { run = 'open -na Ghostty --args -e zsh -c "cd "$@"; exec zsh"', desc = "term", for = "macos" },
+]
+
+[open]
+prepend_rules = [
+    { name = "*.pdf", use = ["open", "reveal"] },
+    { name = "*.md", use = ["edit", "open", "reveal"] },
+    { name = "*/", use = ["term", "edit", "open" ] },
+]
