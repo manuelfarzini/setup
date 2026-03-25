@@ -1,0 +1,37 @@
+# file: .clangd
+
+CompileFlags:
+  Compiler: /opt/homebrew/opt/llvm/bin/clang++
+
+  Add:
+    [
+      -std=c++2c,
+      -Wall,
+      -Wextra,
+      -Wshadow,
+      -Werror,
+      -pedantic,
+      -Iinclude,
+      -I/opt/homebrew/include,
+      -I/opt/homebrew/opt/llvm/include,
+      -I/Users/manuelfarzini/Personal/dev/include,
+      -I/usr/local/include,
+    ]
+
+Diagnostics:
+  Suppress:
+    [unused-includes, overloaded-virtual, unused-local-typedef, missing-braces]
+
+InlayHints:
+  Enabled: true
+  Designators: false
+  DeducedTypes: true
+  ParameterNames: true
+  TypeNameLimit: 15
+  # BlockEnd: true
+
+Hover:
+  ShowAKA: true
+
+Documentation:
+  CommentFormat: Plaintext
