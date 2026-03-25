@@ -40,10 +40,10 @@ Diagnostics:
 
 InlayHints:
   BlockEnd: false
-  DeducedTypes: true
+  DeducedTypes: false
   DefaultArguments: false
   Designators: false
-  Enabled: true
+  Enabled: false
   ParameterNames: false
   TypeNameLimit: 15
 
