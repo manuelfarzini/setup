@@ -1,0 +1,8 @@
+#!/bin/bash
+MAT="$MATLAB_HOME/bin/matlab"
+
+if [ -z "$1" ]; then
+    "$MAT" -nodesktop
+else
+    "$MAT" -nodesktop -r "run('$1');"
+fi
