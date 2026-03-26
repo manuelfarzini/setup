@@ -1,10 +1,13 @@
-# file: .clangd
+### .clangd
 
 CompileFlags:
+  # Compiler: /Library/Developer/CommandLineTools/usr/bin/clang++
   Compiler: /opt/homebrew/opt/llvm/bin/clang++
+  BuiltinHeaders: QueryDriver
+  CompilationDatabase: Ancestors
+  Remove: [-W*]
 
-  Add:
-    [
+  Add: [
       -std=c++2c,
       -Wall,
       -Wextra,
@@ -14,24 +17,61 @@ CompileFlags:
       -Iinclude,
       -I/opt/homebrew/include,
       -I/opt/homebrew/opt/llvm/include,
-      -I/Users/manuelfarzini/Personal/dev/include,
       -I/usr/local/include,
-    ]
+      -I/Users/manuelfarzini/Personal/dev/include,
+
+      # # faust repo
+      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler,
+      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/FaustAlgebra,
+      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/boxes,
+      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/errors,
+      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/evaluate,
+      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/generator,
+      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/generator/fir,
+      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/generator/interpreter,
+      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/parallelize,
+      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/parser,
+      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/signals,
+      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/tlib,
+  ]
 
 Diagnostics:
-  Suppress:
-    [unused-includes, overloaded-virtual, unused-local-typedef, missing-braces]
+  Suppress: [
+      missing-braces
+      overloaded-virtual,
+      unused-includes,
+      unused-local-typedef,
+    ]
+
+  UnusedIncludes: None
+  MissingIncludes: None
+
+  ClangTidy:
+    Add: [
+        performance-unnecessary-value-param,
+        performance-faster-string-find,
+        performance-inefficient-algorithm,
+        performance-inefficient-vector-operation,
+        performance-move-const-arg,
+        performance-no-automatic-move,
+        performance-noexcept-move-constructor,
+        performance-type-promotion-in-math-fn,
+        performance-enum-size,
+        performance-implicit-conversion-in-loop,
+        performance-unnecessary-copy-initialization,
+        performance-for-range-copy,
+        bugprone-branch-clone,
+        bugprone-use-after-move,
+        clang-analyzer-core.uninitialized.*,
+        clang-analyzer-core.NullDereference,
+    ]
+    FastCheckFilter: Strict
 
 InlayHints:
-  Enabled: true
-  Designators: false
-  DeducedTypes: true
-  ParameterNames: true
-  TypeNameLimit: 15
-  # BlockEnd: true
+  Enabled: false
 
 Hover:
-  ShowAKA: true
+  ShowAKA: false
 
 Documentation:
-  CommentFormat: Plaintext
+  CommentFormat: Markdown

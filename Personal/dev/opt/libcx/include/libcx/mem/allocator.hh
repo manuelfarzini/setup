@@ -19,7 +19,7 @@ enum AllocatorMode : u8 {
 };
 
 typedef proc AllocatorProc(
-    anyptr           alctor_data,
+    anyptr           alc_data,
     AllocatorMode    mode,
     isize            size,
     isize            align,
@@ -30,7 +30,7 @@ typedef proc AllocatorProc(
 
 #define CX_ALLOCATOR_PROC(name)                   \
     proc name(                                    \
-        anyptr           alctor_data,             \
+        anyptr           alc_data,                \
         AllocatorMode    mode,                    \
         isize            size,                    \
         isize            align       = DEF_ALIGN, \
@@ -99,7 +99,7 @@ onedef proc cx_mem_free_size(
 
 CX_ALLOCATOR_PROC(heap_allocator_proc)
 {
-    cx_unused(alctor_data);
+    cx_unused(alc_data);
 
     switch (mode) {
         case Mode_Alloc:
