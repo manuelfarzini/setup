@@ -27,12 +27,12 @@ struct ZeroType {
 glob cexpr ZeroType null;
 glob cexpr ZeroType none;
 
-template<typename V, typename E>
-struct Res { 
-  using Val = V;
-  using Err = E;
-  Val val; 
-  Err err; 
+template<typename V, typename E> struct Res {
+    using Val = V;
+    using Err = E;
+    Val val;
+    Err err;
 };
-}       // namespace cx
+
+}  // namespace cx
 #endif  // CX___CONFIG_TYPES_HH

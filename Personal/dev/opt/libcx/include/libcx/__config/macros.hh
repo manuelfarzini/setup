@@ -3,6 +3,14 @@
 #define CX___CONFIG_MACRO_HH
 #include <libcx/__config/platform.hh>
 
+// TODO:
+// #define def(name, ...) \
+//     inline constexpr auto name(__VA_ARGS__) noexce
+// def(do_something, ...) -> i32
+// {
+//     return 42;
+// }
+
 //------------------------------------------
 // Syntax
 
