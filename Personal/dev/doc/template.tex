@@ -1,0 +1,227 @@
+$passoptions.latex()$
+\documentclass[
+$for(babel-otherlangs)$
+  $babel-otherlangs$,
+$endfor$
+$if(babel-lang)$
+  $babel-lang$,
+$endif$
+$if(fontsize)$
+  $fontsize$,
+$endif$
+$if(papersize)$
+  $papersize$paper,
+$endif$
+$for(classoption)$
+  $classoption$$sep$,
+$endfor$
+]{$documentclass$}
+$if(beamerarticle)$
+\usepackage{beamerarticle} % needs to be loaded first
+$endif$
+\usepackage{xcolor}
+$if(geometry)$
+\usepackage[$for(geometry)$$geometry$$sep$,$endfor$]{geometry}
+$endif$
+\usepackage{amsmath,amssymb}
+\setlength{\jot}{1.618em}
+$--
+$-- section numbering
+$--
+$if(numbersections)$
+
+$else$
+ % remove section numbering
+$endif$
+$fonts.latex()$
+$font-settings.latex()$
+$common.latex()$
+$for(header-includes)$
+$header-includes$
+$endfor$
+$after-header-includes.latex()$
+$hypersetup.latex()$
+
+%%% <<< Style begin >>>
+\usepackage{etoolbox}
+\usepackage{fontspec}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tocloft}
+\usepackage{setspace}
+\usepackage{paracol}
+
+%%% Code block
+\pretocmd{\Shaded}{\vspace{0.312em}}{}{}
+\apptocmd{\endShaded}{\vspace{0.312em}}{}{}
+
+%%% Page Setup
+% Layout
+\geometry{a4paper, top=1.5cm, bottom=1.5cm, left=2.5cm, right=2.5cm}
+% Multicolumn separation
+\setlength{\columnsep}{1.618em}
+% Paragraph spacing
+\setlength{\parskip}{0.618em}
+% Footnote
+\renewcommand{\footnoterule}{}
+% Sections enumeration
+\setcounter{secnumdepth}{3}
+
+%%% Toc
+\setlength{\cftbeforesecskip}{1em}        % Adjust for \section
+\setlength{\cftbeforesubsecskip}{0.618em} % Adjust for \subsection
+
+%%% Font
+% Main
+\setmainfont{Junicode Light}
+\renewcommand{\normalsize}{\fontsize{11.5pt}{13.5pt}\selectfont}
+% Variants
+\newfontfamily\mediumfont{Junicode Medium}
+\newfontfamily\mediumitalicfont{Junicode Medium Italic}
+\newfontfamily\semiboldfont{Junicode SmBold}
+\newfontfamily\semibolditalicfont{Junicode SmBold Italic}
+\newcommand{\mediumstyle}[1]{{\mediumfont #1}}
+\newcommand{\mediumitalicstyle}[1]{{\mediumitalicfont #1}}
+\newcommand{\semiboldstyle}[1]{{\semiboldfont #1}}
+\newcommand{\semibolditalicstyle}[1]{{\semibolditalicfont #1}}
+\newcommand{\smallstyle}[1]{{\small #1}}
+% Math
+\setmathfont{STIX Two Math}
+% Special
+\newcommand{\footnotestyle}[1]{{\fontsize{5pt}{6pt}\selectfont #1}}
+% Mono
+\setmonofont{Liga Suisse}[Scale=0.735, LetterSpace=-5.0]
+\newfontfamily\monofont{Liga Suisse}[
+    Scale=0.735, LetterSpace=-5.0, Ligatures={Common, Required, TeX}, Contextuals=Alternate]
+\newcommand{\monostyle}[1]{{\monofont #1}}
+
+\newfontfamily\monoboldfont{Suisse Intl Mono Bold}
+\newcommand{\mb}[1]{{\monoboldfont #1}}
+
+%%% code
+\newcommand{\s}{\hphantom{.}}
+\newcommand{\duo}{\hphantom{..}}
+\newcommand{\tab}{\hphantom{........}}
+\NewDocumentCommand{\kw}{m}{{\textcolor[HTML]{7d1211}{#1}}} % keyword
+\NewDocumentCommand{\ty}{m}{{\textcolor[HTML]{606040}{#1}}} % type ident
+\NewDocumentCommand{\tp}{m}{{\textcolor[HTML]{775d19}{#1}}} % type param
+% #775d19
+
+%%% Headings
+% Setup
+\titleformat{\section}{\fontsize{2.618em}{1}\bfseries}{\thesection}{20pt}{}
+\titleformat{\subsection}{\fontsize{1.618em}{1}\bfseries}{\thesubsection}{13.6pt}{}
+\titleformat{\subsubsection}{\fontsize{1.0em}{1}\bfseries}{\thesubsubsection}{13.7pt}{}
+\titleformat{\paragraph}{\fontsize{1.0em}{1}\bfseries}{\theparagraph}{6pt}{}
+\titleformat{\subparagraph}{\fontsize{0.95em}{1}\mediumitalicstyle}{\thesubparagraph}{6pt}{}
+\titleformat{\subsubparagraph}{\fontsize{0.95em}{1}\bfseries}{\thesubsubparagraph}{6pt}{}
+% Spacing
+% \titlespacing*{\section}{0pt}{4.236em}{0.618em}
+\titlespacing*{\section}{0pt}{4.236em}{4.236em}
+\titlespacing*{\subsection}{0pt}{2.618em}{1em}
+\titlespacing*{\subsubsection}{0pt}{1.618em}{0.618em}
+\titlespacing*{\paragraph}{0pt}{1em}{0.618em}
+\titlespacing*{\subparagraph}{0pt}{1em}{0.618em}
+\titlespacing*{\subsubparagraph}{0pt}{1.618em}{0.618em}
+% Numbering
+\setcounter{tocdepth}{2}
+
+
+%%% List
+% ul
+\setlist[itemize,1]{label={\raisebox{0.5pt}{\textbullet}}, leftmargin=1em, font={\scriptsize\bfseries}}
+\setlist[itemize,2]{label={\raisebox{0.8pt}{–}}, leftmargin=0.618em, font={\scriptsize\bfseries}}
+% ol
+\setlist[enumerate,1]{leftmargin=1em, font={\scriptsize\bfseries}}
+\setlist[enumerate,2]{leftmargin=1em, font={\scriptsize\bfseries}}
+%%% Style end
+%%% <<<\ Style end \>>>
+
+$if(title)$
+\title{$title$$if(thanks)$\thanks{$thanks$}$endif$}
+$endif$
+$if(subtitle)$
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{$subtitle$}
+$endif$
+\author{$for(author)$$author$$sep$ \and $endfor$}
+\date{$date$}
+
+\begin{document}
+$if(has-frontmatter)$
+\frontmatter
+$endif$
+$if(title)$
+\maketitle
+$if(abstract)$
+\begin{abstract}
+$abstract$
+\end{abstract}
+$endif$
+$endif$
+
+$for(include-before)$
+$include-before$
+
+$endfor$
+$if(toc)$
+$if(toc-title)$
+\renewcommand*\contentsname{$toc-title$}
+$endif$
+{
+$if(colorlinks)$
+\hypersetup{linkcolor=$if(toccolor)$$toccolor$$else$$endif$}
+$endif$
+\setcounter{tocdepth}{$toc-depth$}
+\tableofcontents
+}
+$endif$
+$if(lof)$
+\listoffigures
+$endif$
+$if(lot)$
+\listoftables
+$endif$
+$if(linestretch)$
+\setstretch{$linestretch$}
+$endif$
+$if(has-frontmatter)$
+\mainmatter
+$endif$
+$body$
+
+$if(has-frontmatter)$
+\backmatter
+$endif$
+$if(nocite-ids)$
+\nocite{$for(nocite-ids)$$it$$sep$, $endfor$}
+$endif$
+$if(natbib)$
+$if(bibliography)$
+$if(biblio-title)$
+$if(has-chapters)$
+\renewcommand\bibname{$biblio-title$}
+$else$
+\renewcommand\refname{$biblio-title$}
+$endif$
+$endif$
+\bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}
+
+$endif$
+$endif$
+$if(biblatex)$
+\printbibliography$if(biblio-title)$[title=$biblio-title$]$endif$
+
+$endif$
+$for(include-after)$
+$include-after$
+
+$endfor$
+\end{document}
