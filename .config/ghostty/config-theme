@@ -7,56 +7,12 @@ font-style-bold = Bold
 font-style-italic = SemiBold
 adjust-cell-width = 0%
 adjust-cell-height = 20%
-font-size = 9.5
+font-size = 11.5
 adjust-underline-position = 3
 font-thicken = true
-font-thicken-strength=255
+font-thicken-strength=200
 
-#---------------------------------------------------------------------------------------------------------
-
-# PragmataPro
-# font-family = PragmataPro
-# font-style = Regular
-# font-family-bold = PragmataPro
-# adjust-cell-width = 15%
-# adjust-cell-height = 15%
-# font-size = 13.5
-# adjust-underline-position = 3
-# font-thicken = true
-# font-thicken-strength=255
-# font-feature = -dlig
-
-# # Liga Suisse
-# font-family = Liga Suisse
-# font-style = Regular
-# font-family-bold = Suisse Intl Mono
-# adjust-cell-width = -10%
-# adjust-cell-height = 5%
-# font-size = 12.8
-# adjust-underline-position = 6
-# font-thicken = true
-# font-thicken-strength=255
-
-# # Latin Modern
-# font-family = Latin Modern Mono
-# font-style = 8 Regular
-# font-style-bold = 10 Bold
-# adjust-cell-width = -4%
-# adjust-cell-height = 10%
-# font-size = 14
-# adjust-underline-position = 5
-# font-thicken = true
-# font-thicken-strength=0
-
-# # SuisseIntlMono
-# font-family = Suisse Intl Mono
-# font-style = Regular
-# adjust-cell-width = -10%
-# adjust-cell-height = 5%
-# font-size = 12.8
-# adjust-underline-position = 6
-# font-thicken = true
-# font-thicken-strength=255
+#-----------------------------------------------------------------------------------------------------------------|
 
 title = " "
 

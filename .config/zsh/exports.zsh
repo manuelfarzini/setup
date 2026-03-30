@@ -41,7 +41,6 @@ export VK_LAYER_PATH=$VULKAN_SDK/share/vulkan/explicit_layer.d
 
 ### Personal
 export PERS=$HOME/Personal/dev
-export UTILS=$HOME/Personal/dev/utils
 
 ### PATH setup
 export PATH=$PATH:opt/local/bin:usr/local/sbin:/opt/local/sbin:/Library/Apple/usr/bin
@@ -52,7 +51,7 @@ export PATH=$PATH:$(npm prefix -g)/bin
 export PATH=$PATH:$MODULAR_HOME/pkg/packages.modular.com_mojo/bin
 export PATH=$PATH:$POSTGRESHOME/bin
 export PATH=$PATH:$PERS/bin
-export PATH=$PATH:$UTILS/script
+export PATH=$PATH:$PERS/script
 
 ### Rust
 export PATH="$PATH:$HOME/.cargo/bin"

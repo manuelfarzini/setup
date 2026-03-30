@@ -1,7 +1,7 @@
 /// \file libcx/arr/dynamic_array.hh
 #ifndef CX_ARR_DYNAMIC_ARRAY_HH
 #define CX_ARR_DYNAMIC_ARRAY_HH
-#include <libcx/uti/types.hh>
+#include <libcx/config.hh>
 #include <libcx/mem/memory.hh>
 
 

@@ -3,7 +3,6 @@
 // - documentation (requires)
 #ifndef CX_MEM_MEMORY_HH
 #define CX_MEM_MEMORY_HH
-#include <new>
 #include <libcx/config.hh>
 #include <libcx/traits.hh>
 #include <libcx/uti/utilities.hh>
@@ -13,7 +12,7 @@
 
 namespace cx::mem {
 
-//------------------------------------------
+// -----------------------------------------
 // Utilities
 
 /// Copies `num` elements of type `T` from `src` to `dst`
@@ -35,7 +34,7 @@ template<CpOrMvAsble T>
 onedef cexpr proc take_type(T* dst, T* src, usize num) noexce -> void
 {
   for (usize i = 0; i < num; i++) {
-    dst[i] = mem_take_type(src[i]);
+    dst[i] = mem_take_ty(src[i]);
   }
 }
 
@@ -226,7 +225,7 @@ nodisc onedef proc reallocate(T* src, usize num, usize new_num) noexce -> Result
     return {src, uti::take(err)};
   }
   num = new_num < num ? new_num : num;
-  mem::mem_take_type<T>(dst, src, num);
+  mem::mem_take_ty<T>(dst, src, num);
   mem::dealloc<T>(src);
   return {dst, null};
 }
