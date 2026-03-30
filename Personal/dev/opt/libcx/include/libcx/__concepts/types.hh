@@ -5,6 +5,7 @@
 #include <libcx/traits.hh>
 
 namespace cx {
+inline namespace uti {
   
 template<typename T> concept CSintegral = is_sintegral<T>;
 template<typename T> concept CUintegral = is_uintegral<T>;
@@ -42,4 +43,5 @@ concept PlainRawPointerAmong = CPlainRawPointer<U> && one_of<U, Ts...>;
 #define String_Like_Among         cx::uti::StringLikeAmong auto
 
 }       // namespace cx
+}       // namespace uti
 #endif  // CX___CONCEPTS_TYPES_HH

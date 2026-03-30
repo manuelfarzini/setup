@@ -50,6 +50,8 @@ onedef cexpr proc mem_copy(anyptr dst, ptrcany src, usize size) -> void {
     ::memcpy(dst, src, size);
 }
 
+template<typename T> concept anytype = true;
+
 /**
     Copies `num` elements of type `T` from `src` to `dst`.
   
@@ -60,8 +62,8 @@ onedef cexpr proc mem_copy(anyptr dst, ptrcany src, usize size) -> void {
     @pre
     - `src` and `dst` have `num` elements
 **/
-template<CpAsble T>
-onedef cexpr proc mem_copy_type(T* dst, T const* src, usize num) noexce -> void
+template<anytype T>
+onedef cexpr proc mem_copy_ty(T* dst, T const* src, usize num) noexce -> void
 {
     // XXX:(manu)#zero_init# custom predicate
     if constexpr (is_triv_dtble<T>) {
@@ -85,7 +87,7 @@ onedef cexpr proc mem_copy_type(T* dst, T const* src, usize num) noexce -> void
     - `src` and `dst` have `num` elements
 **/
 template<CpOrMvAsble T>
-onedef cexpr proc mem_take_type(T* dst, T* src, usize num) noexce -> void {
+onedef cexpr proc mem_take_ty(T* dst, T* src, usize num) noexce -> void {
     for (usize i = 0; i < num; i++) {
         dst[i] = uti::take(src[i]);
     }
@@ -243,7 +245,7 @@ onedef cexpr proc mem_zero_condition(anyptr data, isize size) -> ErrorCode
     - sufficient, properly aligned storage at `ptr`.
 **/
 template<DefInitble T>
-nodisc finline onedef cexpr proc init_type(anyptr ptr, usize num) noexce
+nodisc finline onedef cexpr proc init_ty(anyptr ptr, usize num) noexce
     -> Res<T*, InitError>
 // XXX:(manu)#zero_init# is it the correct concept?
 {
@@ -336,7 +338,7 @@ nodisc onedef cexpr proc init_ls(anyptr ptr, initls<U> lst) noexce
     - `ptr` has `num` elements
 **/
 template<typename T>
-nodisc onedef proc deinit_type(T* ptr, usize num) noexce -> Res<Empty, InitError>
+nodisc onedef proc deinit_ty(T* ptr, usize num) noexce -> Res<Empty, InitError>
 {
     if (ptr == null) {
         return {empty, Invalid_Ptr};

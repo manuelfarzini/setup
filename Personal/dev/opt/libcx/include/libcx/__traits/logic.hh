@@ -6,17 +6,20 @@
 #include <libcx/__utils/ownership.hh>
 
 namespace cx {
+inline namespace uti {
 
-//------------------------------------------
-// Operators
+/*----------------------------------------**
+    Operators
+**----------------------------------------*/
 
 template<bool... Bs> predicate bvariand = (Bs && ...);
 template<typename... Ts> predicate tvariand = (Ts::value && ...);
 template<bool... Bs> predicate bvarior = (Bs || ...);
 template<typename... Ts> predicate tvarior = (Ts::value || ...);
 
-//------------------------------------------
-// Assertble
+/*----------------------------------------**
+    Assertable
+**----------------------------------------*/
 
 template<typename T> concept ___assertble = is_convertible<T, bool>;
 
@@ -27,5 +30,6 @@ predicate is_assertble = ___assertble<T> && requires(T&& t) {
 
 template<typename T> concept CAssertble = is_assertble<T>;
 
+}       // namespace uti
 }       // namespace cx
 #endif  // CX___TRAITS_LOGIC_HH

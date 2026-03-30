@@ -11,8 +11,9 @@
 //     return 42;
 // }
 
-//------------------------------------------
-// Syntax
+/*----------------------------------------**
+    Syntax
+**----------------------------------------*/
 
 #ifndef nodisc
     #define nodisc [[nodiscard]]
@@ -126,8 +127,9 @@
     #endif
 #endif
 
-//------------------------------------------
-// Text generation
+/*----------------------------------------**
+    Text generation
+**----------------------------------------*/
 
 #ifndef CX
     #define CX namespace cx
@@ -189,8 +191,9 @@
     #define CX_NOTHING
 #endif
 
-//------------------------------------------
-// Concept Generators
+/*----------------------------------------**
+    Concept generators
+**----------------------------------------*/
 
 #ifndef CX_CONCEPT_GEN
     #define CX_CONCEPT_GEN(TypeName, is_type_name, CConceptName)                  \
@@ -208,8 +211,9 @@
         template<typename T> concept CConceptName = is_type_name<cx::rm_cvref<T>>
 #endif
 
-//------------------------------------------
-// Member Aliases
+/*----------------------------------------**
+    Member aliases
+**----------------------------------------*/
 
 #define CX_MEMBER_ALIASES(E, S)          \
     using Elem = E;                      \
@@ -227,8 +231,9 @@
     using Rter = uti::RevIterator<Iter>;                      \
     using KRter = uti::RevIterator<Kter>
 
-//------------------------------------------
-// Type Assertions
+/*----------------------------------------**
+    Type assertions
+**----------------------------------------*/
 
 #ifndef CX_TYPE_ASSERT
     #define CX_BASIC_TYPE_ASSERT(_BODY_)         \
@@ -248,8 +253,9 @@
         static_assert(cx::is_triv_dtble<_BODY_>)
 #endif
 
-//------------------------------------------
-// Unreachable
+/*----------------------------------------**
+    Uncreachable
+**----------------------------------------*/
 
 #ifndef CX__UNREACHABLE
     #if defined(CX_COMPILER_MSVC)
@@ -268,8 +274,9 @@
     #define cx_unreachable() CX__UNREACHABLE
 #endif
 
-//------------------------------------------
-// Function like macros
+/*----------------------------------------**
+    Function like 
+**----------------------------------------*/
 
 #ifndef usize_of
     #define usize_of(x) sizeof(x)
@@ -357,8 +364,9 @@
         }
 #endif
 
-// −−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
-//  Array related macros
+/*----------------------------------------**
+    Array operations
+**----------------------------------------*/
 
 #ifndef cx_extract4
     #define cx_extract4(src) {src[0], src[1], src[2], src[3]}
@@ -382,8 +390,9 @@
 #endif
 
 
-// −−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
-//  Probability branches
+/*----------------------------------------**
+    Probability branches
+**----------------------------------------*/
 
 #if defined(CX_COMPILER_CLANG) || defined(CX_COMPILER_GCC)
     #ifndef CX_PROBABILITY_BRANCH
@@ -418,8 +427,9 @@
     #endif
 #endif
 
-//−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
-// Undefine
+/*----------------------------------------**
+    Undefine macros
+**----------------------------------------*/
 
 #ifndef CX_UNDEF_KEYWORDS
     #define CX_UNDEF_KEYWORDS \
