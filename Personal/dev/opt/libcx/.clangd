@@ -19,8 +19,7 @@ CompileFlags:
       -I/opt/homebrew/opt/llvm/include,
       -I/usr/local/include,
       -I/Users/manuelfarzini/Personal/dev/include,
-
-      # # faust repo
+      ### faust repo
       # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler,
       # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/FaustAlgebra,
       # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/boxes,
@@ -33,7 +32,7 @@ CompileFlags:
       # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/parser,
       # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/signals,
       # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/tlib,
-  ]
+    ]
 
 Diagnostics:
   Suppress: [
@@ -41,7 +40,10 @@ Diagnostics:
       overloaded-virtual,
       unused-includes,
       unused-local-typedef,
-    ]
+  ]
+
+Completion:
+  ArgumentLists: Delimiters # OpenDelimiter, None
 
   UnusedIncludes: None
   MissingIncludes: None
