@@ -268,9 +268,10 @@ nodisc finline onedef cexpr proc init_ty(anyptr ptr, usize num) noexce
 
 **/
 template<typename T, typename... Args>
-nodisc onedef cexpr proc init_va(anyptr ptr, isize num, Args const&... args) noexce
-    -> Res<T*, InitError>
-    where def_initble<T> || ctble<T, Args...> // XXX:(manu)#zero_init#
+nodisc onedef cexpr proc init_va(
+    anyptr ptr, isize num, Args const&... args
+) noexce -> Res<T*, InitError>
+    where is_def_initble<T> || is_ctble<T, Args...> // XXX:(manu)#zero_init#
 {
     if (num == 0) {
         return {null, Invalid_Arg};
@@ -305,7 +306,7 @@ nodisc onedef cexpr proc init_va(anyptr ptr, isize num, Args const&... args) noe
 template<typename T, typename U>
 nodisc onedef cexpr proc init_ls(anyptr ptr, initls<U> lst) noexce
     -> Res<T*, InitError>
-    where ctble<T, U const&>
+    where is_ctble<T, U const&>
 {
     if (ptr == null) {
         return {null, Invalid_Ptr};
