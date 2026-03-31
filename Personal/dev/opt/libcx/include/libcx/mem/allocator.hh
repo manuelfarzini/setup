@@ -29,7 +29,7 @@ typedef proc AllocatorProc(
 ) noexce -> Res<anyptr, AllocatorError>;
 
 #define CX_ALLOCATOR_PROC(name)                   \
-    proc name(                                    \
+    onedef proc name(                             \
         anyptr           alc_data,                \
         AllocatorMode    mode,                    \
         isize            size,                    \
@@ -136,11 +136,12 @@ finline intern cexpr proc heap_allocator() -> Allocator
     return Allocator{heap_allocator_proc, null};
 }
 
-//------------------------------------------
-// Make
+/*----------------------------------------++
+|   Make                                   |
+++----------------------------------------*/
 
 /**
-TODO: make the correct conect
+    TODO: write the correct concept
 **/
 template<typename T>
 nodisc onedef proc make_array(
@@ -172,6 +173,22 @@ nodisc onedef proc delete_array(
     }
     return cx_mem_free_size(alctor, ptr, num);
 }
+
+// #undef proc
+// #define proc(name, ...) [[nodiscard]] inline constexpr auto name(__VA_ARGS__) noexcept
+// #define meta template
+// #define tpar typename
+//
+// meta<tpar T> proc(dummy, int a, int b) -> int
+// {
+//     return a + b;
+// }
+//
+// meta<tpar T>
+// proc(delete_arr, T* ptr, isize num, Allocator alctor) -> Res<anyptr, ErrorCode>
+// {
+//     return cx_mem_free_size(alctor, ptr, num);
+// }
 
 }       // namespace cx::mem
 #endif  // CX_MEM_ALLOCATOR_HH
