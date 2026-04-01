@@ -1,11 +1,12 @@
-/// \file libcx/__config/core.hh
+// libcx/__config/platform.hh
+
 #ifndef CX___CONFIG_PLATFORM_HH
 #define CX___CONFIG_PLATFORM_HH
 
-/*----------------------------------------**
-    Architecture
-    Supported: 32 and 64 bit architecture
-**----------------------------------------*/
+/*-----------------------------------------+
+| Architecture                             |
+| Supported: 32 and 64 bit architectures   |
++-----------------------------------------*/
 
 #if defined(_WIN64) || defined(__x86_64__) || defined(_M_X64) ||          \
     defined(__64BIT__) || defined(__powerpc64__) || defined(__ppc64__) || \
@@ -23,9 +24,9 @@
     #define CX_IS_BIG_ENDIAN (!*(u8*) &(u16) {1})
 #endif
 
-/*----------------------------------------**
-    Operating System
-**----------------------------------------*/
+/*-----------------------------------------+
+| Operating system                         |
++-----------------------------------------*/
 
 #if defined(_WIN32) || defined(_WIN64)
     #ifndef CX_SYSTEM_WIN
@@ -65,10 +66,10 @@
     #error This operating system is not supported
 #endif
 
-/*----------------------------------------**
-    Compiler
-    Supported: MSVC, GCC, clang
-**----------------------------------------*/
+/*-----------------------------------------+
+| Compiler                                 |
+| Supported: MSVC, GCC, clang              |
++-----------------------------------------*/
 
 #if defined(_MSC_VER)
     #define CX_COMPILER_MSVC 1
@@ -83,9 +84,9 @@
     #error This compiler is not supported
 #endif
 
-/*----------------------------------------**
-    CPU, CACHE, SIMD
-**----------------------------------------*/
+/*-----------------------------------------+
+| CPU, CACHE, SIMD                         |
++-----------------------------------------*/
 
 #if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__x86_64__)
     #ifndef CX_CPU_X86
@@ -148,9 +149,9 @@
     #error Unknown CPU
 #endif
 
-/*----------------------------------------**
-    Headers
-**----------------------------------------*/
+/*-----------------------------------------+
+| Headers                                  |
++-----------------------------------------*/
 
 #if !defined(CX_SYSTEM_WIN)
     #include <stddef.h>
@@ -273,9 +274,9 @@
 
 // #include <inttypes.h>  // XXX:
 
-/*----------------------------------------**
-    Miscellaneous
-**----------------------------------------*/
+/*-----------------------------------------+
+| Miscellaneous                            |
++-----------------------------------------*/
 
 #ifndef CX_COMPILER_CLANG
     #define _Nonnull
@@ -308,9 +309,9 @@
     #define cx_restrict __restrict__
 #endif
 
-/*----------------------------------------**
-    Primite types
-**----------------------------------------*/
+/*-----------------------------------------+
+| Primitive types                          |
++-----------------------------------------*/
 
 #if defined(CX_COMPILER_MSVC)
     #if _MSC_VER < 1300
@@ -419,9 +420,9 @@ typedef char const* ptrcch8;
 
 // inline constexpr decltype(nullptr) null = nullptr;
 
-/*----------------------------------------**
-    Extended language types
-**----------------------------------------*/
+/*-----------------------------------------+
+| Extended language types                  |
++-----------------------------------------*/
 
 #ifndef CX_HAS_CHAR8
     #if defined(__cpp_char8_t)
@@ -468,9 +469,9 @@ typedef char const* ptrcch8;
     #endif
 #endif
 
-/*----------------------------------------**
-    Limits
-**----------------------------------------*/
+/*-----------------------------------------+
+| Limits                                   |
++-----------------------------------------*/
 
 #ifndef CX_LIMIT
     #define CX_LIMIT 1
