@@ -5,7 +5,7 @@
 
 // using Align = std::align_val_t;
 // using Nothrow = std::nothrow_t const&;
-// glob cexpr Nothrow No_Throw = std::nothrow;
+// onedef cexpr Nothrow No_Throw = std::nothrow;
 
 onedef cexpr proc u64__mem_set(anyptr data, u8 v, usize n) -> ErrorCode {
 //  NOTE(manu)

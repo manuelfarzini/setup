@@ -68,7 +68,7 @@
 #define CX_FOR_EACH(M, ...) \
   CX_EXPAND(CX_JOIN2(CX_FOR_EACH_, CX_COUNT_ARGS(__VA_ARGS__))(M, __VA_ARGS__))
 
-#define CX_KONST(T) glob cexpr usize CX_JOIN2(K, T) = (usize)__COUNTER__;
+#define CX_KONST(T) onedef cexpr usize CX_JOIN2(K, T) = (usize)__COUNTER__;
 
 /// \file libcx/arr/multi_array.hh
 #ifndef CX_ARR_MULTI_ARRAY_HH
@@ -91,12 +91,12 @@ template<uti::CTypeList L1, uti::CTypeList L2, usize I = 0,
 struct ___same_or_ref_multi {
   using T = uti::TypeAt<I, L1>;
   using U = uti::TypeAt<I, L2>;
-  twide predicate value = uti::same_or_ref<T, U> &&
+  glob predicate value = uti::same_or_ref<T, U> &&
                            ___same_or_ref_multi<L1, L2, I + 1>::value;
 };
 
 template<uti::CTypeList L1, uti::CTypeList L2> 
-struct ___same_or_ref_multi<L1, L2> { twide predicate value = true; };
+struct ___same_or_ref_multi<L1, L2> { glob predicate value = true; };
 
 template<uti::CTypeList Ts, uti::CTypeList Us>
 predicate same_or_ref_multi = ___same_or_ref_multi<Ts, Us>::value;
@@ -123,9 +123,9 @@ template<typename U, typename... Ts> concept LegalTypeAmong =
 template<CLegalType... Ts> requires(sizeof...(Ts) > 1)
 struct MultiArray {
   using Types = uti::TypeList<Ts...>;
-  twide glob cexpr usize rows = sizeof...(Ts);
-  twide glob cexpr Array<usize, rows> sizes{isize_of(Ts)...};
-  twide glob cexpr Array<usize, rows> aligns{ialign_of(Ts)...};
+  glob onedef cexpr usize rows = sizeof...(Ts);
+  glob onedef cexpr Array<usize, rows> sizes{isize_of(Ts)...};
+  glob onedef cexpr Array<usize, rows> aligns{ialign_of(Ts)...};
 
   arr::Array<void*, rows> ptrs;
   usize len{};
@@ -148,7 +148,7 @@ CX_CONCEPT_GEN_TEMPL(MultiArray, is_multi_array, CMultiArray,
   X(f64)              \
   X(u8)
 #define X(T) \
-  glob cexpr usize k##T = (usize) __COUNTER__;
+  onedef cexpr usize k##T = (usize) __COUNTER__;
 MULTI_ROWS(X);
 #undef X
 

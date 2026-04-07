@@ -55,7 +55,7 @@ template<typename T> struct ControlBlock final : IControlBlock {
     return reinterpret_cast<T*>(cb.storage);
   }
 
-  finline twide cexpr void __release(IControlBlock* base) noexce {
+  finline glob cexpr void __release(IControlBlock* base) noexce {
     auto* self = static_cast<ControlBlock<T>*>(base);
     if cexpr (!std::is_trivially_destructible_v<T>) {
       self->object_ptr()->~T();

@@ -18,7 +18,7 @@ struct Tuple<T, Ts...> {
     using Self = Tuple<T, Ts...>;
     using Rest = Tuple<Ts...>;
 
-    glob twide cexpr usize size = 1 + sizeof...(Ts);
+    onedef glob cexpr usize size = 1 + sizeof...(Ts);
 
     Elem elem{};
     Rest rest{};
@@ -30,7 +30,7 @@ template<typename T> struct Tuple<T> {
     using Self = Tuple<T>;
     using Rest = void;
 
-    glob twide cexpr usize size = 1;
+    onedef glob cexpr usize size = 1;
 
     Elem elem{};
 };

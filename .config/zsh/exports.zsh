@@ -17,6 +17,7 @@ export MATLAB_HOME=/Applications/MATLAB_R2024b.app
 ### Faust
 export FAUST_TOOLS=/usr/local/share/faust
 export FAUST_HH=/usr/local/include/faust
+export FAUST_DEV=/Users/manuelfarzini/Personal/dev/repo/faust/build/bin/faust
 
 ### Arduino
 export ARDU_CORES=$HOME/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino

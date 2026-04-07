@@ -1,5 +1,5 @@
 /// \file libcx/mem/memory.hh
-// TODO:
+// XXX: this header is deprecated
 // - documentation (requires)
 #ifndef CX_MEM_MEMORY_HH
 #define CX_MEM_MEMORY_HH
@@ -7,6 +7,7 @@
 #include <libcx/traits.hh>
 #include <libcx/uti/utilities.hh>
 #include <libcx/mem/pointer.hh>
+#include <libcx/mem/common.hh>
 #include <libcx/err/error.hh>
 
 
@@ -68,7 +69,7 @@ template<typename T> nodisc onedef proc alloc_type(usize num) noexce -> Result<T
 ///          otherwise `(ptr, null)`
 template<DefInitble T, typename... Args>
 nodisc onedef cexpr proc place_va(void* ptr, usize num, Args&&... args) noexce -> Result<T*>
-    where(ctble<T, Args...> && sizeof...(Args) > 0)
+    where(is_ctble<T, Args...> && sizeof...(Args) > 0)
 {
     if (num == 0) {
         return {null, cx_arg_err("`num` cannot be 0")};

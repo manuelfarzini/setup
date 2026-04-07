@@ -16,7 +16,7 @@ struct StringReference {
   CX_MEMBER_ALIASES(char, usize);
   using Self = StringReference;
 
-  twide cexpr usize npos = ~usize(0);
+  glob cexpr usize npos = ~usize(0);
   Kter ptr{nullptr};             
   Size len{0};                   
 

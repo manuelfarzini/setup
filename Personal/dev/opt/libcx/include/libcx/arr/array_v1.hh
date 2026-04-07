@@ -18,7 +18,7 @@ template<typename T, CUintegral auto N, CUintegral S = usize> struct Array {
     CX_MEMBER_ALIASES(T, S);
     using Value = Array<T, N, S>;
 
-    glob twide cexpr Size len = N;
+    onedef glob cexpr Size len = N;
     Elem buf[len];
 
     finline cexpr proc operator[](Size idx) noexce->Elem& { return buf[idx]; }

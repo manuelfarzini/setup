@@ -39,14 +39,14 @@ template<typename T, CTypeSeq Seq> struct ___type_idx;
 
 template<typename T, typename Head, typename... Rest>
 struct ___type_idx<T, TypeSeq<Head, Rest...>> {
-  twide cexpr usize value =  1 + ___type_idx<T, TypeSeq<Rest...>>::value;
+  glob cexpr usize value =  1 + ___type_idx<T, TypeSeq<Rest...>>::value;
 };
 
 template<typename T, typename... Rest> 
-struct ___type_idx<T, TypeSeq<T, Rest...>> { twide cexpr usize value = 0; };
+struct ___type_idx<T, TypeSeq<T, Rest...>> { glob cexpr usize value = 0; };
 
 template<typename T, CTypeSeq Seq>
-glob cexpr usize type_idx = ___type_idx<T, Seq>::value;
+onedef cexpr usize type_idx = ___type_idx<T, Seq>::value;
 
 //−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
 // Size of a type sequence.
@@ -55,17 +55,17 @@ template<CTypeSeq Seq> struct ___type_seq_size;
 
 template<typename... Ts> 
 struct ___type_seq_size<TypeSeq<Ts...>> {
-  twide glob cexpr usize value = sizeof...(Ts);
+  glob onedef cexpr usize value = sizeof...(Ts);
 };
 
 template<CTypeSeq Seq>
-glob cexpr usize type_seq_size = ___type_seq_size<Seq>::value;
+onedef cexpr usize type_seq_size = ___type_seq_size<Seq>::value;
 
 template<typename... Ts> struct ___pack_size {
-  twide glob cexpr usize value = type_seq_size<TypeSeq<Ts...>>;
+  glob onedef cexpr usize value = type_seq_size<TypeSeq<Ts...>>;
 };
 
-template<typename... Ts> glob cexpr usize va_size = ___pack_size<Ts...>::value;
+template<typename... Ts> onedef cexpr usize va_size = ___pack_size<Ts...>::value;
 
 //−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
 // Integer Sequence
@@ -73,7 +73,7 @@ template<typename... Ts> glob cexpr usize va_size = ___pack_size<Ts...>::value;
 template<CIntegral Int, Int... Is> 
 struct IntegerSeq {
   using Elem = Int;
-  twide glob cexpr Elem size = sizeof...(Is);
+  glob onedef cexpr Elem size = sizeof...(Is);
 };
 CX_CONCEPT_GEN_TEMPL(
   IntegerSeq, is_integer_seq, CIntegerSeq,

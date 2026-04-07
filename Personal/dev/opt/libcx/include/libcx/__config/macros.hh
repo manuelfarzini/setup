@@ -11,18 +11,28 @@
 //     return 42;
 // }
 
-/*----------------------------------------**
-    Syntax
-**----------------------------------------*/
+/*-----------------------------------------+
+| Syntax                                   |
++-----------------------------------------*/
 
 #ifndef nodisc
     #define nodisc [[nodiscard]]
 #endif
+
 #ifndef noret
     #define noret [[noreturn]]
 #endif
+
 #ifndef unlike
     #define unlike [[unlikely]]
+#endif
+
+#ifndef cx_no_uniq_addr
+    #if defined(CX_COMPILER_MSVC)
+        #define cx_no_uniq_addr [[msvc::no_unique_address]]
+    #else
+        #define cx_no_uniq_addr [[no_unique_address]]
+    #endif
 #endif
 
 #ifndef intern  // internal linkage procedures/variables
@@ -49,11 +59,8 @@
 #ifndef cexpr
     #define cexpr constexpr
 #endif
-#ifndef twide  // type level member variables (type wide)
-    #define twide static
-#endif
 #ifndef glob
-    #define glob inline
+    #define glob static
 #endif
 #ifndef predicate
     #define predicate inline constexpr bool
@@ -83,14 +90,6 @@
 #endif
 #ifndef EnableIf
     #define EnableIf(...) typename = cx::uti::enable_if<(__VA_ARGS__)>
-#endif
-
-#ifndef cx_no_uniq_addr
-    #if defined(CX_COMPILER_MSVC)
-        #define cx_no_uniq_addr [[msvc::no_unique_address]]
-    #else
-        #define cx_no_uniq_addr [[no_unique_address]]
-    #endif
 #endif
 
 #ifndef finline
@@ -127,9 +126,9 @@
     #endif
 #endif
 
-/*----------------------------------------**
-    Text generation
-**----------------------------------------*/
+/*-----------------------------------------+
+| Text generation                          |
++-----------------------------------------*/
 
 #ifndef CX
     #define CX namespace cx
@@ -191,9 +190,9 @@
     #define CX_NOTHING
 #endif
 
-/*----------------------------------------**
-    Concept generators
-**----------------------------------------*/
+/*-----------------------------------------+
+| Concept generators                       |
++-----------------------------------------*/
 
 #ifndef CX_CONCEPT_GEN
     #define CX_CONCEPT_GEN(TypeName, is_type_name, CConceptName)                  \
@@ -211,9 +210,9 @@
         template<typename T> concept CConceptName = is_type_name<cx::rm_cvref<T>>
 #endif
 
-/*----------------------------------------**
-    Member aliases
-**----------------------------------------*/
+/*-----------------------------------------+
+| Member aliases                           |
++-----------------------------------------*/
 
 #define CX_MEMBER_ALIASES(E, S)          \
     using Elem = E;                      \
@@ -231,9 +230,9 @@
     using Rter = uti::RevIterator<Iter>;                      \
     using KRter = uti::RevIterator<Kter>
 
-/*----------------------------------------**
-    Type assertions
-**----------------------------------------*/
+/*-----------------------------------------+
+| Type assertions                          |
++-----------------------------------------*/
 
 #ifndef CX_TYPE_ASSERT
     #define CX_BASIC_TYPE_ASSERT(_BODY_)         \
@@ -253,9 +252,9 @@
         static_assert(cx::is_triv_dtble<_BODY_>)
 #endif
 
-/*----------------------------------------**
-    Uncreachable
-**----------------------------------------*/
+/*-----------------------------------------+
+| Unreachable                              |
++-----------------------------------------*/
 
 #ifndef CX__UNREACHABLE
     #if defined(CX_COMPILER_MSVC)
@@ -274,9 +273,9 @@
     #define cx_unreachable() CX__UNREACHABLE
 #endif
 
-/*----------------------------------------**
-    Function like 
-**----------------------------------------*/
+/*-----------------------------------------+
+| Function like                            |
++-----------------------------------------*/
 
 #ifndef usize_of
     #define usize_of(x) sizeof(x)
@@ -364,9 +363,9 @@
         }
 #endif
 
-/*----------------------------------------**
-    Array operations
-**----------------------------------------*/
+/*-----------------------------------------+
+| Array operations                         |
++-----------------------------------------*/
 
 #ifndef cx_extract4
     #define cx_extract4(src) {src[0], src[1], src[2], src[3]}
@@ -389,10 +388,9 @@
      arr[8], arr[9], arr[10], arr[11], arr[12], arr[13], arr[14], arr[15]}
 #endif
 
-
-/*----------------------------------------**
-    Probability branches
-**----------------------------------------*/
+/*-----------------------------------------+
+| Probability branches                     |
++-----------------------------------------*/
 
 #if defined(CX_COMPILER_CLANG) || defined(CX_COMPILER_GCC)
     #ifndef CX_PROBABILITY_BRANCH
@@ -427,9 +425,9 @@
     #endif
 #endif
 
-/*----------------------------------------**
-    Undefine macros
-**----------------------------------------*/
+/*-----------------------------------------+
+| Undefine macros                          |
++-----------------------------------------*/
 
 #ifndef CX_UNDEF_KEYWORDS
     #define CX_UNDEF_KEYWORDS \
@@ -442,7 +440,7 @@
         #undef persist        \
         #undef predicate      \
         #undef proc           \
-        #undef twide          \
+        #undef glob          \
         #undef onedef
 #endif
       

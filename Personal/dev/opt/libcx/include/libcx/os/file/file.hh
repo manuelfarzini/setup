@@ -29,11 +29,11 @@ enum FileMode {
 // // Idea
 // // Explicit passing to a function, implicit conversion to be used in switch-case
 // struct FileMode {
-//   twide cexpr i32 Read = cx_bit(0);
-//   twide cexpr i32 Write = cx_bit(1);
-//   twide cexpr i32 Append = cx_bit(2);
-//   twide cexpr i32 ReadWrite = cx_bit(3);
-//   twide cexpr i32 Mask = Read | Write | Append | ReadWrite;
+//   glob cexpr i32 Read = cx_bit(0);
+//   glob cexpr i32 Write = cx_bit(1);
+//   glob cexpr i32 Append = cx_bit(2);
+//   glob cexpr i32 ReadWrite = cx_bit(3);
+//   glob cexpr i32 Mask = Read | Write | Append | ReadWrite;
 //
 //   i32 v{0};
 //   implicit cexpr operator i32() const { return v; }
@@ -110,7 +110,7 @@ struct FileStandardConfig {
   File files[FileStandardCount]{};
 };
 
-glob FileStandardConfig ___std_cfg{};
+onedef FileStandardConfig ___std_cfg{};
 
 finline proc get_standard_config() noexce -> FileStandardConfig*
 {
