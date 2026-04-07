@@ -14,7 +14,7 @@ template<bool B>
 predicate kpred = B;
 
 struct Empty {};
-glob cexpr Empty empty;
+onedef cexpr Empty empty;
 
 template<typename T> 
 using initls = std::initializer_list<T>;
@@ -24,8 +24,8 @@ struct ZeroType {
   implicit cexpr operator void*() const noexce { return nullptr; }
   implicit cexpr operator decltype(nullptr)() const noexce { return nullptr; }
 };
-glob cexpr ZeroType null;
-glob cexpr ZeroType none;
+onedef cexpr ZeroType null;
+onedef cexpr ZeroType none;
 
 template<typename V, typename E> struct Res {
     using Val = V;

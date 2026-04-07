@@ -16,7 +16,7 @@ template<usize N> struct ZeroString {
     using Self = ZeroString<N>;
 
     char buf[N] = {};
-    glob twide cexpr usize len = N;
+    onedef glob cexpr usize len = N;
 
     finline cexpr proc operator[](usize const idx) noexce -> char& { return buf[idx]; }
     finline cexpr proc operator[](usize const idx) const noexce -> char { return buf[idx]; }

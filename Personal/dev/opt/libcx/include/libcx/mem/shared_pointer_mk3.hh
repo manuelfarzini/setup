@@ -48,7 +48,7 @@ template<typename T> struct ControlBlock final : IControlBlock {
   /// Default constructor.
   cexpr ControlBlock() noexce { release = __release; }
   /// Typed release implementation.
-  finline twide cexpr proc __release(IControlBlock* base) noexce -> void
+  finline glob cexpr proc __release(IControlBlock* base) noexce -> void
   {
     auto* self = static_cast<ControlBlock<T>*>(base);
     if cexpr (!std::is_trivially_destructible_v<T>) {
@@ -82,7 +82,7 @@ template<typename T> struct SharedPointer {
 
   using Elem = T;
   template<typename U> using EnableUpcast = std::enable_if<std::is_convertible_v<U*, T*>, int>;
-  twide glob cexpr struct AdoptTag {} adopt_tag{};
+  glob onedef cexpr struct AdoptTag {} adopt_tag{};
 
   /// The pointer to control block.
   IControlBlock* ctrl_ptr{nullptr};

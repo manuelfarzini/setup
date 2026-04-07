@@ -19,7 +19,7 @@ struct Array {
     using Self = Array<T, N>;
 
     Elem buf[N];
-    glob twide cexpr Size len = N;
+    onedef glob cexpr Size len = N;
 
     finline cexpr proc operator[](Size const idx) noexce -> T&
     {

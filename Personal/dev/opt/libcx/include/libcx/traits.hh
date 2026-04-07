@@ -32,10 +32,10 @@ template<typename T>
 using UnderUint = BytesToUint<usize_of(T)>;
 
 template<typename T>
-glob cexpr isize tsize_of = isize(sizeof(T));
+onedef cexpr isize tsize_of = isize(sizeof(T));
 
 template<auto v>
-glob cexpr isize vsize_of = isize(sizeof(v));
+onedef cexpr isize vsize_of = isize(sizeof(v));
 
 // template<typename T>
 // finline onedef cexpr proc size_of(T const & t) noexce -> isize

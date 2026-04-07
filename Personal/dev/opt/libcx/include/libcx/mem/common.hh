@@ -15,20 +15,20 @@ namespace cx::mem {
 //     Alctor_InvalidMode,
 // };
 
-glob cexpr u8 Operation_Fail = 1;
-glob cexpr u8 Invalid_Ptr = 2;
-glob cexpr u8 Invalid_Arg = 3;
-glob cexpr u8 Bad_Alloc = 4;
-glob cexpr u8 Invalid_Mode = 5;
+onedef cexpr u8 Operation_Fail = 1;
+onedef cexpr u8 Invalid_Ptr = 2;
+onedef cexpr u8 Invalid_Arg = 3;
+onedef cexpr u8 Bad_Alloc = 4;
+onedef cexpr u8 Invalid_Mode = 5;
 using ErrorCode = u8;
 using AllocatorError = u8;
 using InitError = u8;
 
-glob cexpr isize PTR_SIZE = isize_of(anyptr);
-glob cexpr isize PTR_ALIGN = ialign_of(anyptr);
-glob cexpr isize MAX_SIZE = isize_of(max_align_t);
-glob cexpr isize MAX_ALIGN = ialign_of(max_align_t);
-glob cexpr isize DEF_ALIGN = 2 * MAX_ALIGN;
+onedef cexpr isize PTR_SIZE = isize_of(anyptr);
+onedef cexpr isize PTR_ALIGN = ialign_of(anyptr);
+onedef cexpr isize MAX_SIZE = isize_of(max_align_t);
+onedef cexpr isize MAX_ALIGN = ialign_of(max_align_t);
+onedef cexpr isize DEF_ALIGN = 2 * MAX_ALIGN;
 
 static_assert(MAX_ALIGN % PTR_ALIGN == 0, "`max_align` must be a multiple of `ptr_align`");
 static_assert((MAX_ALIGN & (MAX_ALIGN - 1)) == 0, "`max_align` must be a power of 2");
