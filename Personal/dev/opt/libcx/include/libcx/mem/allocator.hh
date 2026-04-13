@@ -90,7 +90,6 @@ finline onedef proc cx_mem_free_all(Allocator alctor) -> Res<anyptr, AllocatorEr
 onedef proc cx_mem_free_size(
     Allocator alctor, anyptr ptr, isize size
 ) noexce -> Res<anyptr, AllocatorError> {
-    // NOTE: is this proc needed?
     return alctor.call(alctor.data, Mode_Free, 0, 0, ptr, size, true);
 }
 

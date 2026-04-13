@@ -32,7 +32,7 @@ onedef cexpr isize DEF_ALIGN = 2 * MAX_ALIGN;
 
 static_assert(MAX_ALIGN % PTR_ALIGN == 0, "`max_align` must be a multiple of `ptr_align`");
 static_assert((MAX_ALIGN & (MAX_ALIGN - 1)) == 0, "`max_align` must be a power of 2");
-static_assert(DEF_ALIGN == 8  || DEF_ALIGN == 16, "`def_align` must be 8 or 16"); // XXX:
+static_assert(DEF_ALIGN == 8  || DEF_ALIGN == 16, "`def_align` must be 8 or 16");
 
 /** 
     Copies `size` bytes from `src` to `dst`.
@@ -50,8 +50,6 @@ onedef cexpr proc mem_copy(anyptr dst, ptrcany src, usize size) -> void {
     ::memcpy(dst, src, size);
 }
 
-template<typename T> concept anytype = true;
-
 /**
     Copies `num` elements of type `T` from `src` to `dst`.
   
@@ -62,10 +60,11 @@ template<typename T> concept anytype = true;
     @pre
     - `src` and `dst` have `num` elements
 **/
-template<anytype T>
+template<typename T>
 onedef cexpr proc mem_copy_ty(T* dst, T const* src, usize num) noexce -> void
 {
     // XXX:(manu)#zero_init# custom predicate
+
     if constexpr (is_triv_dtble<T>) {
         mem_copy(dst, src, num * isize_of(T));
     } else {
