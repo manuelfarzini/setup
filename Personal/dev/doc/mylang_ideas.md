@@ -5,68 +5,62 @@ markdown_extensions: +bracketed_spans
 # Misc
 
 ```
-generic_test: inln priv proc<
-    T: copble & dtble
->(
-    x: T
-) -> T { 
-    return x
-}
+--- I think this is the best
 
-@inln @priv @cons
-proc generic_test[
-    type T : cpyble & dtble,
-    sint N : N > 0
-](&[T, N] x) -> T
-where:
-    T: copble & dtble
-{ 
-    return accum(x)
-}
++-- Multine non documentationc comment
++-- this is the last line, still part of comment until\n
 
-@inln @priv @cons
-proc generic_test(
-    type $T   : cpyble & dtble,
-    sint $N   : N > 0,
-    &[T, N] x
-) -> T
-where:
-    T: copble & dtble
-{ 
-    return accum(x)
-}
+--+ Multiline documentation coment:
+--+ this is the last line, still part of comment until\n
+```
 
-inln priv cons proc generic_test(
-    cpyble $T
-    sint $N
-    &[T, N] x
+```
+--- good
+@inln @priv
+cons proc generic_test[
+    T: type where T is cpyble & dtble,
+    n: sint where n > 0
+](&[T, n] x) -> T
+
+--- good
+@inln @priv
+cons proc generic_test[
+    T: type
+    n: sint
+](&[T, n] x) -> T, where:
+    T is cpyble & dtble,
+    n > 0
+
+--- good
+@inln @priv 
+cons proc generic_test(
+    $T:    type
+    $n:    sint
+    x:     *[T, n]
 ) -> T, where:
-    T is dtble
-    N > 0
-{ 
-    return accum(x)
-}
-
+    cpyble(T) & dtble(T)
+    0 < n and n < 100
+  
 inln priv cons proc generic_test(
-    $T: type
-    $N: sint
-    x: &[T, N]
+    type       $T
+    sint       $n
+    &[T, n]    x
 ) -> T, where:
-    T is dtble & copyble,
-    N > 0
-{ 
-    return accum(x)
-}
-``` 
+    T is cpyble & dtble,
+    n > 0
+
+@inln @priv
+cons proc generic_test[type T, sint n](&[T, n] arr) -> T, where:
+    cpyble[T] & dtble[T],
+    n > 0
+
+```
 
 ```
 @inln @priv
-fn visit(
+proc visit(
     *DeclareVarInst inst
-) -> void
-where:
-    some_cons_predicate()
-{
+) -> void, where: some_cons_predicate() {
     // if arr_t := dycast(*ArrayTyped, inst.t_info); arr_t:
     if arr_t := dyn *ArrayTyped(inst.t_info); arr_t:
         dst <- endln <- tab <- accept(inst.addr) <- " = ";
