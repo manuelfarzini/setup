@@ -10,18 +10,8 @@ alias cl="clear; clear; clear;"
 alias md="mkdir"
 
 # git
-alias gl="git --no-pager log --graph --pretty=format:\"%h  %ad  %an %d\" --date=short --decorate; echo"
-alias glog="git --no-pager log"
-alias gs="git status"
-
-# arduino cli
-alias ardu="arduino-cli"
-alias arduls="arduino-cli board list"
-
-# yabai
-alias ysto="yabai --stop-service"
-alias ysta="yabai --start-service"
-alias yres="yabai --restart-service"
+alias gl="git --no-pager log --graph --pretty=format:\"%h  %ad  %an %d\" --date=short --decorate -n20; echo"
+alias glog="git --no-pager log -n20"
 
 # Eza
 alias ls="eza --group-directories-first --color=always --no-filesize --icons=never --no-time --no-user --no-permissions"
