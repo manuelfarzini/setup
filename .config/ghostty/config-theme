@@ -5,9 +5,9 @@ font-family-italic = SF Mono
 font-style = Medium
 font-style-bold = Bold
 font-style-italic = SemiBold
-adjust-cell-width = 0%
+adjust-cell-width = -5%
 adjust-cell-height = 20%
-font-size = 11.5
+font-size = 10
 adjust-underline-position = 3
 font-thicken = true
 font-thicken-strength=200
@@ -45,46 +45,3 @@ palette = 12=#626246
 palette = 13=#c27070
 palette = 14=#626246
 palette = 15=#b3b390
-
-
-# ------------------------------
-# zfore    = "#000000",
-# zback    = "#ffffff",
-# fore     = "#1a1a13",
-# back     = "#f3f3eb",
-# line     = "#efefe5",
-# sel_bg   = "#cedce5",
-# vm_bg    = "#ceceb3",
-# value1   = "#849200",
-# value2   = "#cf8f0b",
-# value3   = "#c68909",
-# type     = "#626246",
-# keyword  = "#6b4a65",
-# path     = "#c68909",
-# preproc  = "#aeaf9f",
-# macro    = "#6d4a00",
-# comment1 = "#a8977a",
-# comment2 = "#a88c5b",
-# note     = "#8d9a0c",
-# error    = "#931514",
-# warn     = "#c27070",
-# param   = "#505a8f",
-# green_value  = "#849200",
-# orange_value = "#cf8f0b",
-# red_path     = "#7d1211",
-# orange_teles = "#b55e0b",
-# orange_mason = "#ec9216",
-# flash_match  = "#858566",
-# flash_label  = "#3c067c",
-
-# grey1 = "#5c5c42",
-# grey2 = "#999971",
-# grey3 = "#ceceb3",
-# grey4 = "#dedecc",
-
-# green1 = "#406d17",
-# green2 = "#778f27",
-# green3 = "#a7b142",
-# green4 = "#a8c939",
-# orange3 = "#ec9216",
-
