@@ -1,7 +1,7 @@
 /** @file src/main.cc **/
 // #include <libcx/io/io.hh>
 
-#include "stdio.h"
+#include <stdio.h>
 
 // using CX;
 
@@ -27,5 +27,12 @@
     #define proc auto
 #endif
 
-proc test_dummy() -> void { printf("Hello, this is a dummy test\n"); }
-proc main() -> int { test_dummy(); }
+proc test_dummy() -> void
+{
+    printf("Hello, this is a dummy test\n");
+}
+
+proc main() -> int
+{
+    test_dummy();
+}

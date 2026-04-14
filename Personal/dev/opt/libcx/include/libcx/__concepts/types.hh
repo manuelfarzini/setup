@@ -33,15 +33,6 @@ concept PlainRawPointerAmong = CPlainRawPointer<U> && one_of<U, Ts...>;
 // template<typename U, typename... Ts>
 // concept StringLikeAmong = CStringLike<U> && one_of<U, Ts...>; // XXX: make a pure version?
 
-#define Basic_Pointer             cx::uti::CBasePointer auto
-#define Smart_Pointer             cx::uti::CSmartPointer auto
-#define Plain_Arithmetic          cx::uti::CPlainArithmetic auto
-#define Plain_Arithmetic_Among    cx::uti::PlainArithmeticAmong auto
-#define Plain_Raw_Pointer         cx::uti::CPlainRawPointer auto
-#define Plain_Raw_Pointer_Among   cx::uti::PlainRawPointerAmong auto
-#define String_Like               cx::uti::CStringLike auto
-#define String_Like_Among         cx::uti::StringLikeAmong auto
-
 }       // namespace cx
 }       // namespace uti
 #endif  // CX___CONCEPTS_TYPES_HH
