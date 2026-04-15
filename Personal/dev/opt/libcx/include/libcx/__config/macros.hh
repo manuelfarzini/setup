@@ -426,7 +426,7 @@
 #endif
 
 /*-----------------------------------------+
-| Undefine macros                          |
+*| Undefine macros                          |
 +-----------------------------------------*/
 
 #ifndef CX_UNDEF_KEYWORDS
@@ -443,5 +443,43 @@
         #undef glob          \
         #undef onedef
 #endif
+
+
+// TODO:
+//
+// #define fn(name, ...) inline auto name(__VA_ARGS__) noexcept
+// #define metafn(name, ...) template <__VA_ARGS__> inline auto name
+// #define consfn(name, ...) inline constexpr auto name(__VA_ARGS__) noexcept
+// #define ctimfn(name, ...) inline consteval auto name(__VA_ARGS__) noexcept
+// #define intern static
+// #define begfn {
+// #define endfn }
+// #define meta template
+// #define tname typename
+//
+// #define expand __attribute__((always_inline))
+// #define begif(...) if (__VA_ARGS__) {
+// #define endif }
+//
+// meta<tname T, T x> fn(something, int y) -> int;
+//
+// metafn(somethinh, tname T, T x)(int y) -> int;
+//
+// expand intern fn(edit_bfw_desc, int const) -> int
+// {
+//     if (100 > 0) {
+//         printf("ok");
+//     }
+//     return 0;
+// }
+//
+// expand intern fn(edit_bfw_desd, int const) -> int
+// begfn
+//     begif (100 > 0)
+//         printf("ok");
+//     endif
+//     return 0;
+// endfn
+
       
 #endif  // CX___CONFIG_MACRO_HH
