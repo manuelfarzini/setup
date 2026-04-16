@@ -44,7 +44,8 @@ static_assert(DEF_ALIGN == 8  || DEF_ALIGN == 16, "`def_align` must be 8 or 16")
     @pre
     - `src` and `dst` have `size` bytes.
 **/
-onedef cexpr proc mem_copy(anyptr dst, ptrcany src, usize size) -> void {
+onedef cexpr proc mem_copy(anyptr dst, ptrcany src, usize size) -> void
+{
     // NOTE(manu)
     // should i implement mem_copy? libc is already heavily optimized
     ::memcpy(dst, src, size);
@@ -63,8 +64,13 @@ onedef cexpr proc mem_copy(anyptr dst, ptrcany src, usize size) -> void {
 template<typename T>
 onedef cexpr proc mem_copy_ty(T* dst, T const* src, usize num) noexce -> void
 {
+    if consteval {
+        for (usize i = 0; i < num; i++) {
+            dst[i] = src[i];
+        }
+        return;
+    }
     // XXX:(manu)#zero_init# custom predicate
-
     if constexpr (is_triv_dtble<T>) {
         mem_copy(dst, src, num * isize_of(T));
     } else {
@@ -86,7 +92,8 @@ onedef cexpr proc mem_copy_ty(T* dst, T const* src, usize num) noexce -> void
     - `src` and `dst` have `num` elements
 **/
 template<CpOrMvAsble T>
-onedef cexpr proc mem_take_ty(T* dst, T* src, usize num) noexce -> void {
+onedef cexpr proc mem_take_ty(T* dst, T* src, usize num) noexce -> void
+{
     for (usize i = 0; i < num; i++) {
         dst[i] = uti::take(src[i]);
     }
@@ -103,7 +110,8 @@ onedef cexpr proc mem_take_ty(T* dst, T* src, usize num) noexce -> void {
     @pre
     - `data` has at least `n` bytes.
 **/
-onedef cexpr proc mem_set(anyptr data, u8 val, usize size) -> ErrorCode {
+onedef cexpr proc mem_set(anyptr data, u8 val, usize size) -> ErrorCode
+{
     //  NOTE(manu)
     //  > libc wrapper, actually is the fastest
     //  > found that is the fastest on my m1 macbook pro
@@ -157,12 +165,12 @@ onedef cexpr proc mem_zero(anyptr data, usize size) -> ErrorCode
 **/
 onedef cexpr proc mem_zero_condition(anyptr data, isize size) -> ErrorCode
 {
-    //  NOTE(manu)
-    //  gb.h memset inspired version
-    //  it's faster compared to the odin like one and it's much faster than
-    //  libc ::memset with 0s if the memory is already mapped to a 0 page
-    //  probably I can improve this even more under certain assumptions,
-    //  like using a u64 splat directly
+    // NOTE(manu)
+    // gb.h memset inspired version
+    // it's faster compared to the odin like one and it's much faster than
+    // libc ::memset with 0s if the memory is already mapped to a 0 page
+    // probably I can improve this even more under certain assumptions,
+    // like using a u64 splat directly
     if (data == null) unlike {
         return Invalid_Ptr;
     }
@@ -303,8 +311,7 @@ nodisc onedef cexpr proc init_va(
     - The elements are copied
 **/
 template<typename T, typename U>
-nodisc onedef cexpr proc init_ls(anyptr ptr, initls<U> lst) noexce
-    -> Res<T*, InitError>
+nodisc onedef cexpr proc init_ls(anyptr ptr, initls<U> lst) noexce -> Res<T*, InitError>
     where is_ctble<T, U const&>
 {
     if (ptr == null) {
@@ -338,7 +345,7 @@ nodisc onedef cexpr proc init_ls(anyptr ptr, initls<U> lst) noexce
     - `ptr` has `num` elements
 **/
 template<typename T>
-nodisc onedef proc deinit_ty(T* ptr, usize num) noexce -> Res<Empty, InitError>
+nodisc onedef proc deinit_ty(T* ptr, usize num) noexce -> Res<EmptyType, InitError>
 {
     if (ptr == null) {
         return {empty, Invalid_Ptr};
