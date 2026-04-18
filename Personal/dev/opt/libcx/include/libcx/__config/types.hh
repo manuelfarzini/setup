@@ -10,6 +10,9 @@ namespace cx {
 template<bool B> 
 predicate kpred = B;
 
+template<typename T>
+using Void = void;
+
 struct EmptyType {};
 onedef cexpr EmptyType empty;
 
@@ -23,9 +26,6 @@ struct ZeroType {
 };
 onedef cexpr ZeroType null;
 onedef cexpr ZeroType none;
-
-#define meta template
-#define tyname typename
 
 template<typename V, typename E>
 struct Res {

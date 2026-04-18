@@ -1,19 +1,13 @@
-/// \file libcx/__config/macros.hh
+/** 
+* @file libcx/__config/macros.hh
+*/
 #ifndef CX___CONFIG_MACRO_HH
 #define CX___CONFIG_MACRO_HH
 #include <libcx/__config/platform.hh>
 
-// TODO:
-// #define def(name, ...) \
-//     inline constexpr auto name(__VA_ARGS__) noexce
-// def(do_something, ...) -> i32
-// {
-//     return 42;
-// }
-
-/*-----------------------------------------+
-| Syntax                                   |
-+-----------------------------------------*/
+/*                                         *
+* Syntax                                   *
+*                                         */
 
 #ifndef nodisc
     #define nodisc [[nodiscard]]
@@ -35,10 +29,13 @@
     #endif
 #endif
 
+#ifndef meta
+    #define meta template
+#endif
 #ifndef intern  // internal linkage procedures/variables
     #define intern static
 #endif
-#ifndef onedef  // single procedure across translation units
+#ifndef onedef  // single procedure/variable across translation units
     #define onedef inline
 #endif
 #ifndef proc
@@ -425,9 +422,9 @@
     #endif
 #endif
 
-/*-----------------------------------------+
-*| Undefine macros                          |
-+-----------------------------------------*/
+/*                                         *
+* Undefine macros                          *
+*                                         */
 
 #ifndef CX_UNDEF_KEYWORDS
     #define CX_UNDEF_KEYWORDS \
@@ -449,11 +446,9 @@
 //
 // #define fn(name, ...) inline auto name(__VA_ARGS__) noexcept
 // #define metafn(name, ...) template <__VA_ARGS__> inline auto name
-// #define consfn(name, ...) inline constexpr auto name(__VA_ARGS__) noexcept
-// #define ctimfn(name, ...) inline consteval auto name(__VA_ARGS__) noexcept
+#define consfn(name, ...) inline constexpr auto name(__VA_ARGS__) noexcept
+// #define compfn(name, ...) inline consteval auto name(__VA_ARGS__) noexcept
 // #define intern static
-// #define begfn {
-// #define endfn }
 // #define meta template
 // #define tname typename
 //

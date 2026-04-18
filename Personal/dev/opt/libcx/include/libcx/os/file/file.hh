@@ -169,7 +169,7 @@ intern proc ___posix_file_write(
   i64 cur_off = 0;
   ___posix_file_seek(fd, 0, FileWhenceCurrent, &cur_off);
   if (cur_off == off) {
-    res = write(cast(int, fd.i), buf, size);
+    res = write(int(fd.i), buf, size);
   } else {
     res = pwrite(fd.i, buf, size, off);
   }
@@ -181,6 +181,7 @@ intern proc ___posix_file_write(
   }
   return true;
 }
+
 
 intern proc ___posix_file_close(FileDescriptor fd) noexce -> void { close(fd.i); }
 
@@ -194,41 +195,43 @@ intern proc get_default_ops() noexce -> FileOperations
 
 // TODO: implement
 noinline proc ___posix_file_open(
-  FileDescriptor* fd, FileOperations* ops, FileMode mode, ptrcch8 name) noexce -> FileError
-{
-  i32 os_mode;
-  switch (mode & FileModeMask) {
-  case FileModeRead:
-    os_mode = O_RDONLY;
-    break;
-  case FileModeWrite:
-    os_mode = O_WRONLY | O_CREAT | O_TRUNC;
-    break;
-  case FileModeAppend:
-    os_mode = O_WRONLY | O_CREAT | O_APPEND;
-    break;
-  case FileModeRead | FileModeReadWrite:
-    os_mode = O_RDWR;
-    break;
-  case FileModeWrite | FileModeReadWrite:
-    os_mode = O_RDWR | O_CREAT | O_TRUNC;
-    break;
-  case FileModeAppend | FileModeReadWrite:
-    os_mode = O_RDWR | O_APPEND | O_CREAT;
-    break;
-  default:
-    // CX_PANIC("invalid file mode");
-    return FileErrorInvalid;
-  }
+    FileDescriptor* fd, FileOperations* ops, FileMode mode, ptrcch8 name
+) noexce -> FileError {
+    i32 os_mode;
+    switch (mode & FileModeMask) {
+    case FileModeRead:
+        os_mode = O_RDONLY;
+        break;
+    case FileModeWrite:
+        os_mode = O_WRONLY | O_CREAT | O_TRUNC;
+        break;
+    case FileModeAppend:
+        os_mode = O_WRONLY | O_CREAT | O_APPEND;
+        break;
+    case FileModeRead | FileModeReadWrite:
+        os_mode = O_RDWR;
+        break;
+    case FileModeWrite | FileModeReadWrite:
+        os_mode = O_RDWR | O_CREAT | O_TRUNC;
+        break;
+    case FileModeAppend | FileModeReadWrite:
+        os_mode = O_RDWR | O_APPEND | O_CREAT;
+        break;
+    default:
+        // CX_PANIC("invalid file mode");
+        return FileErrorInvalid;
+    }
 
-  fd->i = open(name, os_mode, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-  if (fd->i < 0) {
-    // TODO:(manu): More file errors
-    return FileErrorInvalid;
-  }
+    fd->i = open(
+        name, os_mode, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
+    );
+    if (fd->i < 0) {
+        // TODO:(manu): More file errors
+        return FileErrorInvalid;
+    }
 
-  *ops = get_default_ops();
-  return FileErrorNone;
+    *ops = get_default_ops();
+    return FileErrorNone;
 }
 
 #endif  // 
