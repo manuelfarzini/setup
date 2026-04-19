@@ -85,8 +85,8 @@
     #define Requires(...)                                                                \
         typename = cx::uti::enable_if<true> > requires (__VA_ARGS__) && cx::kpred < true
 #endif
-#ifndef EnableIf
-    #define EnableIf(...) typename = cx::uti::enable_if<(__VA_ARGS__)>
+#ifndef with
+    #define with(...) , typename = cx::uti::enable_if<(__VA_ARGS__)>
 #endif
 
 #ifndef finline

@@ -1,4 +1,4 @@
-/// \file libcx/__utils/container.hh
+/// @file libcx/__utils/container.hh
 #ifndef CX___UTILS_CONTAINER_HH
 #define CX___UTILS_CONTAINER_HH
 #include <libcx/config.hh>
@@ -7,56 +7,65 @@
 #include <libcx/uti/members.hh>
 
 namespace cx {
+inline namespace uti {
 
-// −−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
-// Type erasure
+/*                                         *
+* Type erasure                             *
+*                                         */
 
 /// Predicate `true` if `T` is a container with a raw `storage`.
 template<typename C>
-concept SomeErasedContainer = requires(C c) {
-    requires is_raw_array<decltype(c.storage)>;
+predicate is_erased_container = requires(C c) {
+    requires is_raw_array<decT(c.storage)>;
     requires same_as<
-        cx::rm_extent<rm_ref<decltype(c.storage)>>, u8
+        cx::rm_extent<rm_ref<decT(c.storage)>>, u8
     >;
 };
 
-/// XXX:
-template<typename T, Requires(!is_func<T>, !is_void<T>)>
+/// Predicate `true` if `T` is a container with a raw `storage`.
+template<typename C>
+concept SomeErasedContainer = is_erased_container<C>;
+
+/// @ret 
+/// - A pointer to the object at `p`, with its lifetime refreshed.
+/// @nota
+/// - To bs used after constructing or re-constructing an object in existing
+///   storage, so the returned pointer refers to the current live object.
+template<typename T with (!is_func<T>, !is_void<T>)>
 nodisc onedef cexpr proc launder(T* p) noexce -> T*
 {
     return __builtin_launder(p);
 }
 
-/// Returns: a `T` pointer to the raw memory of an `ErasedContainer` `c`
-/// Note: used to construct the element(s) in `c`.
-// template <CErasedContainer C>
-// finline onedef cexpr proc get_place(C& c) noexce -> uti::ElemIn<C>*
-// {
-//   return c.storage;
-// }
-
-meta <SomeErasedContainer C> 
-finline consfn(get_place, C& c) -> uti::ElemIn<C>*
+/// @ret
+/// - A `T` pointer to the raw memory of an `ErasedContainer` `c`
+/// @nota
+///  - to be used to construct the element(s) in `c`.
+template <SomeErasedContainer C>
+finline onedef cexpr proc get_place(C& c) noexce -> uti::ElemIn<C>*
 {
-    return c.storage;
+  return c.storage;
 }
 
-/// Returns: a `T` pointer to the object in an `ErasedContainer` `c`
-/// Note: used to get the fully constructed object in `c`.
-// template<SomeErasedContainer C>
-// finline onedef cexpr proc get_object(C& c) noexce -> uti::ElemIn<C>*
-// {
-//     return launder(get_place<C>(c));
-// }
-
-meta <SomeErasedContainer C>
-finline consfn(get_object, C& c) -> uti::ElemIn<C>*
+/// @ret
+///  - A `T` pointer to a live object stored in an `ErasedContainer` `c`.
+/// @nota
+///  - To be used to access a fully constructed object in `c`.
+template<SomeErasedContainer C>
+finline onedef cexpr proc get_object(C& c) noexce -> uti::ElemIn<C>*
 {
-  return launder(get_place<C>(c));
+    return launder(get_place<C>(c));
 }
 
-// −−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
-//  Key type
+// XXX: possible version
+ // finline consfn(get_object, SomeErasedContainer auto& c) -> elemIn(c)
+ // {
+ //    return launder(get_place(c));
+ // }
+
+/*                                         *
+* Key type                                 *
+*                                         */
 
 template<typename T> concept HasKeyIn = requires { typename T::KeyType; };
 template<typename T, typename = void> struct ___KeyOrSelf {
@@ -79,5 +88,6 @@ template<typename T> struct ___KeyOrSelf<T, Void<typename T::KeyType>> {
 /// ```
 template<typename T> using KeyOrSelf = typename ___KeyOrSelf<T>::Type;
 
-}  // namespace cx
+}       // namespace uti
+}       // namespace cx
 #endif  // CX___UTILS_CONTAINER_HH
