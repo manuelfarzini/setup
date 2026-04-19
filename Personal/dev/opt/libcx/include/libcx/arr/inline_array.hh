@@ -218,7 +218,7 @@ cexpr proc find(Arr& arr, Elm&& elm, Cmp cmp = uti::lne) noexce -> isize
 /// where `i` is the index.
 ///
 template<CInlineArray Arr, typename Key, typename Cmp,
-         Requires(!uti::CComparatorType<Cmp> && // disambiguate
+         Requires(!uti::SomeComparator<Cmp> && // disambiguate
                     std::totally_ordered<uti::ElemIn<Arr>> &&
                     std::totally_ordered_with<uti::ElemIn<Arr>, uti::PlainT<Key>> &&
                     std::is_invocable_v<Cmp, uti::ElemIn<Arr>, uti::PlainT<Key>>)>

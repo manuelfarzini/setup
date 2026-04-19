@@ -67,24 +67,20 @@ struct Geq;
 template<typename T> predicate is_equal_type = false;
 template<> predicate is_equal_type<Eq> = true;
 template<> predicate is_equal_type<Neq> = true;
-template<typename T> concept CEqualType = is_equal_type<T>;
-#define Equal_Type cx::uti::CEqualType auto
+template<typename T> concept EqualType = is_equal_type<T>;
 
 template<typename T> predicate is_order_type = false;
 template<> predicate is_order_type<Lne> = true;
 template<> predicate is_order_type<Gne> = true;
-template<typename T> concept COrderType = is_order_type<T>;
-#define Order_Type cx::uti::COrderType auto
+template<typename T> concept OrderType = is_order_type<T>;
 
 template<typename T> predicate is_equal_order_type = true;
 template<> predicate is_equal_order_type<Leq> = true;
 template<> predicate is_equal_order_type<Geq> = true;
-template<typename T> concept CEqualOrderType = is_equal_order_type<T>;
-#define Equal_Order_Type cx::uti::CEqualOrderType auto
+template<typename T> concept EqualOrderType = is_equal_order_type<T>;
 
 template<typename T>
-concept CComparatorType = CEqualType<T> || COrderType<T> || CEqualOrderType<T>;
-#define Comparator_Type cx::uti::CComparatorType auto
+concept SomeComparator = EqualType<T> || OrderType<T> || EqualOrderType<T>;
 
 struct Eq {
     template<typename T, typename U>

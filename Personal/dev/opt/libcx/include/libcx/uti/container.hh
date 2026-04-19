@@ -16,9 +16,9 @@ inline namespace uti {
 /// Predicate `true` if `T` is a container with a raw `storage`.
 template<typename C>
 predicate is_erased_container = requires(C c) {
-    requires is_raw_array<decT(c.storage)>;
+    requires is_raw_array<declt(c.storage)>;
     requires same_as<
-        cx::rm_extent<rm_ref<decT(c.storage)>>, u8
+        cx::rm_extent<rm_ref<declt(c.storage)>>, u8
     >;
 };
 
@@ -31,7 +31,7 @@ concept SomeErasedContainer = is_erased_container<C>;
 /// @nota
 /// - To bs used after constructing or re-constructing an object in existing
 ///   storage, so the returned pointer refers to the current live object.
-template<typename T with (!is_func<T>, !is_void<T>)>
+template<typename T req (!is_func<T>, !is_void<T>)>
 nodisc onedef cexpr proc launder(T* p) noexce -> T*
 {
     return __builtin_launder(p);
@@ -58,7 +58,7 @@ finline onedef cexpr proc get_object(C& c) noexce -> uti::ElemIn<C>*
 }
 
 // XXX: possible version
- // finline consfn(get_object, SomeErasedContainer auto& c) -> elemIn(c)
+ // finline consfn(get_object, SomeErasedContainer auto& c) -> elem_in(c)
  // {
  //    return launder(get_place(c));
  // }
