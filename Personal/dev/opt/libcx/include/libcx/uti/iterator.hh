@@ -74,36 +74,36 @@ template<typename It> cexpr auto rev_iterator(It it) noexce -> RevIterator<It>
 
 finline cexpr proc beg(auto& c) noexce -> decltype(auto)
 {
-  return iterIn(c)(c.begin());
+  return iter_in(c)(c.begin());
 }
 finline cexpr proc beg(auto const& c) noexce -> decltype(auto)
 {
-  return kterIn(c)(c.begin());
+  return cter_in(c)(c.begin());
 }
 finline cexpr proc rbeg(auto& c) noexce -> decltype(auto)
 {
-  return rterIn(c)(c.rbegin());
+  return rter_in(c)(c.rbegin());
 }
 finline cexpr proc rbeg(auto const& c) noexce -> decltype(auto)
 {
-  return krterIn(c)(c.rbegin());
+  return crter_in(c)(c.rbegin());
 }
 
 finline cexpr proc end(auto& c) noexce -> decltype(auto)
 {
-  return iterIn(c)(c.end());
+  return iter_in(c)(c.end());
 }
 finline cexpr proc end(auto const& c) noexce -> decltype(auto)
 {
-  return kterIn(c)(c.end());
+  return cter_in(c)(c.end());
 }
 finline cexpr proc rend(auto& c) noexce -> decltype(auto)
 {
-  return rterIn(c)(c.rend());
+  return rter_in(c)(c.rend());
 }
 finline cexpr proc rend(auto const& c) noexce -> decltype(auto)
 {
-  return krterIn(c)(c.rend());
+  return crter_in(c)(c.rend());
 }
 
 }       // namespace uti

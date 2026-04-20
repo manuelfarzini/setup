@@ -135,9 +135,9 @@ finline intern cexpr proc heap_allocator() -> Allocator
     return Allocator{heap_allocator_proc, null};
 }
 
-/*----------------------------------------++
-|   Make                                   |
-++----------------------------------------*/
+/*                                         *
+* Make                                     *
+*                                         */
 
 /**
     TODO: write the correct concept

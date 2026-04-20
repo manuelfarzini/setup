@@ -12,5 +12,5 @@ namespace cx::mem {
   onedef cexpr auto order_acq_rel = std::memory_order::acq_rel;
   onedef cexpr auto order_seq_cst = std::memory_order::seq_cst;
 
-}  // namespace cx::mem
+}       // namespace cx::mem
 #endif  // CX_MEM_ORDER_HH

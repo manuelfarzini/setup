@@ -74,8 +74,8 @@
     #define cx_unused(x) (void) x
 #endif
 
-#ifndef decT
-    #define decT(x) decltype(x)
+#ifndef declt
+    #define declt(x) decltype(x)
 #endif
 #ifndef where
     #define where requires
@@ -85,8 +85,8 @@
     #define Requires(...)                                                                \
         typename = cx::uti::enable_if<true> > requires (__VA_ARGS__) && cx::kpred < true
 #endif
-#ifndef EnableIf
-    #define EnableIf(...) typename = cx::uti::enable_if<(__VA_ARGS__)>
+#ifndef req
+    #define req(...) , typename = cx::uti::enable_if<(__VA_ARGS__)>
 #endif
 
 #ifndef finline
@@ -444,7 +444,7 @@
 
 // TODO:
 //
-// #define fn(name, ...) inline auto name(__VA_ARGS__) noexcept
+#define fn(name, ...) inline auto name(__VA_ARGS__) noexcept
 // #define metafn(name, ...) template <__VA_ARGS__> inline auto name
 #define consfn(name, ...) inline constexpr auto name(__VA_ARGS__) noexcept
 // #define compfn(name, ...) inline consteval auto name(__VA_ARGS__) noexcept

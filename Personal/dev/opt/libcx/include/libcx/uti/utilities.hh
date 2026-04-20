@@ -24,6 +24,10 @@ finline onedef cexpr proc is_power_of_two(isize const x) noexce -> b32
     return !(x & (x - 1));
 }
 
+/// Holds if `x` is a power of two.
+template<usize x>
+predicate is_power_two = is_power_of_two(x);
+
 }       // namespace uti
 }       // namespace cx
 #endif  // CX_UTI_UTILITIES_HH

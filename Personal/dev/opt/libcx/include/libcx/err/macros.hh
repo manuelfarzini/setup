@@ -47,7 +47,7 @@
   #define CX__TRY_RETHROW(val, _BLK_, uniq)                                       \
     auto [val, CX_JOIN2(err, uniq)] = (_BLK_);                                    \
     if (CX_JOIN2(err, uniq)) {                                                    \
-      if cexpr (cx::uti::mv_ctble<plainT(val)>) {                            \
+      if cexpr (cx::uti::mv_ctble<plaint(val)>) {                            \
         return cx_res{cx::uti::take(val), cx::uti::take(CX_JOIN2(err, uniq))}; \
       } else {                                                                     \
         return cx_res{val, cx::uti::take(CX_JOIN2(err, uniq))};                 \
@@ -87,7 +87,7 @@
 // #define cx_try_ve(val, err, _BLK_)                             \
 //   auto [val, err] = (_BLK_);                                    \
 //   if (err) {                                                    \
-//     if cexpr (cx::uti::mv_ctble<plainT(val)>) {           \
+//     if cexpr (cx::uti::mv_ctble<plaint(val)>) {           \
 //       return cx_res{cx::uti::take(val), cx::uti::take(err)}; \
 //     } else {                                                    \
 //       return cx_res{val, cx::uti::take(err)};                 \
@@ -106,7 +106,7 @@
 // #define cx_try(val, err, _BLK_)                                \
 //   std::tie(val, err) = (_BLK_);                                 \
 //   if (err) {                                                    \
-//     if cexpr (cx::uti::mv_ctble<plainT(val)>) {           \
+//     if cexpr (cx::uti::mv_ctble<plaint(val)>) {           \
 //       return cx_res{cx::uti::take(val), cx::uti::take(err)}; \
 //     } else {                                                    \
 //       return cx_res{val, cx::uti::take(err)};                 \

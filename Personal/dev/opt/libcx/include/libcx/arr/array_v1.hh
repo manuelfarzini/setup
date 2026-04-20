@@ -70,7 +70,7 @@ template<
 finline cexpr proc find_last(Arr const& arr, Key const& key, Cmp cmp) noexce -> isize
     where std::totally_ordered_with<uti::ElemIn<Arr>, uti::PlainT<Key>>
 {
-    sizeIn(arr) j = !cmp(arr[arr.len / 2], key) ? 0 : arr.len / 2;
+    size_in(arr) j = !cmp(arr[arr.len / 2], key) ? 0 : arr.len / 2;
     for (; j < arr.len && cmp(arr[j], key);) {
         j += 1;
     }
@@ -82,9 +82,9 @@ finline onedef cexpr proc _find_last(
     auto const&                  key,
     uti::CEqualOrderComp auto    cmp
 ) noexce -> isize
-    where std::totally_ordered_with<elemIn(arr), decT(key)>
+    where std::totally_ordered_with<elem_in(arr), declt(key)>
 {
-    sizeIn(arr) j = !cmp(arr[arr.len / 2], key) ? 0 : arr.len / 2;
+    size_in(arr) j = !cmp(arr[arr.len / 2], key) ? 0 : arr.len / 2;
     for (; j < arr.len && cmp(arr[j], key);) {
         j += 1;
     }

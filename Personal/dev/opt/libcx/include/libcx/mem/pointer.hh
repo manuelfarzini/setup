@@ -52,7 +52,8 @@ finline cexpr proc align_up(anyptr ptr, isize aln) noexce -> anyptr
     @ret
     - the aligned pointer
 **/
-template<typename Tp> finline cexpr proc align_up(anyptr ptr) noexce -> anyptr
+template<typename Tp>
+finline cexpr proc align_up(anyptr ptr) noexce -> anyptr
 {
     return align_up(ptr, ialign_of(Tp));
 }
@@ -103,7 +104,7 @@ template<typename Tp> finline cexpr proc align_up(uptr ptr) noexce -> uptr
 **/  
 finline cexpr proc ptr_add(auto* ptr, isize off) noexce -> auto*
 {
-    return decT(ptr)(ptru8(ptr) + off);
+    return declt(ptr)(ptru8(ptr) + off);
 }
 
 /**
@@ -119,7 +120,7 @@ finline cexpr proc ptr_add(auto* ptr, isize off) noexce -> auto*
 **/
 finline cexpr proc ptr_sub(auto* ptr, isize off) noexce -> auto*
 {
-    return decT(ptr)(ptru8(ptr) - off);
+    return declt(ptr)(ptru8(ptr) - off);
 }
 
 /**
