@@ -12,4 +12,5 @@
   -fno-rtti \
   -L/opt/homebrew/lib \
   -L/usr/local/lib \
+  -L/opt/homebrew/opt/llvm/lib \
   $1 -lfmt
