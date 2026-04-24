@@ -1,12 +1,384 @@
-// libcx/__config/platform.hh
+/// @file libcx/__config/platform.hh
+
+// /*                                                             *
+// * Architecture                                                 *
+// * Supported: 32 and 64 bit architecture                        *
+// *                                                             */
+//
+// #ifndef MJ_ARCH
+//     #define MJ_ARCH 0
+//     #define MJ_ARCH_32 0
+//     #define MJ_ARCH_64 0
+// #endif
+//
+// #if (defined(_WIN64) || defined(__x86_64__) || defined(_M_X64) ||          \
+//      defined(__64BIT__) || defined(__powerpc64__) || defined(__ppc64__) || \
+//      defined(__aarch64__) || (defined(__riscv) && __riscv_xlen == 64))
+//     #undef MJ_ARCH_64
+//     #define MJ_ARCH_64 1
+// #else
+//     #undef MJ_ARCH_32
+//     #define MJ_ARCH_32 1
+// #endif
+//
+// #ifndef MJ_IS_BIG_ENDIAN
+//     #define MJ_IS_BIG_ENDIAN (!*(u8*) &(u16) {1})
+// #endif
+
+// /*                                                             *
+// * Operating system                                             *
+// *                                                             */
+//
+// #ifndef MJ_SYSTEM
+//     #define MJ_SYSTEM 0
+//     #define MJ_SYSTEM_WIN 0
+//     #define MJ_SYSTEM_OSX 0
+//     #define MJ_SYSTEM_UNIX 0
+//     #define MJ_SYSTEM_LINUX 0
+// #endif
+//
+// #if defined(_WIN32) || defined(_WIN64)
+//     #undef MJ_SYSTEM_WIN
+//     #define MJ_SYSTEM_WIN 1
+// #elif defined(__APPLE__) && defined(__MACH__)
+//     #undef MJ_SYSTEM_OSX
+//     #define MJ_SYSTEM_OSX 1
+// #elif defined(__unix__)
+//     #undef MJ_SYSTEM_UNIX
+//     #define MJ_SYSTEM_UNIX 1
+//     #if defined(__linux__)
+//         #undef MJ_SYSTEM_LINUX
+//         #define MJ_SYSTEM_LINUX 1
+//     #endif
+// #else
+//     #error "This operating system is not supported"
+// #endif
+//
+//
+// #ifndef MJ_WIN64
+//     #if MJ_SYSTEM_WIN && MJ_ARCH_64
+//         #define MJ_WIN64 1
+//     #else
+//         #define MJ_WIN64 0
+//     #endif
+// #endif
+//
+// #ifndef MJ_WIN32
+//     #if MJ_SYSTEM_WIN && MJ_ARCH_32
+//         #define MJ_WIN32 1
+//     #else
+//         #define MJ_WIN32 0
+//     #endif
+// #endif
+//
+// /*                                                             *
+// * Compiler                                                     *
+// * Supported: MSVC, GCC, clang                                  *
+// *                                                             */
+//
+// #ifndef MJ_COMPILER
+//     #define MJ_COMPILER 0
+//     #define MJ_COMPILER_MSVC 0
+//     #define MJ_COMPILER_CLANG 0
+//     #define MJ_COMPILER_GCC 0
+//     #define MJ_COMPILER_APPLE 0
+// #endif
+//
+// #if defined(_MSC_VER)
+//     #undef MJ_COMPILER_MSVC
+//     #define MJ_COMPILER_MSVC 1
+// #elif defined(__clang__)
+//     #undef MJ_COMPILER_CLANG
+//     #define MJ_COMPILER_CLANG 1
+//     #if defined(__apple_build_version__)  // XXX: missing header with __apple_build_version__ ?
+//         #undef MJ_COMPILER_APPLE
+//         #define MJ_COMPILER_APPLE 1
+//     #endif
+// #elif defined(__GNUC__)
+//     #define MJ_COMPILER_GCC 1
+// #else
+//     #error "This compiler is not supported"
+// #endif
+//
+// /*                                                             *
+// * CPU, CACHE, SIMD                                             *
+// *                                                             */
+//
+// #ifndef MJ_CPU
+//     #define MJ_CPU 1
+//     #define MJ_CPU_X86 0
+//     #define MJ_CPU_PPC 0
+//     #define MJ_CPU_ARM 0
+//     #define MJ_SSE2 0
+//     #define MJ_NEON 0
+//     #define MJ_CACHE_LINE_SIZE 0
+// #endif
+//
+// #if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__x86_64__)
+//     #undef MJ_CPU_X86
+//     #define MJ_CPU_X86 1
+//     #if defined(__SSE2__)
+//         #undef MJ_SSE2
+//         #define MJ_SSE2 1
+//     #endif
+//     #undef MJ_CACHE_LINE_SIZE
+//     #define MJ_CACHE_LINE_SIZE 64
+//
+// #elif defined(_M_PPC) || defined(__powerpc__) || defined(__powerpc64__)
+//     #undef MJ_CPU_PPC
+//     #define MJ_CPU_PPC 1
+//     #undef MJ_CACHE_LINE_SIZE
+//     #define MJ_CACHE_LINE_SIZE 128
+//
+// #elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
+//     #undef MJ_CPU_ARM
+//     #define MJ_CPU_ARM 1
+//     #if defined(__ARM_NEON)
+//         #undef MJ_NEON
+//         #define MJ_NEON 1
+//     #endif
+//
+//     #if defined(__APPLE__)
+//         #undef MJ_CACHE_LINE_SIZE
+//         #define MJ_CACHE_LINE_SIZE 128
+//     #else
+//         #undef MJ_CACHE_LINE_SIZE
+//         #define MJ_CACHE_LINE_SIZE 64
+//     #endif
+//
+// #else
+//     #error "Unknown CPU"
+// #endif
+//
+// /*----------------------------------------------------------------------------*/
+//
+// /*                                                             *
+// * Primitive types                                              *
+// *                                                             */
+//
+// namespace mojo {
+//
+// #if MJ_COMPILER_MSVC
+//     #if _MSC_VER < 1300
+//         using u8  = unsigned char;
+//         using u16 = unsigned short;
+//         using u32 = unsigned int;
+//         using i8  = signed char;
+//         using i16 = signed short;
+//         using i32 = signed int;
+//     #else
+//         using u8  = unsigned __int8;
+//         using u16 = unsigned __int16;
+//         using u32 = unsigned __int32;
+//         using i8  = signed __int8;
+//         using i16 = signed __int16;
+//         using i32 = signed __int32;
+//     #endif
+//     using u64 = unsigned __int64;
+//     using i64 = signed __int64;
+// #else
+//     #include <stdint.h>
+//     using u8  = uint8_t;
+//     using u16 = uint16_t;
+//     using u32 = uint32_t;
+//     using u64 = uint64_t;
+//     using i8  = int8_t;
+//     using i16 = int16_t;
+//     using i32 = int32_t;
+//     using i64 = int64_t;
+//     using u128 = unsigned __int128;
+//     using i128 = __int128;
+// #endif
+//
+// using usize = size_t;
+// using isize = ptrdiff_t;
+//
+// #if MJ_SYSTEM_WIN && MJ_ARCH_64
+//     using iptr = signed __int64;
+//     using uptr = unsigned __int64;
+// #elif MJ_SYSTEM_WIN && MJ_ARCH_32
+//     #ifndef _W64
+//         #if !defined(__midl) && (defined(_X86_) || defined(_M_IX86)) && _MSC_VER >= 1300
+//             #define _W64 __w64
+//         #else
+//             #define _W64
+//         #endif
+//     #endif
+//     using iptr = _W64 signed int;
+//     using uptr = _W64 unsigned int;
+// #else
+//     using uptr = uintptr_t;
+//     using iptr = intptr_t;
+// #endif
+//
+// using anyptr  = void*;
+//
+// using f32 = float;
+// using f64 = double;
+//
+// using f32_ptr = f32*;
+// using f64_ptr = f64*;
+//
+// using Rune = i32;
+// #define MJ_RUNE_ERR cast(Rune)(0xfffd)      // unicode replacement character �
+// #define MJ_RUNE_MAX cast(Rune)(0x0010ffff)  // max valid codepoint
+// #define MJ_RUNE_BOM cast(Rune)(0xfeff)      // byte order mark (endianness)
+// #define MJ_RUNE_EOF cast(Rune)(-1)          // end of file
+//
+// using b8 = i8 ;
+// using b16 = i16;
+// using b32 = i32;
+//
+//
+// /*                                                             *
+// * Extended language types                                      *
+// *                                                             */
+//
+// #ifndef MJ_HAS_CHAR8
+//     #if defined(__cpp_char8_t)
+//         #define MJ_HAS_CHAR8 1
+//     #else
+//         #define MJ_HAS_CHAR8 0
+//     #endif
+// #endif
+//
+// #ifndef MJ_HAS_CHAR16
+//     #if defined(__cpp_unicode_characters) || (__cplusplus >= 201103L) || \
+//         (defined(_MSVC_LANG) && _MSVC_LANG >= 201103L)
+//         #define MJ_HAS_CHAR16 1
+//         #define MJ_HAS_CHAR32 1
+//     #else
+//         #define MJ_HAS_CHAR16 0
+//         #define MJ_HAS_CHAR32 0
+//     #endif
+// #endif
+//
+// #ifndef MJ_HAS_WCHAR_MAX
+//     #if defined(__WCHAR_MAX__)
+//         #define MJ_HAS_WCHAR_MAX 1
+//         #define MJ_WCHAR_MAX __WCHAR_MAX__
+//     #else
+//         #define MJ_HAS_WCHAR_MAX 0
+//     #endif
+// #endif
+//
+// #ifndef MJ_HAS_INT128
+//     #if !defined(MJ_COMPILER_MSVC) && defined(__SIZEOF_INT128__)
+//         #define MJ_HAS_INT128 1
+//     #else
+//         #define MJ_HAS_INT128 0
+//     #endif
+// #endif
+//
+// #ifndef MJ_HAS_FLOAT128
+//     #if !defined(MJ_COMPILER_MSVC) &&                                                      \
+//         (defined(__SIZEOF_FLOAT128__) || defined(__FLT128_MAX__) || defined(__FLOAT128__))
+//         #define MJ_HAS_FLOAT128 1
+//     #else
+//         #define MJ_HAS_FLOAT128 0
+//     #endif
+// #endif
+//
+// /*                                                             *
+// * Limits                                                       *
+// *                                                             */
+//
+// #ifndef MJ_LIMIT
+//     #define MJ_LIMIT 1
+//
+//     #define U8_MIN 0u           //     0
+//     #define U8_MAX 0xffu        //   255
+//     #define I8_MIN (-0x7f - 1)  //  -128
+//     #define I8_MAX 0x7f         //   127
+//
+//     #define U16_MIN 0u             //        0
+//     #define U16_MAX 0xffffu        //   65_535
+//     #define I16_MIN (-0x7fff - 1)  //  -32_768
+//     #define I16_MAX 0x7fff         //   32_767
+//
+//     #define U32_MIN 0u                 //               0
+//     #define U32_MAX 0xffffffffu        //   4_294_967_295
+//     #define I32_MIN (-0x7fffffff - 1)  //  -2_147_483_648
+//     #define I32_MAX 0x7fffffff         //   2_147_483_647
+//
+//     #define U64_MIN 0ull                         //                           0
+//     #define U64_MAX 0xffffffffffffffffull        //  18_446_744_073_709_551_615
+//     #define I64_MIN (-0x7fffffffffffffffll - 1)  //  -9_223_372_036_854_775_808
+//     #define I64_MAX 0x7fffffffffffffffll         //   9_223_372_036_854_775_807
+//
+//     #if MJ_ARCH_32
+//         #define USZ_MIN U32_MIN
+//         #define USZ_MAX U32_MAX
+//         #define ISZ_MIN I32_MIN
+//         #define ISZ_MAX I32_MAX
+//     #endif
+//     #if MJ_ARCH_64
+//         #define USZ_MIN U64_MIN
+//         #define USZ_MAX U64_MAX
+//         #define ISZ_MIN I64_MIN
+//         #define ISZ_MAX I64_MAX
+//     #else
+//         #error "Unsupported architecture size"
+//     #endif
+//
+//     inline constexpr u8 u8_min = U8_MIN;
+//     inline constexpr u8 u8_max = U8_MAX;
+//     inline constexpr i8 i8_min = I8_MIN;
+//     inline constexpr i8 i8_max = I8_MAX;
+//
+//     inline constexpr u16 u16_min = U16_MIN;
+//     inline constexpr u16 u16_max = U16_MAX;
+//     inline constexpr i16 i16_min = I16_MIN;
+//     inline constexpr i16 i16_max = I16_MAX;
+//
+//     inline constexpr u32 u32_min = U32_MIN;
+//     inline constexpr u32 u32_max = U32_MAX;
+//     inline constexpr i32 i32_min = I32_MIN;
+//     inline constexpr i32 i32_max = I32_MAX;
+//
+//     inline constexpr u64 u64_min = U64_MIN;
+//     inline constexpr u64 u64_max = U64_MAX;
+//     inline constexpr i64 i64_min = I64_MIN;
+//     inline constexpr i64 i64_max = I64_MAX;
+//
+//     inline constexpr usize usz_min = USZ_MIN;
+//     inline constexpr usize usz_max = USZ_MAX;
+//     inline constexpr isize isz_min = ISZ_MIN;
+//     inline constexpr isize isz_max = ISZ_MAX;
+// #endif
+//
+// }  // namespace mojo
+//
+
+// /*                                                             *
+// * Miscellaneous                                                *
+// *                                                             */
+//
+// #if MJ_COMPILER_GCC || MJ_COMPILER_CLANG
+//     #ifndef MJ_PRINTF_ARGS
+//         #define MJ_PRINTF_ARGS(fmt) __attribute__((format(printf, fmt, (fmt + 1))))
+//     #endif
+// #else // MJ_COMPILER_MSVC
+//     #define MJ_PRINTF_ARGS(fmt)
+// #endif
+//
+// #if MJ_COMPILER_MSVC
+//     #ifndef mj_restrict
+//         #define mj_restrict __restrict
+//     #endif
+// #else  // MJ_COMPILER_GCC || MJ_COMPILER_CLANG
+//     #define mj_restrict __restrict__
+// #endif
+//
+// #endif  // MOJO_HAL_HH
 
 #ifndef CX___CONFIG_PLATFORM_HH
 #define CX___CONFIG_PLATFORM_HH
 
-/*-----------------------------------------+
-| Architecture                             |
-| Supported: 32 and 64 bit architectures   |
-+-----------------------------------------*/
+/*                                         *
+* Architecture                             *
+* Supported: 32 bit and 64 bit             *
+*                                         */
 
 #if defined(_WIN64) || defined(__x86_64__) || defined(_M_X64) ||          \
     defined(__64BIT__) || defined(__powerpc64__) || defined(__ppc64__) || \
@@ -20,13 +392,9 @@
     #endif
 #endif
 
-#ifndef CX_IS_BIG_ENDIAN
-    #define CX_IS_BIG_ENDIAN (!*(u8*) &(u16) {1})
-#endif
-
-/*-----------------------------------------+
-| Operating system                         |
-+-----------------------------------------*/
+/*                                         *
+* Operationg system                        *
+*                                         */
 
 #if defined(_WIN32) || defined(_WIN64)
     #ifndef CX_SYSTEM_WIN
@@ -63,7 +431,7 @@
         #endif
     #endif
 #else
-    #error This operating system is not supported
+    #error "This operating system is not supported."
 #endif
 
 /*-----------------------------------------+
@@ -81,7 +449,21 @@
 #elif defined(__GNUC__)
     #define CX_COMPILER_GCC 1
 #else
-    #error This compiler is not supported
+    #error "This compiler is not supported."
+#endif
+
+/*                                         *
+* Endianness                               *
+*                                         */
+
+#ifndef CX_IS_BIG_ENDIAN
+    #if CX_COMPILER_MSVC
+        #define CX_IS_BIG_ENDIAN 0
+    #elif defined(__BYTE_ORDER__)
+        #define CX_IS_BIG_ENDIAN (__BYTE_ORDER__ == 4321)
+    #else
+        #error "Cannot determine endianness at compile time."
+    #endif
 #endif
 
 /*-----------------------------------------+

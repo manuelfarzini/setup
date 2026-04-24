@@ -8,7 +8,7 @@ CompileFlags:
   Remove: [-W*]
 
   Add: [
-      -std=c++2c,
+      -std=gnu++2c,
       -Wall,
       -Wextra,
       -Wshadow,
