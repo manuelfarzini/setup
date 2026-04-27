@@ -10,8 +10,12 @@ alias cl="clear; clear; clear;"
 alias md="mkdir"
 
 # git
-alias gl="git --no-pager log --graph --pretty=format:\"%h  %ad  %an %d\" --date=short --decorate -n20; echo"
-alias glog="git --no-pager log -n20"
+alias gl="git --no-pager log --graph --pretty=format:\"%h  %ad  %an %d\" --date=short --decorate"
+alias glm="git --no-pager log --graph --decorate --date=short --pretty=format:'%C(auto)%h %C(bold blue)%ad%Creset %C(auto)%d%Creset %C(dim white)<%an>%Creset' --all"
+# alias gll="git log --no-pager --graph --oneline --decorate --date=short \
+#   --pretty=format:'%C(auto)%h %C(bold blue)%ad%Creset %C(auto)%d%Creset %s %C(dim white)<%an>%Creset' \
+#   --all --since='2026-02-20'"
+alias glog="git --no-pager log"
 
 # Eza
 alias ls="eza --group-directories-first --color=always --no-filesize --icons=never --no-time --no-user --no-permissions"
