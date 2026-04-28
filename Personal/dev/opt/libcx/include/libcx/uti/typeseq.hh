@@ -8,16 +8,18 @@
 namespace cx {
 inline namespace uti {
 
-//−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
-// Type Sequence
+/*                                         *
+* Type sequence                            *
+*                                         */
 
 template<typename... Ts> struct TypeSeq {};
-CX_CONCEPT_GEN_TEMPL(TypeSeq, is_type_seq, CTypeSeq, typename... Ts, Ts...);
+CX_CONCEPT_GEN_TEMPL(TypeSeq, is_type_seq, SomeTypeSeq, typename... Ts, Ts...);
 
-//−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
-// Type at a given index in a type sequence.
+/*                                         *
+* Type at a given index in a type sequence *
+*                                         */
 
-template<usize Idx, CTypeSeq Seq> struct ___TypeAt;
+template<usize Idx, SomeTypeSeq Seq> struct ___TypeAt;
 
 template<usize Idx, typename Head, typename... Rest>
 struct ___TypeAt<Idx, TypeSeq<Head, Rest...>>
@@ -26,16 +28,17 @@ struct ___TypeAt<Idx, TypeSeq<Head, Rest...>>
 template<typename Head, typename... Rest>
 struct ___TypeAt<0, TypeSeq<Head, Rest...>> { using Type = Head; };
 
-template<usize Idx, CTypeSeq Seq>
+template<usize Idx, SomeTypeSeq Seq>
 using TypeAt = typename ___TypeAt<Idx, Seq>::Type;
 
 template<usize Idx, typename... Ts>
 using TypeAtVA = TypeAt<Idx, TypeSeq<Ts...>>::Type;
 
-//−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
-// Index of a given type in a type sequence.
+/*                                         *
+* Index of a given type in a type sequence *
+*                                         */
 
-template<typename T, CTypeSeq Seq> struct ___type_idx;
+template<typename T, SomeTypeSeq Seq> struct ___type_idx;
 
 template<typename T, typename Head, typename... Rest>
 struct ___type_idx<T, TypeSeq<Head, Rest...>> {
@@ -45,20 +48,21 @@ struct ___type_idx<T, TypeSeq<Head, Rest...>> {
 template<typename T, typename... Rest> 
 struct ___type_idx<T, TypeSeq<T, Rest...>> { glob cexpr usize value = 0; };
 
-template<typename T, CTypeSeq Seq>
+template<typename T, SomeTypeSeq Seq>
 onedef cexpr usize type_idx = ___type_idx<T, Seq>::value;
 
-//−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
-// Size of a type sequence.
+/*                                         *
+* Size of a type sequence                  *
+*                                         */
 
-template<CTypeSeq Seq> struct ___type_seq_size;
+template<SomeTypeSeq Seq> struct ___type_seq_size;
 
 template<typename... Ts> 
 struct ___type_seq_size<TypeSeq<Ts...>> {
   glob onedef cexpr usize value = sizeof...(Ts);
 };
 
-template<CTypeSeq Seq>
+template<SomeTypeSeq Seq>
 onedef cexpr usize type_seq_size = ___type_seq_size<Seq>::value;
 
 template<typename... Ts> struct ___pack_size {
@@ -67,17 +71,17 @@ template<typename... Ts> struct ___pack_size {
 
 template<typename... Ts> onedef cexpr usize va_size = ___pack_size<Ts...>::value;
 
-//−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
-// Integer Sequence
+/*                                         *
+* Integer sequence                         *
+*                                         */
 
 template<CIntegral Int, Int... Is> 
 struct IntegerSeq {
   using Elem = Int;
   glob onedef cexpr Elem size = sizeof...(Is);
 };
-CX_CONCEPT_GEN_TEMPL(
-  IntegerSeq, is_integer_seq, CIntegerSeq,
-  VA_(CIntegral Int, Int... Is), VA_(Int, Is...));
+CX_CONCEPT_GEN_TEMPL(IntegerSeq, is_integer_seq, CIntegerSeq,
+                     VA_(CIntegral Int, Int... Is), VA_(Int, Is...));
 
 template<CIntegral Int, usize N, usize... Is>
 struct ___make_integer_seq : ___make_integer_seq<Int, N-1, N-1, Is...> {};
@@ -110,14 +114,15 @@ using index_seq_for = make_index_seq<usize{T::size}>;
 }       // namespace cx
 #endif  // CX_UTI_TYPELIST_HH
 
-//−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
-// Testing
+/*                                         *
+* Testing                                  *
+*                                         */
 
-// #define CX_TEST 1
-#ifdef CX_TEST
-proc test_type_seq() -> void
-{
-  using CX;
-  printf("%zu\n", uti::type_idx<char, uti::TypeSeq<i32, char, f64>>);
-}
-#endif
+// // #define CX_TEST 1
+// #ifdef CX_TEST
+// proc test_type_seq() -> void
+// {
+//   using CX;
+//   printf("%zu\n", uti::type_idx<char, uti::TypeSeq<i32, char, f64>>);
+// }
+// #endif
