@@ -14,17 +14,13 @@ preset = 'qwerty'
 [gaps]
 inner.horizontal = 8
 inner.vertical = 8
-outer.left = 0
+outer.left = 200
 outer.bottom = 8
 outer.top = 8
-outer.right = 0
+outer.right = 200
 
 [[on-window-detected]]
 if.app-name-regex-substring = 'System Settings'
-run = 'layout floating'
-
-[[on-window-detected]]
-if.app-name-regex-substring = 'Calculator'
 run = 'layout floating'
 
 [[on-window-detected]]
