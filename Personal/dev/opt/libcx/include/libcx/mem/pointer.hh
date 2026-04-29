@@ -78,14 +78,14 @@ finline cexpr proc align_up(uptr ptr, isize aln) noexce -> uptr
 }
 
 /**
-    Aligns `ptr` upward to the alignment of `Tp`.
+  Aligns `ptr` upward to the alignment of `Tp`.
   
-    @para
-    - `Tp`: the type to align to
-    - `ptr`: the pointer
+  @para
+  - `Tp`: the type to align to
+  - `ptr`: the pointer
   
-    @ret
-    - the aligned pointer
+  @ret
+  - the aligned pointer
 **/  
 template<typename Tp> finline cexpr proc align_up(uptr ptr) noexce -> uptr
 {
@@ -93,14 +93,14 @@ template<typename Tp> finline cexpr proc align_up(uptr ptr) noexce -> uptr
 }
 
 /**
-    Adds `off` to `ptr` and returns the result.
+  Adds `off` to `ptr` and returns the result.
   
-    @para
-    - `ptr`: the pointer
-    - `off`: the offset
+  @para
+  - `ptr`: the pointer
+  - `off`: the offset
   
-    @ret
-    - the result pointer
+  @ret
+  - the result pointer
 **/  
 finline cexpr proc ptr_add(auto* ptr, isize off) noexce -> auto*
 {
