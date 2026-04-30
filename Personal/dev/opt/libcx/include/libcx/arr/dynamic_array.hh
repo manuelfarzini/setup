@@ -10,6 +10,8 @@
 #include "libcx/uti/members.hh"
 #include <libcx/mem/allocator.hh>
 
+#include <utility> // XXX:
+
 // #include <libcx/mem/memory.hh>
 
 
@@ -25,8 +27,19 @@ struct Array {
     Size cap{0};
     mem::Allocator a = mem::heap_allocator();
 
-    finline cexpr Tp& operator[](isize const idx) noexce { return ptr[idx]; }
-    finline cexpr Tp const& operator[](isize const idx) const noexce { return ptr[idx]; }
+    // this can also take by moving that is not always what we want to do
+    finline cexpr proc operator[](this auto&& arr, isize const idx) noexce -> auto&& {
+        return std::forward_like<declt(arr)>(arr.ptr[idx]);
+    }
+
+    finline cexpr auto operator[](this auto& arr, isize const idx) noexce -> Elem&
+    {
+        return arr.ptr[idx];
+    }
+    // finline cexpr auto operator[](this auto const& arr, isize const idx) noexce
+    // {
+    //     return arr.ptr[idx];
+    // }
 
     finline cexpr Iter beg() noexce { return ptr; }
     finline cexpr Iter end() noexce { return ptr + len; }
@@ -49,7 +62,7 @@ template<
     EqualOrderType    Cmp = uti::Leq
 >
 cexpr proc find_last(Arr const& arr, Key const& key, Cmp cmp) noexce -> isize
-where is_total_ordered_w<ElemIn<Arr>, PlainT<Key>>
+    where is_total_ordered_w<ElemIn<Arr>, PlainT<Key>>
 {
     isize j = !cmp(arr[arr.len / 2], key) ? 0 : arr.len / 2;
     for (; j < arr.len && cmp(arr[j], key);) {
