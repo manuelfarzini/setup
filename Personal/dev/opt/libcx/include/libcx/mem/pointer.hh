@@ -15,7 +15,7 @@ namespace cx::mem {
 //     @para
 //     - `ptr`: the pointer to print
 // **/
-// onedef proc print_full_ptr(anyptr ptr) noexce -> void
+// onedef proc print_full_ptr(ptrany ptr) noexce -> void
 // {
 //     printf("%0*" PRIXPTR "\n", int(usize_of(uptr) * 2), uptr(ptr));
 // }
@@ -36,10 +36,10 @@ template<typename Tp> predicate is_over_aligned =  ialign_of(Tp) > ialign_of(max
     @pre
     - `aln` is a power of two
 **/  
-finline cexpr proc align_up(anyptr ptr, isize aln) noexce -> anyptr
+finline cexpr proc align_up(ptrany ptr, isize aln) noexce -> ptrany
 {
     assert(uti::is_power_of_two(aln));  // TODO: custom assert
-    return anyptr((uptr(ptr) + (aln - 1)) & ~(aln - 1));
+    return ptrany((uptr(ptr) + (aln - 1)) & ~(aln - 1));
 }
 
 /**
@@ -53,7 +53,7 @@ finline cexpr proc align_up(anyptr ptr, isize aln) noexce -> anyptr
     - the aligned pointer
 **/
 template<typename Tp>
-finline cexpr proc align_up(anyptr ptr) noexce -> anyptr
+finline cexpr proc align_up(ptrany ptr) noexce -> ptrany
 {
     return align_up(ptr, ialign_of(Tp));
 }
@@ -149,7 +149,7 @@ finline cexpr proc ptr_diff(auto* beg, auto* end) noexce -> isize
     @ret
     - the tagged pointer
 **/  
-template<CRawPointer Ptr> finline cexpr proc ptr_tag(anyptr ptr, uptr tag) noexce -> Ptr
+template<CRawPointer Ptr> finline cexpr proc ptr_tag(ptrany ptr, uptr tag) noexce -> Ptr
 {
     return Ptr(uptr(ptr) | tag);
 }
@@ -164,7 +164,7 @@ template<CRawPointer Ptr> finline cexpr proc ptr_tag(anyptr ptr, uptr tag) noexc
     @ret
     - the untagged pointer
 **/  
-template<CRawPointer Ptr> finline cexpr proc ptr_untag(anyptr ptr, uptr msk) noexce -> Ptr
+template<CRawPointer Ptr> finline cexpr proc ptr_untag(ptrany ptr, uptr msk) noexce -> Ptr
 {
     return Ptr(uptr(ptr) & ~msk);
 }

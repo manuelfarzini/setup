@@ -19,52 +19,52 @@ enum AllocatorMode : u8 {
 };
 
 typedef proc AllocatorProc(
-    anyptr           alc_data,
+    ptrany           alc_data,
     AllocatorMode    mode,
     isize            size,
     isize            align,
-    anyptr           old_ptr,
+    ptrany           old_ptr,
     isize            old_size,
     b32              zero_mem
-) noexce -> Res<anyptr, AllocatorError>;
+) noexce -> Res<ptrany, AllocatorError>;
 
 #define CX_ALLOCATOR_PROC(name)                   \
     onedef proc name(                             \
-        anyptr           alc_data,                \
+        ptrany           alc_data,                \
         AllocatorMode    mode,                    \
         isize            size,                    \
         isize            align       = DEF_ALIGN, \
-        anyptr           old_ptr     = null,      \
+        ptrany           old_ptr     = null,      \
         isize            old_size    = 0,         \
         b32              zero_mem    = true       \
-    ) noexce -> Res<anyptr, AllocatorError>
+    ) noexce -> Res<ptrany, AllocatorError>
 
 struct Allocator {
     AllocatorProc*    call;
-    anyptr            data;
+    ptrany            data;
 };
 
 onedef proc cx_mem_alloc(
     Allocator alctor, isize size, isize align = DEF_ALIGN, b32 zero_mem = true
-) noexce -> Res<anyptr, AllocatorError> {
+) noexce -> Res<ptrany, AllocatorError> {
     if (size == 0) {
         return {null, Invalid_Arg};
     }
     return alctor.call(alctor.data, Mode_Alloc, size, align, null, 0, zero_mem);
 }
 
-finline onedef proc cx_mem_free(Allocator alctor, anyptr ptr) -> Res<anyptr, AllocatorError>
+finline onedef proc cx_mem_free(Allocator alctor, ptrany ptr) -> Res<ptrany, AllocatorError>
 {
     return alctor.call(alctor.data, Mode_Free, 0, 0, ptr, 0, true);
 }
 
 finline onedef proc cx_mem_resize(
     Allocator    alctor, 
-    anyptr       ptr,
+    ptrany       ptr,
     isize        old_size,
     isize        new_size,
     isize        align        = DEF_ALIGN 
-) noexce -> Res<anyptr, AllocatorError> {
+) noexce -> Res<ptrany, AllocatorError> {
     if (new_size == 0) {
         if (ptr != null) {
             return alctor.call(alctor.data, Mode_Free, 0, 0, ptr, old_size, true);
@@ -78,7 +78,7 @@ finline onedef proc cx_mem_resize(
     return alctor.call(alctor.data, Mode_Resize, new_size, align, ptr, old_size, true);
 }
 
-finline onedef proc cx_mem_free_all(Allocator alctor) -> Res<anyptr, AllocatorError>
+finline onedef proc cx_mem_free_all(Allocator alctor) -> Res<ptrany, AllocatorError>
 {
     return alctor.call(alctor.data, Mode_FreeAll, 0, 0, null, 0, true);
 }
@@ -88,8 +88,8 @@ finline onedef proc cx_mem_free_all(Allocator alctor) -> Res<anyptr, AllocatorEr
     - `size`: the size of the memory to be freed [bytes]
 **/
 onedef proc cx_mem_free_size(
-    Allocator alctor, anyptr ptr, isize size
-) noexce -> Res<anyptr, AllocatorError> {
+    Allocator alctor, ptrany ptr, isize size
+) noexce -> Res<ptrany, AllocatorError> {
     return alctor.call(alctor.data, Mode_Free, 0, 0, ptr, size, true);
 }
 
@@ -165,7 +165,7 @@ nodisc onedef proc make_array(
 template<typename T>
 nodisc onedef proc delete_array(
     T* ptr, isize num, Allocator alctor = heap_allocator()
-) noexce -> Res<anyptr, ErrorCode> {
+) noexce -> Res<ptrany, ErrorCode> {
     auto [_, err] = deinit_type<T>(ptr, num);
     if (err) {
         return {_, err};
@@ -184,7 +184,7 @@ nodisc onedef proc delete_array(
 // }
 //
 // meta<tpar T>
-// proc(delete_arr, T* ptr, isize num, Allocator alctor) -> Res<anyptr, ErrorCode>
+// proc(delete_arr, T* ptr, isize num, Allocator alctor) -> Res<ptrany, ErrorCode>
 // {
 //     return cx_mem_free_size(alctor, ptr, num);
 // }
@@ -257,10 +257,10 @@ nodisc onedef proc delete_array(
 //     AllocatorMode    mode,
 //     isize            size,
 //     isize            align       = Def_Align,
-//     anyptr           old_ptr     = null,
+//     ptrany           old_ptr     = null,
 //     isize            old_size    = 0,
 //     b32              zero_mem    = true
-// ) noexce -> Res<anyptr, AllocatorError> {
+// ) noexce -> Res<ptrany, AllocatorError> {
 //     return alctor.invk(mode, alctor.data, size, align, old_ptr, old_size, zero_mem);
 // }
 

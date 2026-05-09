@@ -748,7 +748,7 @@ typedef ptrdiff_t isize;
     typedef intptr_t iptr;
 #endif
 
-typedef void* anyptr;
+typedef void* ptrany;
 typedef void const* ptrcany;
 typedef void** viewany;
 

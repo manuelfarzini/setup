@@ -24,8 +24,8 @@ using ErrorCode = u8;
 using AllocatorError = u8;
 using InitError = u8;
 
-onedef cexpr isize PTR_SIZE = isize_of(anyptr);
-onedef cexpr isize PTR_ALIGN = ialign_of(anyptr);
+onedef cexpr isize PTR_SIZE = isize_of(ptrany);
+onedef cexpr isize PTR_ALIGN = ialign_of(ptrany);
 onedef cexpr isize MAX_SIZE = isize_of(max_align_t);
 onedef cexpr isize MAX_ALIGN = ialign_of(max_align_t);
 onedef cexpr isize DEF_ALIGN = 2 * MAX_ALIGN;
@@ -44,7 +44,7 @@ static_assert(DEF_ALIGN == 8  || DEF_ALIGN == 16, "`def_align` must be 8 or 16")
     @pre
     - `src` and `dst` have `size` bytes.
 **/
-onedef cexpr proc mem_copy(anyptr dst, ptrcany src, usize size) -> void
+onedef cexpr proc mem_copy(ptrany dst, ptrcany src, usize size) -> void
 {
     // NOTE(manu)
     // should i implement mem_copy? libc is already heavily optimized
@@ -110,7 +110,7 @@ onedef cexpr proc mem_take_ty(T* dst, T* src, usize num) noexce -> void
     @pre
     - `data` has at least `n` bytes.
 **/
-onedef cexpr proc mem_set(anyptr data, u8 val, usize size) -> ErrorCode
+onedef cexpr proc mem_set(ptrany data, u8 val, usize size) -> ErrorCode
 {
     //  NOTE(manu)
     //  > libc wrapper, actually is the fastest
@@ -119,7 +119,7 @@ onedef cexpr proc mem_set(anyptr data, u8 val, usize size) -> ErrorCode
     //  > maybe on other platoforms I should use another version
 
     // #if defined(CX_SYSTEM_OSX)
-        anyptr res = ::memset(data, val, size);
+        ptrany res = ::memset(data, val, size);
         if (!res) {
             return Operation_Fail;
         }
@@ -141,7 +141,7 @@ onedef cexpr proc mem_set(anyptr data, u8 val, usize size) -> ErrorCode
     - `data` has at least `size` bytes.
     - `data` is not null
 **/
-onedef cexpr proc mem_zero(anyptr data, usize size) -> ErrorCode
+onedef cexpr proc mem_zero(ptrany data, usize size) -> ErrorCode
 {
     return mem_set(data, 0, size);
 }
@@ -163,7 +163,7 @@ onedef cexpr proc mem_zero(anyptr data, usize size) -> ErrorCode
     - intended to be used when dealing with virtual memory as it
       would be already mapped to a 0 page
 **/
-onedef cexpr proc mem_zero_condition(anyptr data, isize size) -> ErrorCode
+onedef cexpr proc mem_zero_condition(ptrany data, isize size) -> ErrorCode
 {
     // NOTE(manu)
     // gb.h memset inspired version
@@ -252,7 +252,7 @@ onedef cexpr proc mem_zero_condition(anyptr data, isize size) -> ErrorCode
     - sufficient, properly aligned storage at `ptr`.
 **/
 template<DefInitble T>
-nodisc finline onedef cexpr proc init_ty(anyptr ptr, usize num) noexce
+nodisc finline onedef cexpr proc init_ty(ptrany ptr, usize num) noexce
     -> Res<T*, InitError>
 // XXX:(manu)#zero_init# is it the correct concept?
 {
@@ -276,7 +276,7 @@ nodisc finline onedef cexpr proc init_ty(anyptr ptr, usize num) noexce
 **/
 template<typename T, typename... Args>
 nodisc onedef cexpr proc init_va(
-    anyptr ptr, isize num, Args const&... args
+    ptrany ptr, isize num, Args const&... args
 ) noexce -> Res<T*, InitError>
     where is_def_initble<T> || is_ctble<T, Args...> // XXX:(manu)#zero_init#
 {
@@ -311,7 +311,7 @@ nodisc onedef cexpr proc init_va(
     - The elements are copied
 **/
 template<typename T, typename U>
-nodisc onedef cexpr proc init_ls(anyptr ptr, initls<U> lst) noexce -> Res<T*, InitError>
+nodisc onedef cexpr proc init_ls(ptrany ptr, initls<U> lst) noexce -> Res<T*, InitError>
     where is_ctble<T, U const&>
 {
     if (ptr == null) {

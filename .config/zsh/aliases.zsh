@@ -12,9 +12,6 @@ alias md="mkdir"
 # git
 alias gl="git --no-pager log --graph --pretty=format:\"%h  %ad  %an %d\" --date=short --decorate"
 alias glm="git --no-pager log --graph --decorate --date=short --pretty=format:'%C(auto)%h %C(bold blue)%ad%Creset %C(auto)%d%Creset %C(dim white)<%an>%Creset' --all"
-# alias gll="git log --no-pager --graph --oneline --decorate --date=short \
-#   --pretty=format:'%C(auto)%h %C(bold blue)%ad%Creset %C(auto)%d%Creset %s %C(dim white)<%an>%Creset' \
-#   --all --since='2026-02-20'"
 alias glog="git --no-pager log"
 
 # Eza

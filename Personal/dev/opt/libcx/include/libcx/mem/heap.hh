@@ -10,12 +10,12 @@
 
 namespace cx::mem {
 
-onedef cexpr proc heap_free(anyptr ptr) noexce -> void
+onedef cexpr proc heap_free(ptrany ptr) noexce -> void
 {
     return ::free(ptr);
 }
 
-onedef cexpr proc heap_alloc(isize size, b32 zero_mem = true) noexce -> anyptr
+onedef cexpr proc heap_alloc(isize size, b32 zero_mem = true) noexce -> ptrany
 {
     if (size <= 0) {
         return null;
@@ -28,12 +28,12 @@ onedef cexpr proc heap_alloc(isize size, b32 zero_mem = true) noexce -> anyptr
     }
 }
 
-onedef cexpr proc heap_resize(anyptr ptr, isize new_size) noexce -> anyptr
+onedef cexpr proc heap_resize(ptrany ptr, isize new_size) noexce -> ptrany
 {
     return ::realloc(ptr, new_size);
 }
 
-onedef cexpr proc heap_aligned_free(anyptr ptr) noexce -> void
+onedef cexpr proc heap_aligned_free(ptrany ptr) noexce -> void
 {
     if (ptr != null) {
         ::free(viewany(ptr)[-1]);
@@ -43,10 +43,10 @@ onedef cexpr proc heap_aligned_free(anyptr ptr) noexce -> void
 nodisc onedef cexpr proc heap_aligned_alloc(
     isize     size,
     isize     align       = DEF_ALIGN,
-    anyptr    old_ptr     = null,
+    ptrany    old_ptr     = null,
     isize     old_size    = 0,
     b32       zero_mem    = true
-) noexce -> Res<anyptr, AllocatorError> {
+) noexce -> Res<ptrany, AllocatorError> {
     //  NOTE(manu)
     //  should I impose bytes % align == 0 like std::aligned_alloc?
 
@@ -61,9 +61,9 @@ nodisc onedef cexpr proc heap_aligned_alloc(
     isize space = align - 1 + size + PTR_SIZE;
     b32 force_copy = (old_ptr != null) && (align > PTR_ALIGN);
 
-    anyptr alloced_mem = null;
+    ptrany alloced_mem = null;
     if (old_ptr != null && !force_copy) {
-        anyptr origin_ptr = viewany(old_ptr)[-1];
+        ptrany origin_ptr = viewany(old_ptr)[-1];
         alloced_mem = heap_resize(origin_ptr, space);
     } else {
         alloced_mem = heap_alloc(space, zero_mem);
@@ -75,9 +75,9 @@ nodisc onedef cexpr proc heap_aligned_alloc(
         return {null, Bad_Alloc};
     }
 
-    anyptr aligned_mem = ptr_add(alloced_mem, PTR_SIZE);
+    ptrany aligned_mem = ptr_add(alloced_mem, PTR_SIZE);
     uptr aligned_ptr = (uptr(aligned_mem) + align - 1) & ~(align - 1);
-    aligned_mem = anyptr(aligned_ptr);
+    aligned_mem = ptrany(aligned_ptr);
     (viewany(aligned_mem))[-1] = alloced_mem;
 
     if (force_copy) {
@@ -89,12 +89,12 @@ nodisc onedef cexpr proc heap_aligned_alloc(
 }
 
 onedef cexpr proc heap_aligned_resize(
-    anyptr    ptr,
+    ptrany    ptr,
     isize     size,
     isize     new_size,
     isize     new_align,
     b32       zero_mem    = true
-) noexce -> Res<anyptr, AllocatorError> {
+) noexce -> Res<ptrany, AllocatorError> {
     if (ptr == null) {
         return heap_aligned_alloc(new_size, new_align, null, size, zero_mem);
     }
@@ -107,7 +107,7 @@ onedef cexpr proc heap_aligned_resize(
         //  actually using std malloc and realloc, not os specific primitives, so
         //  the new_region should be zeroed in windows too
 
-        anyptr new_region = ptr_add(new_ptr, size);
+        ptrany new_region = ptr_add(new_ptr, size);
 
         //  if not dealing with vm paging plain mem_zero is faster than conditional
         mem_zero(new_region, new_size - size);
