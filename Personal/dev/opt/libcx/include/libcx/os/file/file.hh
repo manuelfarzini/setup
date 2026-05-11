@@ -29,17 +29,17 @@ enum FileMode {
 // // Idea
 // // Explicit passing to a function, implicit conversion to be used in switch-case
 // struct FileMode {
-//   glob cexpr i32 Read = cx_bit(0);
-//   glob cexpr i32 Write = cx_bit(1);
-//   glob cexpr i32 Append = cx_bit(2);
-//   glob cexpr i32 ReadWrite = cx_bit(3);
-//   glob cexpr i32 Mask = Read | Write | Append | ReadWrite;
+//   glob cons i32 Read = cx_bit(0);
+//   glob cons i32 Write = cx_bit(1);
+//   glob cons i32 Append = cx_bit(2);
+//   glob cons i32 ReadWrite = cx_bit(3);
+//   glob cons i32 Mask = Read | Write | Append | ReadWrite;
 //
 //   i32 v{0};
-//   implicit cexpr operator i32() const { return v; }
-//   implicit cexpr operator int() const { return v; }
-//   implicit cexpr operator=(int u) const { v = u; }
-//   implicit cexpr operator=(i32 u) const { v = u; }
+//   implicit cons operator i32() const { return v; }
+//   implicit cons operator int() const { return v; }
+//   implicit cons operator=(int u) const { v = u; }
+//   implicit cons operator=(i32 u) const { v = u; }
 // 
 //    
 // };
@@ -74,16 +74,16 @@ union FileDescriptor {
   uptr u;
 };
 
-#define CX_FILE_OPEN_PROC(fn)                                                                   \
-  proc fn(FileDescriptor* fd, FileOperations* ops, FileMode mode, cstr name) noexce -> FileError
-#define CX_FILE_READ_AT_PROC(fn)                                                   \
-  proc fn(FileDescriptor fd, void* buf, isize size, i64 off, isize* read) noexce -> i32
-#define CX_FILE_WRITE_AT_PROC(fn)                                                           \
-  proc fn(FileDescriptor fd, void const* buf, isize size, i64 off, isize* written) noexce -> i32
-#define CX_FILE_SEEK_PROC(fn)                                                           \
-  proc fn(FileDescriptor fd, i64 cur_off, FileWhence whence, i64* new_off) noexce -> i32
-#define CX_FILE_CLOSE_PROC(fn)             \
-  proc fn(FileDescriptor fd) noexce -> void
+#define CX_FILE_OPEN_PROC(func)                                                                   \
+  auto func(FileDescriptor* fd, FileOperations* ops, FileMode mode, cstring name) noexce -> FileError
+#define CX_FILE_READ_AT_PROC(func)                                                   \
+  auto func(FileDescriptor fd, void* buf, isize size, i64 off, isize* read) noexce -> i32
+#define CX_FILE_WRITE_AT_PROC(func)                                                           \
+  auto func(FileDescriptor fd, void const* buf, isize size, i64 off, isize* written) noexce -> i32
+#define CX_FILE_SEEK_PROC(func)                                                           \
+  auto func(FileDescriptor fd, i64 cur_off, FileWhence whence, i64* new_off) noexce -> i32
+#define CX_FILE_CLOSE_PROC(func)             \
+  auto func(FileDescriptor fd) noexce -> void
 
 typedef CX_FILE_OPEN_PROC(FileOpenProc);
 typedef CX_FILE_READ_AT_PROC(FileReadProc);
@@ -112,26 +112,25 @@ struct FileStandardConfig {
 
 onedef FileStandardConfig ___std_cfg{};
 
-finline proc get_standard_config() noexce -> FileStandardConfig*
+inln fn get_standard_config() noexce -> FileStandardConfig*
 {
   return &___std_cfg;
 }
 
-finline proc are_standard_streams_set() noexce -> i32
+inln fn are_standard_streams_set() noexce -> i32
 {
   return get_standard_config()->are_std_set;
 }
 
-// −−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
-//  Operations (platform specific)
+// Operations (platform specific)
 
-#if defined(CX_SYSTEM_WIN)
+#if CX_SYSTEM_WIN
 
 // TODO:
 
 #else  // POSIX
 
-intern proc ___posix_file_seek(
+intern fn ___posix_file_seek(
   FileDescriptor fd, i64 cur_off, FileWhence whence, i64* new_off) noexce -> i32
 {
   #if defined(CX_SYSTEM_OSX)
@@ -149,9 +148,9 @@ intern proc ___posix_file_seek(
   return true;
 }
 
-intern proc ___posix_file_read(
-  FileDescriptor fd, void* buf, isize size, i64 off, isize* read) noexce -> i32
-{
+intern fn ___posix_file_read(
+  FileDescriptor fd, void* buf, isize size, i64 off, isize* read
+) noexce -> i32 {
   isize res = pread(fd.i, buf, size, off);
   if (res < 0) {
     return false;
@@ -162,7 +161,7 @@ intern proc ___posix_file_read(
   return true;
 }
 
-intern proc ___posix_file_write(
+intern fn ___posix_file_write(
   FileDescriptor fd, void const* buf, isize size, i64 off, isize* written) noexce -> i32
 {
   isize res;
@@ -183,18 +182,18 @@ intern proc ___posix_file_write(
 }
 
 
-intern proc ___posix_file_close(FileDescriptor fd) noexce -> void { close(fd.i); }
+intern fn ___posix_file_close(FileDescriptor fd) noexce -> void { close(fd.i); }
 
-intern proc get_default_ops() noexce -> FileOperations
+intern fn get_default_ops() noexce -> FileOperations
 {
-  persist cexpr FileOperations default_file_ops{
+  persist FileOperations default_file_ops{
       ___posix_file_read, ___posix_file_write, 
       ___posix_file_seek, ___posix_file_close};
   return default_file_ops;
 }
 
 // TODO: implement
-noinline proc ___posix_file_open(
+noinln fn ___posix_file_open(
     FileDescriptor* fd, FileOperations* ops, FileMode mode, ptrcch8 name
 ) noexce -> FileError {
     i32 os_mode;
@@ -236,7 +235,7 @@ noinline proc ___posix_file_open(
 
 #endif  // 
 
-finline proc set_standard_to_default() noexce -> void
+inln fn set_standard_to_default() noexce -> void
 {
   if (are_standard_streams_set()) {
     return;
@@ -256,7 +255,7 @@ finline proc set_standard_to_default() noexce -> void
   fsc->are_std_set = 1u;
 }
 
-finline proc get_standard(FileStandard type) noexce -> File* 
+inln fn get_standard(FileStandard type) noexce -> File* 
 {
   if (!are_standard_streams_set()) {
     set_standard_to_default();

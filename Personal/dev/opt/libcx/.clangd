@@ -19,19 +19,6 @@ CompileFlags:
       -I/opt/homebrew/opt/llvm/include,
       -I/usr/local/include,
       -I/Users/manuelfarzini/Personal/dev/include,
-      ### faust repo
-      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler,
-      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/FaustAlgebra,
-      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/boxes,
-      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/errors,
-      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/evaluate,
-      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/generator,
-      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/generator/fir,
-      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/generator/interpreter,
-      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/parallelize,
-      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/parser,
-      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/signals,
-      # -I/Users/manuelfarzini/Personal/dev/repo/faust/compiler/tlib,
     ]
 
 Diagnostics:

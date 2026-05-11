@@ -1,6 +1,10 @@
+/** @file libcx/concepts.hh **/
+
 #ifndef CX_CONCEPTS_HH
 #define CX_CONCEPTS_HH
+
 #include <libcx/config.hh>
-#include <libcx/__concepts/types.hh>
-#include <libcx/__concepts/lifetime.hh>
+#include <libcx/concept/types.hh>
+#include <libcx/concept/lifetime.hh>
+
 #endif // CX_CONCEPTS_HH 

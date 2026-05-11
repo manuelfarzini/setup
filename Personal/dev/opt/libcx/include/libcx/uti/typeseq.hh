@@ -1,9 +1,11 @@
-/// \file libcx/uti/typeseq.hh
-#ifndef CX_UTI_TYPELIST_HH
-#define CX_UTI_TYPELIST_HH
-#include <libcx/config.hh>
-#include <libcx/traits.hh>
-#include <libcx/concepts.hh>
+/** @file libcx/uti/typeseq.hh **/
+
+#ifndef CX_UTI_TYPESEQ_HH
+#define CX_UTI_TYPESEQ_HH
+
+#include "libcx/conf/macro.hh"
+#include "libcx/traits/qualifier.hh"
+#include "libcx/concept/types.hh"
 
 namespace cx {
 inline namespace uti {
@@ -42,14 +44,14 @@ template<typename T, SomeTypeSeq Seq> struct ___type_idx;
 
 template<typename T, typename Head, typename... Rest>
 struct ___type_idx<T, TypeSeq<Head, Rest...>> {
-  glob cexpr usize value =  1 + ___type_idx<T, TypeSeq<Rest...>>::value;
+  glob cons usize value =  1 + ___type_idx<T, TypeSeq<Rest...>>::value;
 };
 
 template<typename T, typename... Rest> 
-struct ___type_idx<T, TypeSeq<T, Rest...>> { glob cexpr usize value = 0; };
+struct ___type_idx<T, TypeSeq<T, Rest...>> { glob cons usize value = 0; };
 
 template<typename T, SomeTypeSeq Seq>
-onedef cexpr usize type_idx = ___type_idx<T, Seq>::value;
+onedef cons usize type_idx = ___type_idx<T, Seq>::value;
 
 /*                                         *
 * Size of a type sequence                  *
@@ -59,17 +61,17 @@ template<SomeTypeSeq Seq> struct ___type_seq_size;
 
 template<typename... Ts> 
 struct ___type_seq_size<TypeSeq<Ts...>> {
-  glob onedef cexpr usize value = sizeof...(Ts);
+  glob onedef cons usize value = sizeof...(Ts);
 };
 
 template<SomeTypeSeq Seq>
-onedef cexpr usize type_seq_size = ___type_seq_size<Seq>::value;
+onedef cons usize type_seq_size = ___type_seq_size<Seq>::value;
 
 template<typename... Ts> struct ___pack_size {
-  glob onedef cexpr usize value = type_seq_size<TypeSeq<Ts...>>;
+  glob onedef cons usize value = type_seq_size<TypeSeq<Ts...>>;
 };
 
-template<typename... Ts> onedef cexpr usize va_size = ___pack_size<Ts...>::value;
+template<typename... Ts> onedef cons usize va_size = ___pack_size<Ts...>::value;
 
 /*                                         *
 * Integer sequence                         *
@@ -78,7 +80,7 @@ template<typename... Ts> onedef cexpr usize va_size = ___pack_size<Ts...>::value
 template<CIntegral Int, Int... Is> 
 struct IntegerSeq {
   using Elem = Int;
-  glob onedef cexpr Elem size = sizeof...(Is);
+  glob onedef cons Elem size = sizeof...(Is);
 };
 CX_CONCEPT_GEN_TEMPL(IntegerSeq, is_integer_seq, CIntegerSeq,
                      VA_(CIntegral Int, Int... Is), VA_(Int, Is...));
@@ -112,7 +114,7 @@ using index_seq_for = make_index_seq<usize{T::size}>;
 
 }       // namespace uti
 }       // namespace cx
-#endif  // CX_UTI_TYPELIST_HH
+#endif  // CX_UTI_TYPESEQ_HH
 
 /*                                         *
 * Testing                                  *
@@ -120,7 +122,7 @@ using index_seq_for = make_index_seq<usize{T::size}>;
 
 // // #define CX_TEST 1
 // #ifdef CX_TEST
-// proc test_type_seq() -> void
+// fn test_type_seq() -> void
 // {
 //   using CX;
 //   printf("%zu\n", uti::type_idx<char, uti::TypeSeq<i32, char, f64>>);

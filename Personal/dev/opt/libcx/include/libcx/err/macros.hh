@@ -2,7 +2,7 @@
 #ifndef CX_ERR_MACRO
 #define CX_ERR_MACRO
 #include <libcx/config.hh>
-#include <libcx/str/macros.hh>
+#include <libcx/str/macro.hh>
 
 #define CX__ERR_CONTEXT_RHS(...) ":", STR_(CX_LINE), " ! ", CX_FUNCTION, " ! ", __VA_ARGS__
 #define CX__ERR_ZS_CONTEXT_RHS(...) CX_ZS(CX__ERR_CONTEXT_RHS(__VA_ARGS__))
@@ -47,7 +47,7 @@
   #define CX__TRY_RETHROW(val, _BLK_, uniq)                                       \
     auto [val, CX_JOIN2(err, uniq)] = (_BLK_);                                    \
     if (CX_JOIN2(err, uniq)) {                                                    \
-      if cexpr (cx::uti::mv_ctble<plaint(val)>) {                            \
+      if cons (cx::uti::mv_ctble<plaint(val)>) {                            \
         return cx_res{cx::uti::take(val), cx::uti::take(CX_JOIN2(err, uniq))}; \
       } else {                                                                     \
         return cx_res{val, cx::uti::take(CX_JOIN2(err, uniq))};                 \
@@ -66,11 +66,11 @@
 #endif
 
 // #include "libcx/err/result_pair.hh"
-// proc test_help() -> cx::err::ResultPair<int>
+// fn test_help() -> cx::err::ResultPair<int>
 // {
 //   return cx::err::ResultPair(42);
 // }
-// proc test() -> cx::err::ResultPair<>
+// fn test() -> cx::err::ResultPair<>
 // {
 //   try_rethrow_empty(n, test_help());
 //   return {cx_empty{}, null};
@@ -87,7 +87,7 @@
 // #define cx_try_ve(val, err, _BLK_)                             \
 //   auto [val, err] = (_BLK_);                                    \
 //   if (err) {                                                    \
-//     if cexpr (cx::uti::mv_ctble<plaint(val)>) {           \
+//     if cons (cx::uti::mv_ctble<plaint(val)>) {           \
 //       return cx_res{cx::uti::take(val), cx::uti::take(err)}; \
 //     } else {                                                    \
 //       return cx_res{val, cx::uti::take(err)};                 \
@@ -106,7 +106,7 @@
 // #define cx_try(val, err, _BLK_)                                \
 //   std::tie(val, err) = (_BLK_);                                 \
 //   if (err) {                                                    \
-//     if cexpr (cx::uti::mv_ctble<plaint(val)>) {           \
+//     if cons (cx::uti::mv_ctble<plaint(val)>) {           \
 //       return cx_res{cx::uti::take(val), cx::uti::take(err)}; \
 //     } else {                                                    \
 //       return cx_res{val, cx::uti::take(err)};                 \

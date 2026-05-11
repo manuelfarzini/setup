@@ -1,6 +1,7 @@
-/// \file libcx/mem/memory.hh
-// XXX: this header is deprecated
-// - documentation (requires)
+/** @file libcx/mem/memory.hh **/
+
+// WARN: this header is deprecated
+
 #ifndef CX_MEM_MEMORY_HH
 #define CX_MEM_MEMORY_HH
 #include <libcx/config.hh>
@@ -18,21 +19,22 @@ namespace cx::mem {
 
 /// Copies `num` elements of type `T` from `src` to `dst`
 /// Requires: `src` and `dst` have `n` elements.
-template<typename T> onedef proc copy_type(T* dst, T const* src, usize num) noexce -> void
+template<typename T>
+fn copy_type(T* dst, T const* src, usize num) noexce -> void
 {
-  if constexpr (is_triv_dtble<T>) {
-    ::memcpy(dst, src, num * isize_of(T));
-  } else {
-    for (usize i = 0; i < num; i++) {
-      dst[i] = src[i];
+    if constexpr (is_triv_dtble<T>) {
+        ::memcpy(dst, src, num * size_of(T));
+    } else {
+        for (usize i = 0; i < num; i++) {
+            dst[i] = src[i];
+        }
     }
-  }
 }
 
 /// Moves `num` elements of type `T` from `src` to `dst`
 /// If `T` is not move assignable, then behaves like `memcopy`
 template<CpOrMvAsble T>
-onedef cexpr proc take_type(T* dst, T* src, usize num) noexce -> void
+cons fn take_type(T* dst, T* src, usize num) noexce -> void
 {
   for (usize i = 0; i < num; i++) {
     dst[i] = mem_take_ty(src[i]);
@@ -47,14 +49,15 @@ onedef cexpr proc take_type(T* dst, T* src, usize num) noexce -> void
 /// Returns: `null` if `num == 0` or the allocation fails; otherwise the pointer
 ///           to the allocation.
 /// Note: this function allocates raw storage and does not initialize objects.
-template<typename T> nodisc onedef proc alloc_type(usize num) noexce -> Result<T*>
+template<typename T>
+nodisc fn alloc_type(usize num) noexce -> Res<T*, ErrorCode>
 {
     if (num == 0) {
         return {null, cx_arg_err("`num` cannot be 0")};
     }
 
-    uptr align = ualign_of(T) > ualign_of(void*) ? ualign_of(T) : ualign_of(void*);
-    uptr bytes = usize_of(T) * num;
+    uptr align = align_of(T) > align_of(void*) ? align_of(T) : align_of(void*);
+    uptr bytes = size_of(T) * num;
 
     T* ptr = (T*) ::operator new(bytes, Align{align}, No_Throw);
     if (ptr == null) {
@@ -68,7 +71,7 @@ template<typename T> nodisc onedef proc alloc_type(usize num) noexce -> Result<T
 /// Returns: `(null, err)` if `ptr == null` or `num` == `0`,
 ///          otherwise `(ptr, null)`
 template<DefInitble T, typename... Args>
-nodisc onedef cexpr proc place_va(void* ptr, usize num, Args&&... args) noexce -> Result<T*>
+nodisc onedef cons fn place_va(void* ptr, usize num, Args&&... args) noexce -> Result<T*>
     where(is_ctble<T, Args...> && sizeof...(Args) > 0)
 {
     if (num == 0) {
@@ -103,7 +106,7 @@ nodisc onedef cexpr proc place_va(void* ptr, usize num, Args&&... args) noexce -
 /// Requires: sufficient, properly aligned storage at `ptr`.
 /// Returns: `null` if `ptr` is `null` or `num` is `0`; otherwise `ptr`.
 template<typename T, typename U>
-nodisc onedef cexpr proc place_ls(void* ptr, initls<U> list) noexce -> Result<T*>
+nodisc onedef cons fn place_ls(void* ptr, initls<U> list) noexce -> Result<T*>
     where ctble<T, U const&>
 {
   if (ptr == null) {
@@ -134,7 +137,7 @@ nodisc onedef cexpr proc place_ls(void* ptr, initls<U> list) noexce -> Result<T*
   - {`ptr, null`} otherwise
 **/
 template<typename T, typename... Args>
-nodisc onedef proc make_va(usize num, Args&&... args) noexce -> Result<T*>
+nodisc onedef fn make_va(usize num, Args&&... args) noexce -> Result<T*>
 {
     auto [ptr, err] = alloc_type<T>(num);
     if (err) {
@@ -154,7 +157,7 @@ nodisc onedef proc make_va(usize num, Args&&... args) noexce -> Result<T*>
   - {`ptr, null`} otherwise
 **/
 template<typename T, typename U>
-nodisc onedef proc make_ls(initls<U> list) noexce -> Result<T*>
+nodisc onedef fn make_ls(initls<U> list) noexce -> Result<T*>
     where ctble<T, U const&>
 {
     auto [ptr, err] = alloc_type<T>(list.size());
@@ -167,19 +170,19 @@ nodisc onedef proc make_ls(initls<U> list) noexce -> Result<T*>
 /// Releases the memory owned by `ptr`.
 /// Requires: `ptr` was obtained from `allocate<T>`
 /// Note: this function only deallocates storage and does not destroy objects.
-template<typename T> nodisc onedef proc dealloc(void* ptr) noexce -> Result<>
+template<typename T> nodisc onedef fn dealloc(void* ptr) noexce -> Result<>
 {
   if (ptr == null) {
     return {empty, cx_null_err("given a null pointer `ptr`")};
   }
-  ::operator delete(ptr, Align{ualign_of(T)}, No_Throw);
+  ::operator delete(ptr, Align{align_of(T)}, No_Throw);
   return {empty, null};
 }
 
 /// Uninitializes `num` contiguous `T` objects at `ptr`.
 /// Requires: `ptr` was obtained from `allocate<T>` and `ptr` has `num` elements.
 template<typename T>
-nodisc onedef proc unplace(T* ptr, usize num) noexce -> Result<>
+nodisc onedef fn unplace(T* ptr, usize num) noexce -> Result<>
 {
   if (ptr == null) {
     return {empty, cx_null_err("given a null pointer `ptr`")};
@@ -198,7 +201,7 @@ nodisc onedef proc unplace(T* ptr, usize num) noexce -> Result<>
 }
 
 ///
-template<typename T> onedef proc remove(T* ptr, usize num) noexce -> Result<>
+template<typename T> onedef fn remove(T* ptr, usize num) noexce -> Result<>
 {
   auto [val, err] = mem::unplace<T>(ptr, num);
   if (err) {
@@ -213,7 +216,7 @@ template<typename T> onedef proc remove(T* ptr, usize num) noexce -> Result<>
 ///          `num = 0` or `new_num = 0`, otherwise the pointer to the new block.
 /// Requires:
 template<typename T>
-nodisc onedef proc reallocate(T* src, usize num, usize new_num) noexce -> Result<T*>
+nodisc onedef fn reallocate(T* src, usize num, usize new_num) noexce -> Result<T*>
 {
   if (src == null) {
     return {src, cx_null_err("given a null pointer `src`")};

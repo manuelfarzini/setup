@@ -10,20 +10,17 @@
 namespace cx {
 inline namespace uti {
 
-//------------------------------------------
 // Rvalue pitfalls solutions
 // We have 3 mitigation tricks
 
-//------------------------------------------
-// #### 1
+// 1.
 // Deleting the rvalue accessors.
 // struct Example {
 //   sint32 a;
 //   sint32&& get_a() && = delete;
 // };
 
-//------------------------------------------
-// #### 2
+// 2.
 // This trait + macro system ensures safe reference binding when
 // forwarding expressions that may be lvalues or rvalues.
 // In particular, it prevents dangling references when binding an
@@ -59,12 +56,11 @@ inline namespace uti {
 // https://www.youtube.com/watch?v=9V195P3Tv_8 18:22
 template<typename T> struct ___decay_rvalue {};
 template<typename T> struct ___decay_rvalue<T&> { using type = T&; };
-template<typename T> struct ___decay_rvalue<T&&> { using type = uti::decay<T>; };
+template<typename T> struct ___decay_rvalue<T&&> { using type = decay<T>; };
 template<typename T> using decay_rvalue = typename ___decay_rvalue<T>::type;
-#define cx_auto_ref(var, ...) cx::uti::decay_rvalue<decltype((__VA_ARGS__))&&> var = (__VA_ARGS__);
+#define cx_auto_ref(var, ...) decay_rvalue<declt((__VA_ARGS__))&&> var = (__VA_ARGS__);
 
-// -----------------------------------------
-// #### 3
+// 3.
 // A custom version of the common reference trait
 // The `std::common_reference_t` trait tends to collapse mixed cases
 // like `int&` and `int&&` into `int&`, losing rvalue semantics.
@@ -79,9 +75,8 @@ template<typename T> using decay_rvalue = typename ___decay_rvalue<T>::type;
 // combining lvalues and temporaries.
 template<typename... Ts> 
 struct ___common_ref_rval {
-  using Old = uti::common_ref<Ts...>;
-  using Type = uti::condition<is_lref<Old> && (is_rref<Ts> || ...),    rm_ref<Old>&&,
-                                                                       Old >;
+  using Old = common_ref<Ts...>;
+  using Type = condition<is_lref<Old> && (is_rref<Ts> || ...), rm_ref<Old>&&, Old>;
 };
 template<typename... Ts> using common_ref_rval = ___common_ref_rval<Ts...>::Type;
 // Example of usage:
@@ -96,8 +91,8 @@ template<typename... Ts> using common_ref_rval = ___common_ref_rval<Ts...>::Type
 // Binds to `const&&` if there is an rvalue.
 // Prevents an immediate copy.
 #define cx_condition_ref(b, l, r)                                       \
-  (b ? static_cast<cx::uti::common_ref<decltype((l)), decltype((r))>>(l)  \
-     : static_cast<cx::uti::common_ref<decltype((l)), decltype((r))>>(r))
+  (b ? static_cast<common_ref<declt((l)), declt((r))>>(l)  \
+     : static_cast<common_ref<declt((l)), declt((r))>>(r))
 // Example of usage:
 // struct A {};
 // struct B {

@@ -1,6 +1,8 @@
-/// \file libcx/uti/utilities.hh
+/** @file libcx/uti/utilities.hh **/
+
 #ifndef CX_UTI_UTILITIES_HH
 #define CX_UTI_UTILITIES_HH
+
 #include <libcx/config.hh>
 #include <libcx/__utils/ownership.hh>
 #include <libcx/__utils/defer.hh>
@@ -16,7 +18,7 @@ namespace cx {
 inline namespace uti {
 
 /// Returns `true` if `x` is a power of two.
-finline onedef cexpr proc is_power_of_two(isize const x) noexce -> b32
+inln cons fn is_power_of_two(isize const x) noexce -> b32
 {
     if (x <= 0) {
         return false;

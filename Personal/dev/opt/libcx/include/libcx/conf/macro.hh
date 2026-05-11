@@ -1,63 +1,81 @@
-/** 
-* @file libcx/__config/macros.hh
-*/
-#ifndef CX___CONFIG_MACRO_HH
-#define CX___CONFIG_MACRO_HH
-#include <libcx/__config/platform.hh>
+/** @type conf/macro.hh **/
 
-/*                                         *
-* Syntax                                   *
-*                                         */
+#ifndef CX_CONF_MACRO
+#define CX_CONF_MACRO
 
+#include "libcx/conf/hal.hh"
+
+// =========================================
+// Syntax
+// =========================================
+
+#ifndef or_return
+    #define or_return ; if (err) return
+#endif
+#ifndef or_else
+    #define or_else ; if (err)
+#endif
+#ifndef or_continue
+    #define or_continue ; if (err) continue
+#endif
+#ifndef or_break
+    #define or_break ; if (err) break
+#endif
+#ifndef or_goto
+    #define or_goto ; if (err) goto
+#endif
+  
 #ifndef nodisc
     #define nodisc [[nodiscard]]
 #endif
-
 #ifndef noret
     #define noret [[noreturn]]
 #endif
-
 #ifndef unlike
     #define unlike [[unlikely]]
 #endif
-
 #ifndef cx_no_uniq_addr
-    #if defined(CX_COMPILER_MSVC)
+    #if CX_COMPILER_MSVC
         #define cx_no_uniq_addr [[msvc::no_unique_address]]
     #else
         #define cx_no_uniq_addr [[no_unique_address]]
     #endif
 #endif
 
-#ifndef meta
-    #define meta template
+#ifndef priv  // internal linkage procedures/variables
+    #define priv static
 #endif
-#ifndef intern  // internal linkage procedures/variables
-    #define intern static
-#endif
-#ifndef onedef  // single procedure/variable across translation units
-    #define onedef inline
-#endif
-#ifndef proc
-    #define proc auto
-#endif
-#ifndef noexce
-    #define noexce noexcept
-#endif
-#ifndef implicit
-    #define implicit
+#ifndef glob
+    #define glob static
 #endif
 #ifndef persist  // persistent local variables
     #define persist static
 #endif
-#ifndef ceval
-    #define ceval consteval
+#ifndef onedef  // single procedure/variable across translation units
+    #define onedef inline
 #endif
-#ifndef cexpr
-    #define cexpr constexpr
+
+#ifndef fn
+    #define fn inline auto
 #endif
-#ifndef glob
-    #define glob static
+#ifndef noexce
+    #define noexce noexcept
+#endif
+#ifndef where
+    #define where requires
+#endif
+#ifndef proc
+    #define proc(_name_, ...) inline auto _name_(__VA_ARGS__) noexcept ->
+#endif
+#ifndef clos
+    #define clos auto
+#endif
+
+#ifndef comp
+    #define comp consteval
+#endif
+#ifndef cons
+    #define cons constexpr
 #endif
 #ifndef predicate
     #define predicate inline constexpr bool
@@ -77,9 +95,6 @@
 #ifndef declt
     #define declt(x) decltype(x)
 #endif
-#ifndef where
-    #define where requires
-#endif
 
 #ifndef Requires
     #define Requires(...)                                                                \
@@ -89,43 +104,41 @@
     #define req(...) , typename = cx::uti::enable_if<(__VA_ARGS__)>
 #endif
 
-#ifndef finline
-    #if defined(CX_COMPILER_MSVC)
+#ifndef inln
+    #if CX_COMPILER_MSVC
         #if _MSC_VER < 1300
-            #define finline
+            #define inln
         #else
-            #define finline __forceinline
+            #define inln __forceinline
         #endif
-    #elif defined(CX_COMPILER_CLANG)
-        #define finline [[clang::always_inline]] __attribute__((always_inline))
-    #elif defined(CX_COMPILER_GCC)
-        #define finline [[gnu::always_inline]] __attribute__((always_inline))
+    #elif CX_COMPILER_CLANG
+        #define inln [[clang::always_inline]] __attribute__((always_inline))
+    #elif CX_COMPILER_GCC
+        #define inln [[gnu::always_inline]] __attribute__((always_inline))
     #else
-        #define finline
+        #define inln
+    #endif
+#endif
+#ifndef noinln
+    #if CX_COMPILER_MSVC
+        #define noinln __declspec(noinln)
+    #elif CX_COMPILER_CLANG || CX_COMPILER_GCC
+        #define noinln __attribute__((noinline))
+    #else
+        #define noinln
+    #endif
+#endif
+#ifndef inln_clos
+    #if CX_COMPILER_GCC || CX_COMPILER_CLANG
+        #define inln_clos __attribute__((always_inline, hot))
+    #else
+        #define inln_clos
     #endif
 #endif
 
-#ifndef noinline
-    #if defined(CX_COMPILER_MSVC)
-        #define noinline __declspec(noinline)
-    #elif defined(CX_COMPILER_CLANG) || defined(CX_COMPILER_GCC)
-        #define noinline __attribute__((noinline))
-    #else
-        #define noinline
-    #endif
-#endif
-
-#ifndef finline_clos
-    #if defined(CX_COMPILER_GCC) || defined(CX_COMPILER_CLANG)
-        #define finline_clos __attribute__((always_inline, hot))
-    #else
-        #define finline_clos
-    #endif
-#endif
-
-/*-----------------------------------------+
-| Text generation                          |
-+-----------------------------------------*/
+// =========================================
+// Text generation
+// =========================================
 
 #ifndef CX
     #define CX namespace cx
@@ -138,19 +151,27 @@
     #define CX_FILE __FILE__
 #endif
 #ifndef CX_FUNCTION
-    #if defined(CX_COMPILER_CLANG) || defined(CX_COMPILER_GCC)
+    #if CX_COMPILER_CLANG || CX_COMPILER_GCC
         #define CX_FUNCTION __PRETTY_FUNCTION__
-    #elif defined(CX_COMPILER_MSVC)
+    #elif CX_COMPILER_MSVC
         #define CX_FUNCTION __FUNCSIG__
     #else
         #define CX_FUNCTION __func__
     #endif
 #endif
 
-#define NS_(name) name::
-#define CX__STR_(x) #x
-#define STR_(x) CX__STR_(x)
-#define VA_(...) __VA_ARGS__
+#ifndef NS
+    #define NS_(name) name::
+#endif
+
+#ifndef STR_
+    #define CX__STR_(x) #x
+    #define STR_(x) CX__STR_(x)
+#endif
+
+#ifndef VA_
+    #define VA_(...) __VA_ARGS__
+#endif
 
 #ifndef CX_JOIN_MACROS
     #define CX_JOIN_MACROS 1
@@ -172,24 +193,21 @@
     #define CX_UNDEF
 #endif
 #ifndef CX_BEG
-    #define CX_BEG
+    #define CX_BEG {
 #endif
 #ifndef CX_END
-    #define CX_END
+    #define CX_END }
 #endif
 #ifndef CX_HASH
     #define CX_HASH #
 #endif
-#ifndef CX_SPACE
-    #define CX_SPACE()
-#endif
-#ifndef CX_NOTHING
-    #define CX_NOTHING
+#ifndef CX_EMPTY
+    #define CX_EMPTY
 #endif
 
-/*-----------------------------------------+
-| Concept generators                       |
-+-----------------------------------------*/
+// =========================================
+// Concepts generators
+// =========================================
 
 #ifndef CX_CONCEPT_GEN
     #define CX_CONCEPT_GEN(TypeName, is_type_name, CConceptName)                  \
@@ -207,9 +225,9 @@
         template<typename T> concept CConceptName = is_type_name<cx::rm_cvref<T>>
 #endif
 
-/*-----------------------------------------+
-| Member aliases                           |
-+-----------------------------------------*/
+// =========================================
+// Member aliases
+// =========================================
 
 #define CX_MEMBER_ALIASES(E, S)          \
     using Elem = E;                      \
@@ -227,9 +245,9 @@
     using Rter = uti::RevIterator<Iter>;                      \
     using KRter = uti::RevIterator<Kter>
 
-/*-----------------------------------------+
-| Type assertions                          |
-+-----------------------------------------*/
+// =========================================
+// Type assertions
+// =========================================
 
 #ifndef CX_TYPE_ASSERT
     #define CX_BASIC_TYPE_ASSERT(_BODY_)         \
@@ -249,17 +267,17 @@
         static_assert(cx::is_triv_dtble<_BODY_>)
 #endif
 
-/*-----------------------------------------+
-| Unreachable                              |
-+-----------------------------------------*/
+// =========================================
+// Unreachable
+// =========================================
 
 #ifndef CX__UNREACHABLE
-    #if defined(CX_COMPILER_MSVC)
+    #if CX_COMPILER_MSVC
         #define CX__UNREACHABLE \
             __assume(0);        \
             __debugbreak();     \
             for (;;) {}
-    #else
+    #else // GCC || CLANG
         #define CX__UNREACHABLE      \
             __builtin_unreachable(); \
             __builtin_trap();        \
@@ -270,39 +288,25 @@
     #define cx_unreachable() CX__UNREACHABLE
 #endif
 
-/*-----------------------------------------+
-| Function like                            |
-+-----------------------------------------*/
+// =========================================
+// Function like
+// =========================================
 
-#ifndef usize_of
-    #define usize_of(x) sizeof(x)
+#ifndef size_of
+    #define size_of(x) (isize(sizeof(x)))
 #endif
-#ifndef isize_of
-    #define isize_of(x) ((isize) (sizeof(x)))
+#ifndef offset_of
+    #define offset_of(Type, elem) (cast(isize) & ((cast(Type*) 0)->elem))
 #endif
-#ifndef ioffset_of
-    #define ioffset_of(Type, elem) (cast(isize) & ((cast(Type*) 0)->elem))
+#ifndef align_of
+    #define align_of(Type) alignof(Type)
 #endif
-#ifndef ualign_of
-    #define ualign_of(Type) alignof(Type)
+#ifndef align_of
+    #define align_of(Type) isize(alignof(Type))
 #endif
-#ifndef ialign_of
-    #define ialign_of(Type) isize(alignof(Type))
-#endif
-#ifndef icount_of
-    #define icount_of(x) \
-        ((isize_of(x) / isize_of(0 [x])) / (cast(isize) !(isize_of(x) % isize_of(0 [x]))))
-#endif
-
-#ifndef cx_forward
-    #define cx_forward(val) cx::uti::forward<decltype(val)>(val)
-#endif
-#ifndef cx_forward_args
-    #define cx_forward_args(args) cx::uti::forward<Args>(args)
-#endif
-
-#ifndef cx_dprint
-    #define cx_dprint(A) cx::io::printfn("DEBUG ---- {}", A)
+#ifndef count_of
+    #define count_of(x) \
+        ((size_of(x) / size_of(0 [x])) / (cast(isize, !(size_of(x) % size_of(0 [x])))))
 #endif
 
 #ifndef cx_between
@@ -360,9 +364,9 @@
         }
 #endif
 
-/*-----------------------------------------+
-| Array operations                         |
-+-----------------------------------------*/
+// =========================================
+// Array operations
+// =========================================
 
 #ifndef cx_extract4
     #define cx_extract4(src) {src[0], src[1], src[2], src[3]}
@@ -385,23 +389,23 @@
      arr[8], arr[9], arr[10], arr[11], arr[12], arr[13], arr[14], arr[15]}
 #endif
 
-/*-----------------------------------------+
-| Probability branches                     |
-+-----------------------------------------*/
+// =========================================
+// Probability branch
+// =========================================
 
-#if defined(CX_COMPILER_CLANG) || defined(CX_COMPILER_GCC)
+#if CX_COMPILER_CLANG || CX_COMPILER_GCC
     #ifndef CX_PROBABILITY_BRANCH
         #define CX_PROBABILITY_BRANCH
         #define cx_rare(_BLK_)                        \
             [[unlikely]] {                            \
-                [&] __attribute__((noinline, cold)) { \
+                [&] __attribute__((noinln, cold)) { \
                     _BLK_;                            \
                 }();                                  \
             }
 
         #define cx_rare_if(b, _BLK_)                  \
             if (b) [[unlikely]] {                     \
-                [&] __attribute__((noinline, cold)) { \
+                [&] __attribute__((noinln, cold)) { \
                     _BLK_;                            \
                 }();                                  \
             }
@@ -422,59 +426,23 @@
     #endif
 #endif
 
-/*                                         *
-* Undefine macros                          *
-*                                         */
+// =========================================
+// Undefine macros
+// =========================================
 
 #ifndef CX_UNDEF_KEYWORDS
     #define CX_UNDEF_KEYWORDS \
-        #undef cexpr          \
-        #undef ceval          \
+        #undef cons          \
+        #undef comp          \
         #undef glob           \
         #undef implicit       \
-        #undef intern         \
+        #undef priv         \
         #undef noexce         \
         #undef persist        \
         #undef predicate      \
-        #undef proc           \
+        #undef fn           \
         #undef glob          \
         #undef onedef
 #endif
-
-
-// TODO:
-//
-#define fn(name, ...) inline auto name(__VA_ARGS__) noexcept
-// #define metafn(name, ...) template <__VA_ARGS__> inline auto name
-#define consfn(name, ...) inline constexpr auto name(__VA_ARGS__) noexcept
-// #define compfn(name, ...) inline consteval auto name(__VA_ARGS__) noexcept
-// #define intern static
-// #define meta template
-// #define tname typename
-//
-// #define expand __attribute__((always_inline))
-// #define begif(...) if (__VA_ARGS__) {
-// #define endif }
-//
-// meta<tname T, T x> fn(something, int y) -> int;
-//
-// metafn(somethinh, tname T, T x)(int y) -> int;
-//
-// expand intern fn(edit_bfw_desc, int const) -> int
-// {
-//     if (100 > 0) {
-//         printf("ok");
-//     }
-//     return 0;
-// }
-//
-// expand intern fn(edit_bfw_desd, int const) -> int
-// begfn
-//     begif (100 > 0)
-//         printf("ok");
-//     endif
-//     return 0;
-// endfn
-
       
-#endif  // CX___CONFIG_MACRO_HH
+#endif  // CX_CONF_MACRO

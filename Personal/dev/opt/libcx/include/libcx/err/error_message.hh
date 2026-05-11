@@ -21,8 +21,8 @@ CX_CONCEPT_GEN(ErrorPointer, is_error_pointer, CErrorPointer);
 #define IError_Message cx::err::CIErrorMessage auto
 #define Error_Message cx::err::CErrorMessage auto
 #define Error_Pointer cx::err::CErrorPointer auto
-finline onedef cexpr proc priv__ptr_tag(IErrorMessage* ptr, ErrorTag tag) noexce -> IErrorMessage*;
-finline onedef cexpr proc priv__ptr_untag(IErrorMessage* ptr) noexce -> IErrorMessage*;
+inln onedef cons fn priv__ptr_tag(IErrorMessage* ptr, ErrorTag tag) noexce -> IErrorMessage*;
+inln onedef cons fn priv__ptr_untag(IErrorMessage* ptr) noexce -> IErrorMessage*;
 
 
 //−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
@@ -57,21 +57,21 @@ struct ErrorPointer {
 
   IErrorMessage* ptr{null};
 
-  cexpr ErrorPointer() = default;
+  cons ErrorPointer() = default;
 
-  cexpr ErrorPointer(IErrorMessage* p) noexce : ptr(p) {}
+  cons ErrorPointer(IErrorMessage* p) noexce : ptr(p) {}
 
-  cexpr ErrorPointer(ZeroType) noexce : ptr(null) {}
+  cons ErrorPointer(ZeroType) noexce : ptr(null) {}
 
   /// Move constructor, leaves the given `ErrorPointer` uninitialized.
-  cexpr ErrorPointer(ErrorPointer&& that) noexce : ptr(that.ptr)
+  cons ErrorPointer(ErrorPointer&& that) noexce : ptr(that.ptr)
   {
     that.ptr = null;
   }
 
   /// Move assignment operator, leaves the given `ErrorPointer` uninitialized.
   /// If `this` pointer is not `null` the owned memory is released.
-  cexpr ErrorPointer& operator=(this auto& self, ErrorPointer&& that) noexce
+  cons ErrorPointer& operator=(this auto& self, ErrorPointer&& that) noexce
   {
     if (uptr(self.ptr) << 5 == uptr(that.ptr) << 5) {
       return self;
@@ -83,7 +83,7 @@ struct ErrorPointer {
   }
 
   /// Destructor, if `ptr` is not `null` the owned memory is released.
-  cexpr ~ErrorPointer() noexce
+  cons ~ErrorPointer() noexce
   {
     if (ptr) {
       free(err::priv__ptr_untag(ptr));
@@ -91,24 +91,24 @@ struct ErrorPointer {
   }
 
   /// Boolean conversion, returns `true` if the pointer is not `null`.
-  finline cexpr operator bool() const noexce { return ptr != null; }
+  inln cons operator bool() const noexce { return ptr != null; }
 
   /// Implicit conversion to `IErrorMessage*`.
-  finline cexpr operator IErrorMessage*() const noexce { return ptr; }
+  inln cons operator IErrorMessage*() const noexce { return ptr; }
 
   ErrorPointer(ErrorPointer const&) = delete;
   ErrorPointer& operator=(ErrorPointer const&) = delete;
 };
 
 /// Tags the given pointer to error message with the given `tag`.
-finline onedef cexpr proc priv__ptr_tag(IErrorMessage* ptr, ErrorTag tag) noexce
+inln onedef cons fn priv__ptr_tag(IErrorMessage* ptr, ErrorTag tag) noexce
   -> IErrorMessage*
 {
   return mem::ptr_tag<IErrorMessage*>(ptr, tag);
 }
 
 /// Removes the tag from the given pointer to error message.
-finline onedef cexpr proc priv__ptr_untag(IErrorMessage* ptr) noexce
+inln onedef cons fn priv__ptr_untag(IErrorMessage* ptr) noexce
   -> IErrorMessage*
 {
   return mem::ptr_untag<IErrorMessage*>(ptr, ErrorTagMask);

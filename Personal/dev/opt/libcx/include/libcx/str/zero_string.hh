@@ -16,25 +16,25 @@ template<usize N> struct ZeroString {
     using Self = ZeroString<N>;
 
     char buf[N] = {};
-    onedef glob cexpr usize len = N;
+    onedef glob cons usize len = N;
 
-    finline cexpr proc operator[](usize const idx) noexce -> char& { return buf[idx]; }
-    finline cexpr proc operator[](usize const idx) const noexce -> char { return buf[idx]; }
+    inln cons fn operator[](usize const idx) noexce -> char& { return buf[idx]; }
+    inln cons fn operator[](usize const idx) const noexce -> char { return buf[idx]; }
 
-    // finline cexpr operator std::string_view() const noexce { return {buf, len}; }
+    // inln cons operator std::string_view() const noexce { return {buf, len}; }
 
-    finline cexpr proc begin() noexce -> Iter { return buf; }
-    finline cexpr proc begin() const noexce -> Kter { return buf; }
-    finline cexpr proc rbegin() noexce -> Rter { return uti::rev_iterator(buf); }
-    finline cexpr proc rbegin() const noexce -> KRter { return uti::rev_iterator(buf); }
-    finline cexpr proc end() noexce -> Iter { return buf + len; }
-    finline cexpr proc end() const noexce -> Kter { return buf; }
+    inln cons fn begin() noexce -> Iter { return buf; }
+    inln cons fn begin() const noexce -> Kter { return buf; }
+    inln cons fn rbegin() noexce -> Rter { return uti::rev_iterator(buf); }
+    inln cons fn rbegin() const noexce -> KRter { return uti::rev_iterator(buf); }
+    inln cons fn end() noexce -> Iter { return buf + len; }
+    inln cons fn end() const noexce -> Kter { return buf; }
 };
 template<usize N> ZeroString(char const (&)[N]) -> ZeroString<N>;
 
 /// Copy `src` literal of size `N` into `dst` buffer and advance `i`ndex.
 template<usize N>
-finline ceval proc priv__zs_copy_advance(
+inln comp fn priv__zs_copy_advance(
     CZeroString auto&    dst,
     const char           (&src)[N],
     usize&               i
@@ -47,7 +47,7 @@ finline ceval proc priv__zs_copy_advance(
 /// Creates a `ZeroString` from a list of literals of size `Ns...`.
 /// The resulting lenght counts only a single `null` terminator.
 template<usize... Ns>
-ceval proc zs_create(const char (&... srcs)[Ns]) noexce -> CZeroString auto
+comp fn zs_create(const char (&... srcs)[Ns]) noexce -> CZeroString auto
 {
     ZeroString<(1 + ... + Ns) - sizeof...(Ns)> res{};
     usize i = 0;
@@ -57,7 +57,7 @@ ceval proc zs_create(const char (&... srcs)[Ns]) noexce -> CZeroString auto
 }
 
 /// Copy `src` ZeroString into `dst` buffer and advance `i`ndex.
-finline ceval proc priv__zs_copy_advance(
+inln comp fn priv__zs_copy_advance(
     CZeroString auto&          dst,
     CZeroString auto const&    src,
     usize&                     i
@@ -68,7 +68,7 @@ finline ceval proc priv__zs_copy_advance(
 }
 
 /// Creates a `ZeroString` from a list of `ZeroStrings`.
-template<ZeroString... Zs> ceval proc zs_create() noexce -> Zero_String
+template<ZeroString... Zs> comp fn zs_create() noexce -> Zero_String
 {
     ZeroString<(1 + ... + Zs.len) - sizeof...(Zs)> res{};
     usize i = 0;
@@ -79,7 +79,7 @@ template<ZeroString... Zs> ceval proc zs_create() noexce -> Zero_String
 
 ///
 template<ZeroString Z, usize M> requires (M < Z.len)
-ceval proc zs_create() noexce -> Zero_String
+comp fn zs_create() noexce -> Zero_String
 {
     ZeroString<M> res{};
     for (usize i = 0; i < M - 1; i++) {
@@ -90,7 +90,7 @@ ceval proc zs_create() noexce -> Zero_String
 }
 
 /// Formatter to integrate ZeroString into the `fmt` API.
-// finline cexpr proc format_as(Zero_String const& z) noexce -> fmt::string_view
+// inln cons fn format_as(Zero_String const& z) noexce -> fmt::string_view
 // {
 //     return {z.buf, z.len};
 // }
@@ -105,7 +105,7 @@ static_assert(sizeof(zs_create<ZeroString{"Heisenberg"}>()) == 11);
 
 // #define CX_TEST 1
 #ifdef CX_TEST
-proc test_zero_string -> void()
+fn test_zero_string -> void()
 {
     using CX;
     Zero_String z = zs_create("Heisenberg");

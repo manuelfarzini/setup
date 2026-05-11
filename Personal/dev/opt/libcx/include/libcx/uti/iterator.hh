@@ -11,97 +11,97 @@ template<typename It> struct RevIterator {
   using Iter = It;
   Iter cur;
 
-  cexpr RevIterator() = default;
-  cexpr RevIterator(Iter it) : cur(it) {}
+  cons RevIterator() = default;
+  cons RevIterator(Iter it) : cur(it) {}
 
-  cexpr Iter base(this auto const& self) noexce { return self.cur; }
+  cons Iter base(this auto const& self) noexce { return self.cur; }
 
-  cexpr proc operator*(this auto const& self) noexce -> decltype(auto)
+  cons fn operator*(this auto const& self) noexce -> decltype(auto)
   {
     auto tmp = self.cur;
     --tmp;
     return *tmp;
   }
 
-  cexpr proc operator->(this auto const& self) noexce -> auto
+  cons fn operator->(this auto const& self) noexce -> auto
   {
     return &(*self);  // XXX: proxy?
   }
 
-  cexpr proc operator++(this auto& self) noexce -> decltype(self)
+  cons fn operator++(this auto& self) noexce -> decltype(self)
   {
     --self.cur;
     return self;
   }
 
-  cexpr proc operator++(this auto& self, int) noexce -> auto
+  cons fn operator++(this auto& self, int) noexce -> auto
   {
     auto tmp = self;
     --self.cur;
     return tmp;
   }
 
-  cexpr proc operator--(this auto& self) noexce -> decltype(self)
+  cons fn operator--(this auto& self) noexce -> decltype(self)
   {
     ++self.cur;
     return self;
   }
 
-  cexpr proc operator--(this auto& self, int) noexce -> auto
+  cons fn operator--(this auto& self, int) noexce -> auto
   {
     auto tmp = self;
     ++self.cur;
     return tmp;
   }
 
-  friend cexpr proc operator==(
+  friend cons fn operator==(
     RevIterator const& a, RevIterator const& b) noexce -> b32
   {
     return a.cur == b.cur;
   }
 
-  friend cexpr proc operator!=(
+  friend cons fn operator!=(
     RevIterator const& a, RevIterator const& b) noexce -> b32
   {
     return !(a == b);
   }
 };
 
-template<typename It> cexpr auto rev_iterator(It it) noexce -> RevIterator<It>
+template<typename It> cons auto rev_iterator(It it) noexce -> RevIterator<It>
 {
   return RevIterator<It>(it);
 }
 
-finline cexpr proc beg(auto& c) noexce -> decltype(auto)
+inln cons fn beg(auto& c) noexce -> decltype(auto)
 {
   return iter_in(c)(c.begin());
 }
-finline cexpr proc beg(auto const& c) noexce -> decltype(auto)
+inln cons fn beg(auto const& c) noexce -> decltype(auto)
 {
   return cter_in(c)(c.begin());
 }
-finline cexpr proc rbeg(auto& c) noexce -> decltype(auto)
+inln cons fn rbeg(auto& c) noexce -> decltype(auto)
 {
   return rter_in(c)(c.rbegin());
 }
-finline cexpr proc rbeg(auto const& c) noexce -> decltype(auto)
+inln cons fn rbeg(auto const& c) noexce -> decltype(auto)
 {
   return crter_in(c)(c.rbegin());
 }
 
-finline cexpr proc end(auto& c) noexce -> decltype(auto)
+inln cons fn end(auto& c) noexce -> decltype(auto)
 {
   return iter_in(c)(c.end());
 }
-finline cexpr proc end(auto const& c) noexce -> decltype(auto)
+inln cons fn end(auto const& c) noexce -> decltype(auto)
 {
   return cter_in(c)(c.end());
 }
-finline cexpr proc rend(auto& c) noexce -> decltype(auto)
+inln cons fn rend(auto& c) noexce -> decltype(auto)
 {
   return rter_in(c)(c.rend());
 }
-finline cexpr proc rend(auto const& c) noexce -> decltype(auto)
+inln cons fn rend(auto const& c) noexce -> decltype(auto)
 {
   return crter_in(c)(c.rend());
 }

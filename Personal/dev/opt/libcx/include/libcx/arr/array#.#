@@ -47,7 +47,7 @@ predicate matches_elem_in = same_or_cvref<uti::ElemIn<Cont>, Elem>;
 template<
     CArrayType         Arr,
     typename           Key,
-    uti::COrderComp    Cmp = uti::Lne,
+    uti::COrderComp    Cmp = Lne(),
     Requires(std::totally_ordered_with<uti::ElemIn<Arr>, uti::PlainT<Key>>)>
 finline cexpr proc find_first(Arr const& arr, Key const& key, Cmp cmp) noexce -> isize
 {

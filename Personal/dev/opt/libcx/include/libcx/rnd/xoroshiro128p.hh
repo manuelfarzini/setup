@@ -21,7 +21,7 @@ struct Xoroshiro128p {
 
 /// Rotates a 64-bit unsigned integer `y` left by `k` bits.
 /// Returns: the rotated value.
-finline cexpr proc rotl(u64 const y, int k) noexce -> u64
+inln cons fn rotl(u64 const y, int k) noexce -> u64
 {
     return (y << k) | (y >> (64 - k));
 }
@@ -30,7 +30,7 @@ finline cexpr proc rotl(u64 const y, int k) noexce -> u64
 /// Generates an u64 pseudorandom number from the input seed `y`
 /// that will be mutated. Initializes the `Xoroshiro`.
 /// Returns: the u64 generated pseudorandom number.
-finline cexpr proc splitmix64(u64& y) noexce -> u64
+inln cons fn splitmix64(u64& y) noexce -> u64
 {
     u64 z = (y += 0x9e3779b97f4a7c15);
     z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;
@@ -40,7 +40,7 @@ finline cexpr proc splitmix64(u64& y) noexce -> u64
 
 /// Seeds the internal state of `xoro` using the splitmix64
 /// algorithm with the input seed `y`.
-finline cexpr proc seed(Xoroshiro128p& xoro, u64 y) noexce -> void
+inln cons fn seed(Xoroshiro128p& xoro, u64 y) noexce -> void
 {
     xoro.state[0] = splitmix64(y);
     xoro.state[1] = splitmix64(y);
@@ -48,7 +48,7 @@ finline cexpr proc seed(Xoroshiro128p& xoro, u64 y) noexce -> void
 
 /// Generates the next u64 pseudorandom value from `xoro`
 /// Returns: the u64 generated pseudorandom number
-finline cexpr proc next(Xoroshiro128p& xoro) noexce -> u64
+inln cons fn next(Xoroshiro128p& xoro) noexce -> u64
 {
     const u64 s0 = xoro.state[0];
     u64 s1 = xoro.state[1];
@@ -61,7 +61,7 @@ finline cexpr proc next(Xoroshiro128p& xoro) noexce -> u64
 
 /// Generates a single f32 ∈ [-1, 1) from a `xoro`.
 /// Returns: the generated f32.
-finline cexpr proc generate_one(Xoroshiro128p& xoro) noexce -> f32
+inln cons fn generate_one(Xoroshiro128p& xoro) noexce -> f32
 {
     return 2.0f * f32(next(xoro)>>32) * (1.0f/f32(1ull<<32)) - 1.0f;
 }
@@ -70,7 +70,7 @@ finline cexpr proc generate_one(Xoroshiro128p& xoro) noexce -> f32
 /// SIMD instructions. Writes them in the internal `simd_buffer`
 /// and a pointer to it is returned.
 /// Returns: a pointer to the internal `simd buffer`.
-finline cexpr proc generate_four(Xoroshiro128p& xoro) noexce -> f32*
+inln cons fn generate_four(Xoroshiro128p& xoro) noexce -> f32*
 {
     #if defined(CX_SSE2)
         __m128i vi = _mm_set_epi32(

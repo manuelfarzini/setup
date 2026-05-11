@@ -1,4 +1,4 @@
-/// \file libcx/mem/shared_pointer_mk3.hh
+/** @file libcx/mem/shared_pointer_mk3.hh **/
 /// Not supported:
 ///   - weak pointers,
 ///   - multiple inheritance,
@@ -27,9 +27,9 @@ CX_CONCEPT_GEN_TEMPL(
 #define Control_Block_Base cx::mem::CControlBlockBase auto
 #define Control_Block_Impl cx::mem::CControlBlock auto
 #define Shared_Pointer cx::mem::CSharedPointer auto
-typedef proc DeleterProc(IControlBlock*) noexce -> void;
-finline cexpr proc priv__decrement_shared(Shared_Pointer& p) -> void;
-cexpr proc priv__release_shared(Shared_Pointer& p) -> bool;
+typedef fn DeleterProc(IControlBlock*) noexce -> void;
+inln cons fn priv__decrement_shared(Shared_Pointer& p) -> void;
+cons fn priv__release_shared(Shared_Pointer& p) -> bool;
 
 /// Control block interface.
 struct IControlBlock {
@@ -44,14 +44,14 @@ template<typename T> struct ControlBlock final : IControlBlock {
   /// The encalsupated element type.
   using Elem = T;
   /// The internal type erased storage.
-  alignas(Elem) u8 storage[usize_of(T)]{};
+  alignas(Elem) u8 storage[size_of(T)]{};
   /// Default constructor.
-  cexpr ControlBlock() noexce { release = __release; }
+  cons ControlBlock() noexce { release = __release; }
   /// Typed release implementation.
-  finline glob cexpr proc __release(IControlBlock* base) noexce -> void
+  inln glob cons fn __release(IControlBlock* base) noexce -> void
   {
     auto* self = static_cast<ControlBlock<T>*>(base);
-    if cexpr (!std::is_trivially_destructible_v<T>) {
+    if cons (!std::is_trivially_destructible_v<T>) {
       get_object(self)->~T();
     }
     mem::dealloc<ControlBlock<T>>(self);
@@ -82,7 +82,7 @@ template<typename T> struct SharedPointer {
 
   using Elem = T;
   template<typename U> using EnableUpcast = std::enable_if<std::is_convertible_v<U*, T*>, int>;
-  glob onedef cexpr struct AdoptTag {} adopt_tag{};
+  glob onedef cons struct AdoptTag {} adopt_tag{};
 
   /// The pointer to control block.
   IControlBlock* ctrl_ptr{nullptr};
@@ -90,12 +90,12 @@ template<typename T> struct SharedPointer {
   Elem* obj_ptr{nullptr};
 
   /// Default constructor.
-  cexpr SharedPointer() = default;
+  cons SharedPointer() = default;
 
   SharedPointer& operator=(const SharedPointer&) = delete;
   SharedPointer& operator=(SharedPointer&&) = delete;
   /// Copy constructor.
-  cexpr SharedPointer(SharedPointer const& that) noexce 
+  cons SharedPointer(SharedPointer const& that) noexce 
       : ctrl_ptr(that.ctrl_ptr),
         obj_ptr(that.obj_ptr)
   {
@@ -116,7 +116,7 @@ template<typename T> struct SharedPointer {
   }
 
   /// Move constructor.
-  cexpr SharedPointer(SharedPointer&& that) noexce 
+  cons SharedPointer(SharedPointer&& that) noexce 
       : ctrl_ptr(that.ctrl_ptr),
         obj_ptr(that.obj_ptr)
   {
@@ -126,7 +126,7 @@ template<typename T> struct SharedPointer {
 
   /// Polymorphic move constructor
   template<typename U, EnableUpcast<U> = 0>
-  cexpr SharedPointer(SharedPointer<U>&& that) noexce
+  cons SharedPointer(SharedPointer<U>&& that) noexce
       : ctrl_ptr(that.ctrl_ptr),
         obj_ptr(static_cast<T*>(that.obj_ptr))
   {
@@ -136,7 +136,7 @@ template<typename T> struct SharedPointer {
 
   /// Aliasing contructor.
   template<typename U>
-  cexpr SharedPointer(SharedPointer<U> const& that, T* alias_ptr) noexce
+  cons SharedPointer(SharedPointer<U> const& that, T* alias_ptr) noexce
       : ctrl_ptr(that.ctrl_ptr),
         obj_ptr(alias_ptr)
   {
@@ -147,7 +147,7 @@ template<typename T> struct SharedPointer {
 
   /// Polymorphic aliasing constructor.
   template<typename U, EnableUpcast<U> = 0>
-  cexpr SharedPointer(SharedPointer<U> const& that, T* alias_ptr) noexce
+  cons SharedPointer(SharedPointer<U> const& that, T* alias_ptr) noexce
       : ctrl_ptr(that.ctrl_ptr),
         obj_ptr(alias_ptr)
   {
@@ -167,7 +167,7 @@ template<typename T> struct SharedPointer {
   }
 
   /// Copy assignment operator.
-  cexpr SharedPointer& operator=(this auto& self, SharedPointer const& that)
+  cons SharedPointer& operator=(this auto& self, SharedPointer const& that)
   {
     if (&self == &that) {
       return self;
@@ -185,7 +185,7 @@ template<typename T> struct SharedPointer {
 
   /// Polymorphic copy assignment operator.
   template<typename U, EnableUpcast<U> = 0>
-  cexpr SharedPointer& operator=(this auto& self, SharedPointer<U> const& that)
+  cons SharedPointer& operator=(this auto& self, SharedPointer<U> const& that)
   {
     if (self.ctrl_ptr == that.ctrl_ptr) {
       return self;
@@ -202,7 +202,7 @@ template<typename T> struct SharedPointer {
   }
 
   /// Move assignment operator
-  cexpr SharedPointer& operator=(this auto& self, SharedPointer&& that) noexce
+  cons SharedPointer& operator=(this auto& self, SharedPointer&& that) noexce
   {
     if (&self == &that) {
       return self;
@@ -219,7 +219,7 @@ template<typename T> struct SharedPointer {
 
   /// Polymorphic move assignment operator.
   template<typename U, EnableUpcast<U> = 0>
-  cexpr SharedPointer& operator=(this auto& self, SharedPointer<U>&& that) noexce
+  cons SharedPointer& operator=(this auto& self, SharedPointer<U>&& that) noexce
   {
     if (self.ctrl_ptr != nullptr) {
       mem::priv__decrement_shared(self);
@@ -234,12 +234,12 @@ template<typename T> struct SharedPointer {
   /// Destructor
   ~SharedPointer() { mem::priv__release_shared(*this); }
 
-  finline cexpr operator bool() noexce { return ctrl_ptr != nullptr; }
+  inln cons operator bool() noexce { return ctrl_ptr != nullptr; }
 };  // SharedPointer
 
 /// Makes a new `SharedPointer` that is the first owner of a `T` instance.
 template<typename T, typename... Args>
-cexpr proc make_shared(Args&&... args) -> SharedPointer<T>
+cons fn make_shared(Args&&... args) -> SharedPointer<T>
 {
   ControlBlock<T>* ctrl_ptr = mem::make<ControlBlock<T>>(1);
   if (ctrl_ptr == nullptr) {
@@ -255,7 +255,7 @@ cexpr proc make_shared(Args&&... args) -> SharedPointer<T>
 
 /// Decrements the reference counter of `p`.
 /// Requires: `p.ctrl_ptr` must not be `nullptr`.
-finline cexpr proc priv__decrement_shared(Shared_Pointer& p) -> void
+inln cons fn priv__decrement_shared(Shared_Pointer& p) -> void
 {
   if (p.ctrl_ptr->ref_count.fetch_sub(1, mem::order_release) == 1) {
     std::atomic_thread_fence(mem::order_acquire);
@@ -266,7 +266,7 @@ finline cexpr proc priv__decrement_shared(Shared_Pointer& p) -> void
 /// Release ownership held by `p`.
 /// If the counter reaches zero, the pointee is removed.
 /// Returns: `true` if released, `false` if `p` was already null.
-cexpr proc priv__release_shared(Shared_Pointer& p) -> bool
+cons fn priv__release_shared(Shared_Pointer& p) -> bool
 {
   if (!p) {
     return false;
@@ -283,21 +283,21 @@ cexpr proc priv__release_shared(Shared_Pointer& p) -> bool
 // but this can be a bad idea since this breaks encapsulation that i think  is
 // inherently fundamental for this type of automatic memory management structure.
 
-// template<typename T> finline cexpr SharedPointer<T>
+// template<typename T> inln cons SharedPointer<T>
 // copy_create(SharedPointer<T> const& src) noexce {
 //   return SharedPointer<T>(src);
 // }
 
 // template<typename T>
-// finline cexpr SharedPointer<T> move_create(SharedPointer<T>&& src) noexce {
+// inln cons SharedPointer<T> move_create(SharedPointer<T>&& src) noexce {
 //   return SharedPointer<T>(uti::move(src));
 // }
 
-// finline cexpr void copy_assign(Shared_Pointer& dst, Shared_Pointer const& src) noexce {
+// inln cons void copy_assign(Shared_Pointer& dst, Shared_Pointer const& src) noexce {
 //   dst = src;
 // }
 
-// finline cexpr void move_assign(Shared_Pointer& dst, Shared_Pointer&& src) noexce {
+// inln cons void move_assign(Shared_Pointer& dst, Shared_Pointer&& src) noexce {
 //   dst = uti::move(src);
 // }
 

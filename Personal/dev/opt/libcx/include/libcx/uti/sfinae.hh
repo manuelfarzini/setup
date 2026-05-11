@@ -1,6 +1,7 @@
+/** @file libcx/uti/sfinae.hh **/
+
 #ifndef CX_UTI_SFINAE_HH
 #define CX_UTI_SFINAE_HH
-#include <libcx/config.hh>
 
 namespace cx {
 inline namespace uti {

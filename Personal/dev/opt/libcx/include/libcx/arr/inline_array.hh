@@ -1,9 +1,11 @@
-/// \file libcx/arr/inline_array.hh
+/** @file libcx/arr/inline_array.hh **/
+
 #ifndef CX_ARR_INLINE_ARRAY_HH
 #define CX_ARR_INLINE_ARRAY_HH
-#include <libcx/io/io.hh>
-#include <libcx/err/error.hh>
-#include <libcx/mem/memory.hh>
+
+// #include <libcx/io/io.hh>
+// #include <libcx/err/error.hh>
+// #include <libcx/mem/memory.hh>
 #include <libcx/uti/utilities.hh>
 
 // TODO:
@@ -50,23 +52,23 @@ template<typename T, usize C, typename S> struct InlineArray {
   using CIter = Elem const*;
   using Self = InlineArray<Elem, C, Size>;
 
-  inline static cexpr Size cap = C;
+  inline static cons Size cap = C;
   Elem buf[C]{};
   Size len{};
 
-  finline cexpr proc operator[](usize const i) noexce
+  inln cons fn operator[](usize const i) noexce
     -> Elem& { return buf[i]; }
-  finline cexpr proc operator[](usize const i) const noexce
+  inln cons fn operator[](usize const i) const noexce
     -> Elem const& { return buf[i]; }
 
-  finline cexpr proc begin() noexce -> Iter { return buf; }
-  finline cexpr proc end() noexce -> Iter { return buf + len; }
-  finline cexpr proc begin() const noexce -> CIter { return buf; }
-  finline cexpr proc end() const noexce -> CIter { return buf + len; }
+  inln cons fn begin() noexce -> Iter { return buf; }
+  inln cons fn end() noexce -> Iter { return buf + len; }
+  inln cons fn begin() const noexce -> CIter { return buf; }
+  inln cons fn end() const noexce -> CIter { return buf + len; }
 };
 
 /// Equality operator.
-cexpr proc operator==(Inline_Array const& a, Inline_Array const& b) noexce -> bool
+cons fn operator==(Inline_Array const& a, Inline_Array const& b) noexce -> bool
 {
   if (&a == &b) {
     return true;
@@ -85,7 +87,7 @@ cexpr proc operator==(Inline_Array const& a, Inline_Array const& b) noexce -> bo
 }
 
 /// Comparison operator.
-cexpr proc operator<=>(Inline_Array const& a, Inline_Array const& b) noexce -> auto
+cons fn operator<=>(Inline_Array const& a, Inline_Array const& b) noexce -> auto
 {
   if (a.len < b.len) {
     return std::strong_ordering::less;
@@ -105,16 +107,16 @@ cexpr proc operator<=>(Inline_Array const& a, Inline_Array const& b) noexce -> a
 }
 
 /// Returns `true` if the array is empty.
-cexpr proc is_empty(Inline_Array arr) noexce -> bool { return arr.len == 0; }
+cons fn is_empty(Inline_Array arr) noexce -> bool { return arr.len == 0; }
 
 /// Returns `true` if the array is full.
-cexpr proc is_full(Inline_Array arr) noexce -> bool { return arr.len == arr.cap; }
+cons fn is_full(Inline_Array arr) noexce -> bool { return arr.len == arr.cap; }
 
 /// Shifts the `arr`'s elements to the right from `i` to `j` by `off` positions.
 /// Returns `true` if the shift was successful.
 ///
 template<CInlineArray Arr, typename Size = uti::SizeIn<Arr>>
-finline cexpr proc shift_right(Arr& arr, Size i, Size j, Size off) noexce -> bool
+inln cons fn shift_right(Arr& arr, Size i, Size j, Size off) noexce -> bool
 {
   if (off == 0 || j >= arr.cap || i >= j || i + off > j) {
     return false;
@@ -131,7 +133,7 @@ finline cexpr proc shift_right(Arr& arr, Size i, Size j, Size off) noexce -> boo
 /// Returns `true` if the shift was successful.
 ///
 template<CInlineArray Arr, typename Size = uti::SizeIn<Arr>>
-finline cexpr proc shift_left(Arr& arr, Size i, Size j, Size off) noexce
+inln cons fn shift_left(Arr& arr, Size i, Size j, Size off) noexce
     -> bool
 {
   if (off == 0 || j >= arr.cap || i >= j || i + off > j) {
@@ -147,7 +149,7 @@ finline cexpr proc shift_left(Arr& arr, Size i, Size j, Size off) noexce
 template<
     CInlineArray Arr, typename Size = uti::SizeIn<Arr>, typename... Args,
     Requires(uti::same_or_cvref<uti::ElemIn<Arr>, Args>&&...)>
-cexpr proc push_back(Arr& arr, Size num, Args&&... args) noexce -> bool
+cons fn push_back(Arr& arr, Size num, Args&&... args) noexce -> bool
 {
   if (num == 0) {
     return false;
@@ -159,7 +161,7 @@ cexpr proc push_back(Arr& arr, Size num, Args&&... args) noexce -> bool
 
 ///
 template<CInlineArray Arr, typename Elm = uti::ElemIn<Arr>>
-onedef proc push_back(Arr& arr, initlist<Elm> lst) noexce -> bool
+onedef fn push_back(Arr& arr, initlist<Elm> lst) noexce -> bool
 {
   if (lst.size() == 0 && lst.size() + arr.len > arr.cap) {
     return false;
@@ -171,7 +173,7 @@ onedef proc push_back(Arr& arr, initlist<Elm> lst) noexce -> bool
 
 ///
 template<CInlineArray Arr, typename Elm = uti::ElemIn<Arr>>
-onedef proc pop_back(Arr& arr, Elm& res) noexce -> bool
+onedef fn pop_back(Arr& arr, Elm& res) noexce -> bool
 {
   if (arr.len == 0) {
     return false;
@@ -186,10 +188,10 @@ onedef proc pop_back(Arr& arr, Elm& res) noexce -> bool
 template<CInlineArray Arr, typename Elm, uti::COrderComp Cmp = uti::Lne,
          Requires(std::totally_ordered<uti::ElemIn<Arr>> &&
                       uti::same_or_cvref<uti::ElemIn<Arr>, Elm>)>
-cexpr proc find(Arr& arr, Elm&& elm, Cmp cmp = uti::lne) noexce -> isize
+cons fn find(Arr& arr, Elm&& elm, Cmp cmp = uti::lne) noexce -> isize
 {
   usize i;
-  if cexpr (uti::same_as<decltype(cmp), uti::Lne>) {
+  if cons (uti::same_as<decltype(cmp), uti::Lne>) {
     i = 0;
     while (i < arr.len && cmp(arr[i], elm)) {
       i++;
@@ -198,7 +200,7 @@ cexpr proc find(Arr& arr, Elm&& elm, Cmp cmp = uti::lne) noexce -> isize
       return (isize) i;
     }
 
-  } else if cexpr (uti::same_as<decltype(cmp), uti::Gne>) {
+  } else if cons (uti::same_as<decltype(cmp), uti::Gne>) {
     i = arr.len;
     while (i > 0 && cmp(arr[i - 1], elm)) {
       i--;
@@ -222,7 +224,7 @@ template<CInlineArray Arr, typename Key, typename Cmp,
                     std::totally_ordered<uti::ElemIn<Arr>> &&
                     std::totally_ordered_with<uti::ElemIn<Arr>, uti::PlainT<Key>> &&
                     std::is_invocable_v<Cmp, uti::ElemIn<Arr>, uti::PlainT<Key>>)>
-cexpr proc find(Arr& arr, auto&& key, auto&& cmp) noexce -> isize
+cons fn find(Arr& arr, auto&& key, auto&& cmp) noexce -> isize
 {
   usize i = 0;
   while (i < arr.len && cmp(arr[i], key)) {
@@ -238,7 +240,7 @@ cexpr proc find(Arr& arr, auto&& key, auto&& cmp) noexce -> isize
 template<CInlineArray Arr, typename Elm, uti::COrderComp Cmp = uti::Lne,
          Requires(std::totally_ordered<uti::ElemIn<Arr>>&&
                     uti::same_or_cvref<uti::ElemIn<Arr>, Elm>)>
-cexpr proc insert(Arr& arr, Elm&& elm, Cmp cmp = uti::lne) noexce -> isize
+cons fn insert(Arr& arr, Elm&& elm, Cmp cmp = uti::lne) noexce -> isize
 {
   if (arr.len == arr.cap) {
     return -1;
@@ -259,7 +261,7 @@ cexpr proc insert(Arr& arr, Elm&& elm, Cmp cmp = uti::lne) noexce -> isize
   return i;
 }
 
-// cexpr proc remove(Inline_Array& arr, KeyIn(arr) key) -> isize {
+// cons fn remove(Inline_Array& arr, KeyIn(arr) key) -> isize {
 // }
 
 }  // namespace cx::arr

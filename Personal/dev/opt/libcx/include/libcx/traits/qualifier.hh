@@ -1,13 +1,13 @@
-/// \file libcx/__raits/qualifier.hh
-#ifndef CX___TRAITS_QUALIFIER_HH
-#define CX___TRAITS_QUALIFIER_HH
-#include <libcx/__config/macros.hh>
+/** @file libcx/__raits/qualifier.hh **/
+
+#ifndef CX_TRAITS_QUALIFIER_HH
+#define CX_TRAITS_QUALIFIER_HH
+
+#include "libcx/conf/macro.hh"
 
 namespace cx {
 
-/*----------------------------------------**
-    Constant|Volatile
-**----------------------------------------*/
+// Constant - Volatile
 
 template<typename T> struct ___rm_cv                   { using Type = T; };
 template<typename T> struct ___rm_cv<T const>          { using Type = T; };
@@ -38,9 +38,7 @@ template<typename T> predicate is_vola<T volatile> = true;
 
 template<typename T> predicate is_cv_qual = is_const<T> || is_vola<T>;
 
-/*----------------------------------------**
-    Reference
-**----------------------------------------*/
+// Reference
 
 template<typename T> struct ___rm_ref      { using Type = T; };
 template<typename T> struct ___rm_ref<T&>  { using Type = T; };
@@ -85,9 +83,7 @@ template<typename T> using mk_lref = typename ___mk_lref<T>::Type;
 template<typename T> struct ___mk_const_lref { using Type = rm_ref<T> const&; };
 template<typename T> using mk_const_lref = typename ___mk_const_lref<T>::Type;
 
-/*----------------------------------------**
-    Pointer
-**----------------------------------------*/
+// Pointer
 
 template<typename T> struct ___rm_ptr                    { using Type = T; };
 template<typename T> struct ___rm_ptr<T*>                { using Type = T; };
@@ -101,9 +97,7 @@ template<typename T> using rm_cvptr = rm_cv<rm_ptr<T>>;
 template<typename T> struct ___ad_ptr { using Type = rm_ref<T>*; };
 template<typename T> using add_ptr = typename ___ad_ptr<T>::Type;
 
-/*----------------------------------------**
-    Extent
-**----------------------------------------*/
+// Extent
 
 template<typename T>
 struct ___rm_extent { using Type = T; };
@@ -130,4 +124,4 @@ template<typename T>
 using rm_all_extent = copy_cv<T, typename ___rm_all_extent<rm_cv<T>>::Type>;
 
 }       // namespace cx
-#endif  // CX___TRAITS_QUALIFIER_HH
+#endif  // CX_TRAITS_QUALIFIER_HH

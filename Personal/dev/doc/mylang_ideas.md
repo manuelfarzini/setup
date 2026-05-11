@@ -2,6 +2,30 @@
 markdown_extensions: +bracketed_spans
 ---
 
+```
+ptr to single u8          ->  []u8,      only dereferencable
+multi ptr (to n u8s)      ->  [*]u8,     dereferencable and indexable 
+ptr to multi ptr to u8s   ->  [][*]u8,   dereferencable and indexable
+slice of u8(s)            ->  [u8]
+slice of slices of u8s    ->  [[u8]]
+dereferencing             ->  x[]
+indexing                  ->  x[i]
+slicing                   ->  x[i:j]
+static array of n u8s     ->  [u8, n]
+dynamic of u8s            ->  [u8, ..]
+simd vector of n u8s      ->  [n]u8 ? <u8, n> ? u8<n> ? u8[n] ? <n>u8
+
+Alternative
+[]u8      -> ptr
+[*]u8     -> multi ptr
+[][*]u8   -> ptr to multi ptr
+[&][&]u8  -> slice of slices
+[&]u8     -> slice
+[n]u8     -> static array
+[..]u8    -> dynamic array
+u8<n>     -> simd
+```
+
 # Misc
 
 ```

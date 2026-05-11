@@ -1,7 +1,11 @@
-/// \file libcx/__config/config.hh
+/// \file libcx/conf/config.hh
+
 #ifndef CX__CONFIG_HH
 #define CX__CONFIG_HH
-#include <libcx/__config/platform.hh>
-#include <libcx/__config/macros.hh>
-#include <libcx/__config/types.hh>
+
+#include <libcx/conf/hal.hh>
+#include <libcx/conf/macro.hh>
+#include <libcx/conf/prelude.hh>
+#include <libcx/conf/type.hh>
+
 #endif  // CX__CONFIG_HH

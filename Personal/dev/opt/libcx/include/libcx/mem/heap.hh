@@ -1,21 +1,21 @@
-/** @File libcx/mem/heap.hh **/
+/** @file libcx/mem/heap.hh **/
+
 #ifndef CX_MEM_HEAP_HH
 #define CX_MEM_HEAP_HH
-#include <libcx/config.hh>
-#include <libcx/__utils/ownership.hh>
-#include <libcx/mem/common.hh>
-#include <libcx/mem/pointer.hh>
 
-// TODO: documentation
+#include "libcx/config.hh"
+#include "libcx/__utils/ownership.hh"
+#include "libcx/mem/common.hh"
+#include "libcx/mem/pointer.hh"
 
 namespace cx::mem {
 
-onedef cexpr proc heap_free(ptrany ptr) noexce -> void
+cons fn heap_free(ptrany ptr) noexce -> void
 {
     return ::free(ptr);
 }
 
-onedef cexpr proc heap_alloc(isize size, b32 zero_mem = true) noexce -> ptrany
+cons fn heap_alloc(isize size, b32 zero_mem = true) noexce -> ptrany
 {
     if (size <= 0) {
         return null;
@@ -28,25 +28,25 @@ onedef cexpr proc heap_alloc(isize size, b32 zero_mem = true) noexce -> ptrany
     }
 }
 
-onedef cexpr proc heap_resize(ptrany ptr, isize new_size) noexce -> ptrany
+cons fn heap_resize(ptrany ptr, isize new_size) noexce -> ptrany
 {
     return ::realloc(ptr, new_size);
 }
 
-onedef cexpr proc heap_aligned_free(ptrany ptr) noexce -> void
+cons fn heap_aligned_free(ptrany ptr) noexce -> void
 {
     if (ptr != null) {
         ::free(viewany(ptr)[-1]);
     }
 }
 
-nodisc onedef cexpr proc heap_aligned_alloc(
+nodisc cons fn heap_aligned_alloc(
     isize     size,
     isize     align       = DEF_ALIGN,
     ptrany    old_ptr     = null,
     isize     old_size    = 0,
     b32       zero_mem    = true
-) noexce -> Res<ptrany, AllocatorError> {
+) noexce -> Res<ptrany, AllocatorErr> {
     //  NOTE(manu)
     //  should I impose bytes % align == 0 like std::aligned_alloc?
 
@@ -88,13 +88,13 @@ nodisc onedef cexpr proc heap_aligned_alloc(
     return {aligned_mem, none};
 }
 
-onedef cexpr proc heap_aligned_resize(
+cons fn heap_aligned_resize(
     ptrany    ptr,
     isize     size,
     isize     new_size,
     isize     new_align,
     b32       zero_mem    = true
-) noexce -> Res<ptrany, AllocatorError> {
+) noexce -> Res<ptrany, AllocatorErr> {
     if (ptr == null) {
         return heap_aligned_alloc(new_size, new_align, null, size, zero_mem);
     }
@@ -130,16 +130,16 @@ onedef cexpr proc heap_aligned_resize(
 //
 
 // template<DefInitble T>
-// nodisc onedef cexpr proc heap_aligned_alloc_type(
+// nodisc cons fn heap_aligned_alloc_type(
 //     isize     num        = 1,
-//     isize     align      = ualign_of(T),
+//     isize     align      = align_of(T),
 //     anyptr    old_ptr    = null,
 //     isize     old_num    = 0
 // ) noexce -> Res<T*, AllocatorError> {
 //     auto [new_ptr, err] = heap_aligned_alloc(
-//         num * isize_of(T), 
+//         num * size_of(T), 
 //         align, old_ptr, 
-//         old_num * isize_of(T), 
+//         old_num * size_of(T), 
 //         false);
 //     if (err) {
 //         return {null, err};
@@ -167,10 +167,10 @@ onedef cexpr proc heap_aligned_resize(
 //
 // **/
 // template<typename T>
-// nodisc onedef proc heap_aligned_resize_type(T* ptr, isize num, isize new_num) noexce
+// nodisc fn heap_aligned_resize_type(T* ptr, isize num, isize new_num) noexce
 //     -> Res<T*, AllocatorError>
 // {
-//   auto [new_ptr, err] = heap_aligned_alloc_type<T>(new_num, ualign_of(T), ptr, num);
+//   auto [new_ptr, err] = heap_aligned_alloc_type<T>(new_num, align_of(T), ptr, num);
 //   if (err) {
 //       return {ptr, err};
 //   }

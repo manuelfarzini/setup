@@ -1,11 +1,13 @@
+/** @file mem/allocator.hh **/
 #ifndef CX_MEM_ALLOCATOR_HH
 #define CX_MEM_ALLOCATOR_HH
+
 #include <libcx/mem/common.hh>
 #include <libcx/mem/heap.hh>
 
 namespace cx::mem {
 
-//------------------------------------------
+// -----------------------------------------
 // Common
 
 enum AllocatorMode : u8 {
@@ -18,7 +20,7 @@ enum AllocatorMode : u8 {
     // Mode_FreeTyped,
 };
 
-typedef proc AllocatorProc(
+typedef auto AllocatorProc(
     ptrany           alc_data,
     AllocatorMode    mode,
     isize            size,
@@ -29,7 +31,7 @@ typedef proc AllocatorProc(
 ) noexce -> Res<ptrany, AllocatorError>;
 
 #define CX_ALLOCATOR_PROC(name)                   \
-    onedef proc name(                             \
+    onedef auto name(                             \
         ptrany           alc_data,                \
         AllocatorMode    mode,                    \
         isize            size,                    \
@@ -44,7 +46,7 @@ struct Allocator {
     ptrany            data;
 };
 
-onedef proc cx_mem_alloc(
+fn cx_mem_alloc(
     Allocator alctor, isize size, isize align = DEF_ALIGN, b32 zero_mem = true
 ) noexce -> Res<ptrany, AllocatorError> {
     if (size == 0) {
@@ -53,12 +55,12 @@ onedef proc cx_mem_alloc(
     return alctor.call(alctor.data, Mode_Alloc, size, align, null, 0, zero_mem);
 }
 
-finline onedef proc cx_mem_free(Allocator alctor, ptrany ptr) -> Res<ptrany, AllocatorError>
+inln fn cx_mem_free(Allocator alctor, ptrany ptr) -> Res<ptrany, AllocatorError>
 {
     return alctor.call(alctor.data, Mode_Free, 0, 0, ptr, 0, true);
 }
 
-finline onedef proc cx_mem_resize(
+inln fn cx_mem_resize(
     Allocator    alctor, 
     ptrany       ptr,
     isize        old_size,
@@ -78,7 +80,7 @@ finline onedef proc cx_mem_resize(
     return alctor.call(alctor.data, Mode_Resize, new_size, align, ptr, old_size, true);
 }
 
-finline onedef proc cx_mem_free_all(Allocator alctor) -> Res<ptrany, AllocatorError>
+inln fn cx_mem_free_all(Allocator alctor) noexce -> Res<ptrany, AllocatorError>
 {
     return alctor.call(alctor.data, Mode_FreeAll, 0, 0, null, 0, true);
 }
@@ -87,7 +89,7 @@ finline onedef proc cx_mem_free_all(Allocator alctor) -> Res<ptrany, AllocatorEr
     @par
     - `size`: the size of the memory to be freed [bytes]
 **/
-onedef proc cx_mem_free_size(
+fn cx_mem_free_size(
     Allocator alctor, ptrany ptr, isize size
 ) noexce -> Res<ptrany, AllocatorError> {
     return alctor.call(alctor.data, Mode_Free, 0, 0, ptr, size, true);
@@ -130,7 +132,7 @@ CX_ALLOCATOR_PROC(heap_allocator_proc)
     }
 }
 
-finline intern cexpr proc heap_allocator() -> Allocator
+inln priv cons fn heap_allocator() -> Allocator
 {
     return Allocator{heap_allocator_proc, null};
 }
@@ -143,17 +145,17 @@ finline intern cexpr proc heap_allocator() -> Allocator
     TODO: write the correct concept
 **/
 template<typename T>
-nodisc onedef proc make_array(
-    isize num, Allocator alctor = heap_allocator(), isize align = isize_of(T)
+nodisc fn make_array(
+    isize num, Allocator alctor = heap_allocator(), isize align = size_of(T)
 ) noexce -> Res<T*, ErrorCode> {
     // if constexpr (is_zeroable<T>) {
-    //     auto [ptr, err] = cx_alloc(alctor, num * isize_of(T), align);
+    //     auto [ptr, err] = cx_alloc(alctor, num * size_of(T), align);
     //     if (err) {
     //         return {null, err};
     //     }
     //     return {cast(T*, ptr), err};
     //} else {
-        auto [ptr, err] = cx_mem_alloc(alctor, num * isize_of(T), align, false);
+        auto [ptr, err] = cx_mem_alloc(alctor, num * size_of(T), align, false);
         if (err) {
             return {null, err};
         }
@@ -163,7 +165,7 @@ nodisc onedef proc make_array(
 }
 
 template<typename T>
-nodisc onedef proc delete_array(
+nodisc fn delete_array(
     T* ptr, isize num, Allocator alctor = heap_allocator()
 ) noexce -> Res<ptrany, ErrorCode> {
     auto [_, err] = deinit_type<T>(ptr, num);
@@ -172,22 +174,6 @@ nodisc onedef proc delete_array(
     }
     return cx_mem_free_size(alctor, ptr, num);
 }
-
-// #undef proc
-// #define proc(name, ...) [[nodiscard]] inline constexpr auto name(__VA_ARGS__) noexcept
-// #define meta template
-// #define tpar typename
-//
-// meta<tpar T> proc(dummy, int a, int b) -> int
-// {
-//     return a + b;
-// }
-//
-// meta<tpar T>
-// proc(delete_arr, T* ptr, isize num, Allocator alctor) -> Res<ptrany, ErrorCode>
-// {
-//     return cx_mem_free_size(alctor, ptr, num);
-// }
 
 }       // namespace cx::mem
 #endif  // CX_MEM_ALLOCATOR_HH
@@ -203,7 +189,7 @@ nodisc onedef proc delete_array(
 
 // NOTE:(manu) - old
 // We have also the typed version of the allocator modes in
-// to value init non primitive types within the `make_type` proc.
+// to value init non primitive types within the `make_type` fn.
 // This can be further extended with the different init_type procs.
 // Is this is a good idea? Should the non strictly zero init be done
 // explicitly caller side? Is more code actually useful?
@@ -220,7 +206,7 @@ nodisc onedef proc delete_array(
 //   - `null` if the allocation fails or `num == 0`
 //   - `ptr` pointer otherwise
 // **/
-// template<typename T> nodisc onedef proc heap_make_type(isize num) noexce -> Res<T*, ErrorCode> {
+// template<typename T> nodisc onedef fn heap_make_type(isize num) noexce -> Res<T*, ErrorCode> {
 //     auto [ptr, err] = heap_aligned_alloc_type<T>(num);
 //     if (err) {
 //         return {null, err};
@@ -244,23 +230,10 @@ nodisc onedef proc delete_array(
 //   - `ptr` has `num` elements
 // **/
 // template<typename T>
-// onedef proc heap_remove_type(T* ptr, isize num) noexce -> Res<Empty, AllocatorError> {
+// onedef fn heap_remove_type(T* ptr, isize num) noexce -> Res<Empty, AllocatorError> {
 //     auto [_, err] = deinit_type<T>(ptr, num);
 //     if (err) {
 //         return {_, uti::take(err)};
 //     }
 //     return heap_aligned_free(ptr);
 // }
-
-// finline onedef proc invoke_allocator(
-//     Allocator        alctor, 
-//     AllocatorMode    mode,
-//     isize            size,
-//     isize            align       = Def_Align,
-//     ptrany           old_ptr     = null,
-//     isize            old_size    = 0,
-//     b32              zero_mem    = true
-// ) noexce -> Res<ptrany, AllocatorError> {
-//     return alctor.invk(mode, alctor.data, size, align, old_ptr, old_size, zero_mem);
-// }
-

@@ -1,8 +1,9 @@
-/** @file libcx/__traits/lifetime.hh **/
-#ifndef CX___TRAITS_LIFETIME_HH
-#define CX___TRAITS_LIFETIME_HH
-#include <libcx/__traits/qualifier.hh>
-#include "libcx/__utils/declval.hh"
+/** @file libcx/traits/lifetime.hh **/
+
+#ifndef CX_TRAITS_LIFETIME_HH
+#define CX_TRAITS_LIFETIME_HH
+
+#include <libcx/traits/qualifier.hh>
 
 namespace cx {
 inline namespace uti {
@@ -27,23 +28,16 @@ template<typename T> predicate is_triv_dtble    = __is_trivially_destructible(T)
 
 template<typename T> predicate is_def_ctble = is_ctble<T>;
 
-template<typename T> 
-predicate is_zero_initble = requires { T{}; } && requires { []{ T x; (void)x; }(); } &&
-                            requires { []{ T x{}; (void)x; }(); };
+template<typename T>
+predicate is_def_initble = requires { T{}; } && requires { []{ T x; cx_unused(x); }(); };
 
-// XXX:
-template<typename T> predicate is_def_initble = is_def_ctble<T> && is_zero_initble<T> && is_triv_dtble<T>;
+template<typename T>
+predicate is_zero_initble = is_triv_dtble<T> && requires { T{}; } && requires { T(); }
+                            && requires { []{ T x; cx_unused(x); }(); };
 
 template<typename T> predicate is_cp_or_mv_ctble = is_cp_ctble<T> || is_mv_ctble<T>;
 template<typename T> predicate is_cp_or_mv_asble = is_cp_asble<T> || is_mv_asble<T>;
 
 }       // namespace cx
 }       // namespace uti
-#endif  // CX___TRAITS_LIFETIME_HH
-
-// NOTE: probe
-// template<typename T>
-// predicate is_dtble = requires(T& x) { 
-//     { x.~T() };
-//     requires noexcept(x.~T());
-// };
+#endif  // CX_TRAITS_LIFETIME_HH

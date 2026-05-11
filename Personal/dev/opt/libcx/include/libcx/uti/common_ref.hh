@@ -8,7 +8,7 @@ namespace cx  {
 inline namespace uti {
 
 template<typename R> void accept__common_ref(R);
-#define cx__accept(R, S) accept__common_ref<R>(cx::declval<S>())
+#define cx__accept(R, S) accept__common_ref<R>(declv<S>())
 
 template<typename T, typename U>
 using ___common_ref_help =
@@ -36,8 +36,7 @@ using ___common_ref_help =
 template<typename T, typename U>
 using ___common_ref_or_val =
     uti::condition<!same_as<___common_ref_help<T, U>, void>,    ___common_ref_help<T, U>,
-    uti::condition<requires { typename ternary_res<T, U>; },    rm_cvref<ternary_res<T, U>>,
-                                                                void >>;
+    uti::condition<requires { typename ternary_res<T, U>; },    rm_cvref<ternary_res<T, U>>, void >>;
 
 template<typename... Args>
 struct ___common_ref;
@@ -57,9 +56,9 @@ template<typename... Args>
 using common_ref = typename ___common_ref<Args...>::Type;
 
 template<typename T, typename U>
-predicate common_ref_w = same_as<common_ref<T, U>, common_ref<U, T>> &&
-                            is_convertible<T, common_ref<T, U>> &&
-                            is_convertible<U, common_ref<T, U>>;
+predicate common_ref_w = same_as<common_ref<T, U>, common_ref<U, T>>
+                         && is_convertible<T, common_ref<T, U>>
+                         && is_convertible<U, common_ref<T, U>>;
 
 #undef  cx__accept
 

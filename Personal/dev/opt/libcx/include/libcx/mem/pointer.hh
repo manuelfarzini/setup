@@ -1,11 +1,14 @@
-/// \file libcx/mem/pointer.hh
+/** @file libcx/mem/pointer.hh **/
+
 #ifndef CX_MEM_POINTER_HH
 #define CX_MEM_POINTER_HH
+
+#include <assert.h>
+
 #include <libcx/config.hh>
 #include <libcx/traits.hh>
 #include <libcx/concepts.hh>
 #include <libcx/uti/utilities.hh>
-#include <assert.h>
 
 namespace cx::mem {
 
@@ -15,13 +18,13 @@ namespace cx::mem {
 //     @para
 //     - `ptr`: the pointer to print
 // **/
-// onedef proc print_full_ptr(ptrany ptr) noexce -> void
+// onedef fn print_full_ptr(ptrany ptr) noexce -> void
 // {
-//     printf("%0*" PRIXPTR "\n", int(usize_of(uptr) * 2), uptr(ptr));
+//     printf("%0*" PRIXPTR "\n", int(size_of(uptr) * 2), uptr(ptr));
 // }
 
 /// Predicate that is `true` if `Tp` requires more alignment than `std::max_align_t`.
-template<typename Tp> predicate is_over_aligned =  ialign_of(Tp) > ialign_of(max_align_t);
+template<typename Tp> predicate is_over_aligned =  align_of(Tp) > align_of(max_align_t);
 
 /**
     Aligns `ptr` upward to the `aln` boundary.
@@ -36,7 +39,7 @@ template<typename Tp> predicate is_over_aligned =  ialign_of(Tp) > ialign_of(max
     @pre
     - `aln` is a power of two
 **/  
-finline cexpr proc align_up(ptrany ptr, isize aln) noexce -> ptrany
+inln cons fn align_up(ptrany ptr, isize aln) noexce -> ptrany
 {
     assert(uti::is_power_of_two(aln));  // TODO: custom assert
     return ptrany((uptr(ptr) + (aln - 1)) & ~(aln - 1));
@@ -53,9 +56,9 @@ finline cexpr proc align_up(ptrany ptr, isize aln) noexce -> ptrany
     - the aligned pointer
 **/
 template<typename Tp>
-finline cexpr proc align_up(ptrany ptr) noexce -> ptrany
+inln cons fn align_up(ptrany ptr) noexce -> ptrany
 {
-    return align_up(ptr, ialign_of(Tp));
+    return align_up(ptr, align_of(Tp));
 }
 
 /**
@@ -71,7 +74,7 @@ finline cexpr proc align_up(ptrany ptr) noexce -> ptrany
     @pre
     - `aln` is a power of two
 **/  
-finline cexpr proc align_up(uptr ptr, isize aln) noexce -> uptr
+inln cons fn align_up(uptr ptr, isize aln) noexce -> uptr
 {
     assert(uti::is_power_of_two(aln));  // TODO: custom assert
     return (ptr + (aln - 1)) & ~(aln - 1);
@@ -87,9 +90,9 @@ finline cexpr proc align_up(uptr ptr, isize aln) noexce -> uptr
   @ret
   - the aligned pointer
 **/  
-template<typename Tp> finline cexpr proc align_up(uptr ptr) noexce -> uptr
+template<typename Tp> inln cons fn align_up(uptr ptr) noexce -> uptr
 {
-    return align_up(ptr, ialign_of(Tp));
+    return align_up(ptr, align_of(Tp));
 }
 
 /**
@@ -102,7 +105,7 @@ template<typename Tp> finline cexpr proc align_up(uptr ptr) noexce -> uptr
   @ret
   - the result pointer
 **/  
-finline cexpr proc ptr_add(auto* ptr, isize off) noexce -> auto*
+inln cons fn ptr_add(auto* ptr, isize off) noexce -> auto*
 {
     return declt(ptr)(ptru8(ptr) + off);
 }
@@ -118,7 +121,7 @@ finline cexpr proc ptr_add(auto* ptr, isize off) noexce -> auto*
     - the result pointer
   
 **/
-finline cexpr proc ptr_sub(auto* ptr, isize off) noexce -> auto*
+inln cons fn ptr_sub(auto* ptr, isize off) noexce -> auto*
 {
     return declt(ptr)(ptru8(ptr) - off);
 }
@@ -134,7 +137,7 @@ finline cexpr proc ptr_sub(auto* ptr, isize off) noexce -> auto*
     - the difference in bytes
   
 **/
-finline cexpr proc ptr_diff(auto* beg, auto* end) noexce -> isize
+inln cons fn ptr_diff(auto* beg, auto* end) noexce -> isize
 {
     return isize(ptru8(end) - ptru8(beg));
 }
@@ -149,7 +152,7 @@ finline cexpr proc ptr_diff(auto* beg, auto* end) noexce -> isize
     @ret
     - the tagged pointer
 **/  
-template<CRawPointer Ptr> finline cexpr proc ptr_tag(ptrany ptr, uptr tag) noexce -> Ptr
+template<CRawPointer Ptr> inln cons fn ptr_tag(ptrany ptr, uptr tag) noexce -> Ptr
 {
     return Ptr(uptr(ptr) | tag);
 }
@@ -164,7 +167,7 @@ template<CRawPointer Ptr> finline cexpr proc ptr_tag(ptrany ptr, uptr tag) noexc
     @ret
     - the untagged pointer
 **/  
-template<CRawPointer Ptr> finline cexpr proc ptr_untag(ptrany ptr, uptr msk) noexce -> Ptr
+template<CRawPointer Ptr> inln cons fn ptr_untag(ptrany ptr, uptr msk) noexce -> Ptr
 {
     return Ptr(uptr(ptr) & ~msk);
 }

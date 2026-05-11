@@ -1,6 +1,8 @@
 /** @file libcx/__container/string.hh **/
+
 #ifndef CX___CONTAINER_STRING_HH
 #define CX___CONTAINER_STRING_HH
+
 #include <libcx/config.hh>
 #include <libcx/traits.hh>
 #include <libcx/mem/allocator.hh>
@@ -14,9 +16,9 @@ struct ___ShortStr { u8 buf[16]; };
 /**
     A string …
 **/
-struct String {
+struct string {
     CX_MEMBER_ALIASES(u8, isize);
-    using Self = String;
+    using Self = string;
 
     union {
         ___LongStr l;
@@ -43,25 +45,25 @@ struct String {
     @nota
     1. this procedure does not allocate memory
 **/
-onedef cexpr proc make_string(
+cons fn make_string(
     u8 const*         txt,
     isize             len       = 0, 
     mem::Allocator    alctor    = mem::heap_allocator()
-) noexce -> String {
+) noexce -> string {
     if (len < 0) /* unlike */ {
         len = cx_strlen(txt);
     }
     if (len <= 16) {
         // is this fast or should I use memcpy? how it relates with RVO
-        return String{.s{cx_extract16(txt)}};
+        return string{.s{cx_extract16(txt)}};
     }
 
     auto [ptr, err] = mem::cx_mem_alloc(alctor, len);
-    return String{.l{.ptr = ptru8(ptr), .len = len}};
+    return string{.l{.ptr = ptru8(ptr), .len = len}};
 }
 
 /**
-    Creates a new string from the given `txt`.
+    Creates a new string from the given source `txt`.
 
     @para
     - `text`: the source character buffer
@@ -72,38 +74,36 @@ onedef cexpr proc make_string(
     @see
     -  `make_string(u8 const*, isize)`
 **/
-onedef cexpr proc make_string(
+onedef cons fn make_string(
     char const*       txt,
     mem::Allocator    alctor    = mem::heap_allocator()
-) noexce -> String {
+) noexce -> string {
     return make_string(ptrcu8(txt), cx_strlen(txt), alctor);
 }
 
-/**
-    Creates a new string from the given `str`.
-**/
+/** Creates a `vstring` from the given String `str`. **/
 template<>
-onedef cexpr proc string_view(String const& str) noexce -> StringView 
+onedef cons fn slice(string const& str) noexce -> vstring 
 {
     return {str.l.ptr, str.l.len};
 }
 
-static_assert(is_string_like<String>);
+static_assert(is_string_like<string>);
 
-proc test() -> void {
+fn test() -> void {
 
-    cexpr char const* txt = "Hello";
+    cons char const* txt = "Hello";
 
     isize len = cx_strlen(txt);
 
-    String str1{.l{.ptr = ptru8("Hello"), .len = len}};
+    string str1{.l{.ptr = ptru8("Hello"), .len = len}};
 
-    String str2{.s{"Hello"}};
+    string str2{.s{"Hello"}};
 
     // str2.s.buf[0] = u8('H');
     str2.l.ptr[0] = u8('H');
 
-    String str3{.l{.ptr = ptru8(txt), .len = 5}};
+    string str3{.l{.ptr = ptru8(txt), .len = 5}};
 
     cx_unused(str1);
     cx_unused(str3);

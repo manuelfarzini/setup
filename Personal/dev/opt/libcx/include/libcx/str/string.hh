@@ -7,10 +7,10 @@ namespace cx::str {
 
 ///
 template<ZeroString Z> 
-ceval proc priv__zs_short_fpath_len() noexce -> usize
+comp fn priv__zs_short_fpath_len() noexce -> usize
 {
-  cexpr auto& Src = Z.buf;
-  cexpr usize N = Z.len;
+  cons auto& Src = Z.buf;
+  cons usize N = Z.len;
   usize count = 0;
   for (usize i = N - 1; i > 0; i--) {
     if (Src[i] == '/') {
@@ -28,7 +28,7 @@ template<
   ZeroString Z, 
   usize M = priv__zs_short_fpath_len<Z>(),
   Requires(M <= Z.len)>
-ceval proc zs_short_fpath() noexce -> ZeroString<M>
+comp fn zs_short_fpath() noexce -> ZeroString<M>
 {
   ZeroString<M> res{};
   usize i = 0;
@@ -39,7 +39,7 @@ ceval proc zs_short_fpath() noexce -> ZeroString<M>
   return res;
 }
 
-//  ceval proc priv__zs_short_fpath(
+//  comp fn priv__zs_short_fpath(
 //      $Z: ZeroString,
 //      $M := priv__zs_short_fpath_len(Z),
 //  where:

@@ -1,7 +1,10 @@
+/** @file libcx/uti/members.hh **/
+
 #ifndef CX_UTI_MEMBERS_HH
 #define CX_UTI_MEMBERS_HH
+
 #include <libcx/config.hh>
-#include <libcx/__traits/lifetime.hh>
+#include <libcx/traits/lifetime.hh>
 
 namespace cx {
 inline namespace uti {

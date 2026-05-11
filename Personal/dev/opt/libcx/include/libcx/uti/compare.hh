@@ -1,15 +1,16 @@
-/// \file libcx/uti/compare.hh
+/** @file libcx/uti/compare.hh **/
+
 #ifndef CX_UTI_COMPARE_HH
 #define CX_UTI_COMPARE_HH
+
 #include <libcx/config.hh>
 #include <libcx/__utils/ownership.hh>
-#include <libcx/__traits/logic.hh>
+#include <libcx/traits/logic.hh>
 #include <libcx/uti/common_ref.hh>
 
 namespace cx {
 inline namespace uti {
 
-// -----------------------------------------
 // Equality
 
 template<typename T, typename U>
@@ -29,7 +30,6 @@ predicate is_equal_compble_w =
     is_equal_compble<common_ref<mk_const_lref<T>, mk_const_lref<U>>> &&
     is_weak_equal_compble<T, U>;
 
-// -----------------------------------------
 // Ordering
 
 template<typename T, typename U>
@@ -54,7 +54,6 @@ predicate is_total_ordered_w =
     is_total_ordered<common_ref<mk_const_lref<T>, mk_const_lref<U>>> &&
     is_partial_ordered_w<T, U>;
 
-// -----------------------------------------
 // Comparators
 
 struct Eq;
@@ -84,7 +83,7 @@ concept SomeComparator = EqualType<T> || OrderType<T> || EqualOrderType<T>;
 
 struct Eq {
     template<typename T, typename U>
-    nodisc finline glob predicate operator()(T&& t, U&& u) noexce
+    nodisc inln glob predicate operator()(T&& t, U&& u) noexce
         where(is_equal_compble_w<T, U>) 
     {
         return forward<T>(t) == forward<U>(u);
@@ -93,7 +92,7 @@ struct Eq {
 
 struct Neq {
     template<typename T, typename U>
-    nodisc finline glob predicate operator()(T&& t, U&& u) noexce
+    nodisc inln glob predicate operator()(T&& t, U&& u) noexce
         where(is_equal_compble_w<T, U>)
     {
         return !(forward<T>(t) == forward<U>(u));
@@ -102,7 +101,7 @@ struct Neq {
 
 struct Lne {
     template<typename T, typename U>
-    nodisc finline glob predicate operator()(T&& t, U&& u) noexce
+    nodisc inln glob predicate operator()(T&& t, U&& u) noexce
         where (is_total_ordered_w<T, U>)
     {
         return forward<T>(t) < forward<U>(u);
@@ -111,7 +110,7 @@ struct Lne {
 
 struct Leq {
     template<typename T, typename U>
-    nodisc finline glob predicate operator()(T&& t, U&& u) noexce
+    nodisc inln glob predicate operator()(T&& t, U&& u) noexce
         where(is_total_ordered_w<T, U>)
     {
         return !(forward<T>(u) < forward<U>(t));
@@ -120,7 +119,7 @@ struct Leq {
 
 struct Gne {
     template<typename T, typename U>
-    nodisc finline glob predicate operator()(T&& t, U&& u) noexce
+    nodisc inln glob predicate operator()(T&& t, U&& u) noexce
         where(is_total_ordered_w<T, U>)
     {
         return forward<T>(u) < forward<U>(t);
@@ -129,19 +128,19 @@ struct Gne {
 
 struct Geq {
     template<typename T, typename U>
-    nodisc finline glob predicate operator()(T&& t, U&& u) noexce
+    nodisc inln glob predicate operator()(T&& t, U&& u) noexce
         where(is_total_ordered_w<T, U>)
     {
         return !(forward<T>(t) < forward<U>(u));
     }
 };
 
-onedef cexpr Eq eq{};
-onedef cexpr Neq neq{};
-onedef cexpr Lne lne{};
-onedef cexpr Leq leq{};
-onedef cexpr Gne gne{};
-onedef cexpr Geq geq{};
+onedef cons Eq eq{};
+onedef cons Neq neq{};
+onedef cons Lne lne{};
+onedef cons Leq leq{};
+onedef cons Gne gne{};
+onedef cons Geq geq{};
 
 }       // namespace uti
 }       // namespace cx

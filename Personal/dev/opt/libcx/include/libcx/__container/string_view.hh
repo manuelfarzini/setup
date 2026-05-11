@@ -1,12 +1,12 @@
 #include <libcx/config.hh>
 #include <libcx/uti/iterator.hh>
 
-onedef cexpr proc cx_has_zero_byte_u64(u64 x) -> b32 {
+onedef cons fn cx_has_zero_byte_u64(u64 x) -> b32 {
     // Hacker's Delight: detect any zero byte
     return ((x - 0x0101010101010101ULL) & ~x & 0x8080808080808080ULL) != 0;
 }
 
-finline onedef cexpr proc cx_first_zero_byte_u64(u64 x) -> u32 {
+inln onedef cons fn cx_first_zero_byte_u64(u64 x) -> u32 {
     u64 m = (x - 0x0101010101010101ULL) & ~x & 0x8080808080808080ULL;
 
     #if defined(CX_COMPILER_GCC) || defined(CX_COMPILER_CLANG)
@@ -26,7 +26,7 @@ finline onedef cexpr proc cx_first_zero_byte_u64(u64 x) -> u32 {
     #endif
 }
 
-finline onedef cexpr proc cx_strlen_u8(u8 const* s) -> isize {
+inln onedef cons fn cx_strlen_u8(u8 const* s) -> isize {
     const u8* p = s;
 
     // align to 8 (optional; helps some CPUs)
@@ -47,7 +47,7 @@ finline onedef cexpr proc cx_strlen_u8(u8 const* s) -> isize {
     }
 }
 
-finline onedef cexpr proc cx_strlen(char const* txt) noexce -> isize
+inln onedef cons fn cx_strlen(char const* txt) noexce -> isize
 {
     return isize(::strlen(txt));
 }
@@ -56,7 +56,7 @@ finline onedef cexpr proc cx_strlen(char const* txt) noexce -> isize
     @pre
     - `txt` must be null-terminated
 **/
-finline onedef cexpr proc cx_strlen(u8 const* txt) noexce -> isize
+inln onedef cons fn cx_strlen(u8 const* txt) noexce -> isize
 {
     return isize(::strlen(ptrcch8(txt)));
 }
@@ -66,48 +66,46 @@ finline onedef cexpr proc cx_strlen(u8 const* txt) noexce -> isize
 
 namespace cx {
 
-struct StringView {
+struct vstring {
     CX_MEMBER_ALIASES(u8, isize);
-    using Self = StringView;
+    using Self = vstring;
 
     u8* ptr;
     Size len;
 
-    finline cexpr proc operator[](Size const idx) noexce -> u8 const& { return ptr[idx]; }
+    inln cons fn operator[](Size const idx) noexce -> u8 const& { return ptr[idx]; }
 
-    finline cexpr proc begin() noexce -> Iter { return ptr; }
-    finline cexpr proc end() noexce -> Iter { return ptr + len; }
+    inln cons fn beg() noexce -> Iter { return ptr; }
+    inln cons fn end() noexce -> Iter { return ptr + len; }
 
-    finline cexpr proc begin() const noexce -> Kter { return ptr; }
-    finline cexpr proc end() const noexce -> Kter { return ptr + len; }
+    inln cons fn beg() const noexce -> Kter { return ptr; }
+    inln cons fn end() const noexce -> Kter { return ptr + len; }
 };
 
 template<typename T>
-finline onedef cexpr proc string_view(T const& src) noexce -> StringView;
+inln onedef cons fn slice(T const& src) noexce -> vstring;
 
 template<typename T>
-finline onedef cexpr proc string_view(T const* src) noexce -> StringView;
+inln onedef cons fn slice(T const* src) noexce -> vstring;
 
 template<typename T, typename S>
-finline onedef cexpr proc string_view(T const* src, S len = -1) noexce -> StringView;
+inln onedef cons fn slice(T const* src, S len = -1) noexce -> vstring;
 
 template<typename T>
-predicate is_string_like = requires(T t) { []{ cx::string_view(t); }(); };
+predicate is_string_like = requires(T t) { []{ cx::slice(t); }(); };
 
-template<> predicate is_string_like<StringView> = true;
-
-static_assert(is_string_like<StringView>);
+template<> predicate is_string_like<vstring> = true;
 
 struct StringIter {
     using Size = isize;
     using Self = StringIter;
 
-    StringView const& str;
+    vstring const& str;
     isize pos = 0;
 };
 
 template<>
-finline onedef cexpr proc string_view(u8 const* txt, isize len) noexce -> StringView
+inln onedef cons fn slice(u8 const* txt, isize len) noexce -> vstring
 {
     if (len < 0) unlike {
         len = cx_strlen(txt);
@@ -116,9 +114,9 @@ finline onedef cexpr proc string_view(u8 const* txt, isize len) noexce -> String
 }
 
 template<>
-finline onedef cexpr proc string_view(char const* txt) noexce -> StringView
+inln onedef cons fn slice(char const* txt) noexce -> vstring
 {
-    return string_view(ptrcu8(txt), cx_strlen(txt));
+    return slice(ptrcu8(txt), cx_strlen(txt));
 }
 
 }       // namespace cx

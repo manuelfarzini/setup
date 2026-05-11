@@ -23,16 +23,16 @@
 //   io::printfn("Hello from `main`: {}", (void*)file.fp);
 // }
 
-#ifndef proc
-    #define proc auto
+#ifndef fn
+    #define fn auto
 #endif
 
-proc test_dummy() -> void
+fn test_dummy() -> void
 {
     printf("Hello, this is a dummy test\n");
 }
 
-proc main() -> int
+fn main() -> int
 {
     test_dummy();
 }

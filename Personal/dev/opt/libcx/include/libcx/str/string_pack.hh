@@ -1,7 +1,9 @@
-/// \file libcx/string_pack.hh
-#pragma once
-#include <libcx/err/error.hh>
+/** @file str/string_pack.hh **/
 
+#ifndef CX_STR_STRING_PACK_HH
+#define CX_STR_STRING_PACK_HH
+
+#include <libcx/err/error.hh>
 
 namespace cx::str {
 
@@ -9,7 +11,7 @@ template<usize... Lens> struct StringPack;
 CX_CONCEPT_GEN_TEMPL(StringPack, is_string_pack, CStringPack, usize... Ls, Ls...);
 #define String_Pack cx::str::CStringPack auto
 
-template<usize N> finline intern ceval proc
+template<usize N> inln priv comp fn
 help__pack_copy_advance(char* dst, char const (&src)[N], usize i) -> void;
 
 /// Buffer of packed strings.
@@ -24,7 +26,7 @@ struct StringPack {
 
 
   /// The total lenght of the character buffer.
-  static cexpr usize len = (Lens + ... + 0) - sizeof...(Lens);
+  static cons usize len = (Lens + ... + 0) - sizeof...(Lens);
 
   /// The underlying character buffer.
   char buf[len] = {};
@@ -34,16 +36,16 @@ struct StringPack {
 
 
   /// Creates an empty `StringPack`.
-  finline consteval StringPack() = default;
+  inln comp StringPack() = default;
 
   ///
-  finline consteval StringPack(char const (&...srcs)[Lens]) noexce {
+  inln comp StringPack(char const (&...srcs)[Lens]) noexce {
     usize i = 0, b = 0;
     ((begs[b++] = i, help__pack_copy_advance(buf, srcs, i)), ...);
     begs[sizeof...(Lens)] = i;
   }
 
-  nodisc finline cexpr Result_Pair at(u8 const i) noexce { 
+  nodisc inln cons Result_Pair at(u8 const i) noexce { 
     if (i >= sizeof...(Lens)) {
       return Result{std::string_view{""}, cx_ope_err("index out of bounds")};
     }
@@ -52,7 +54,7 @@ struct StringPack {
 };
 
 
-template<usize N> finline consteval auto
+template<usize N> inln comp auto
 help__pack_copy_advance(char* dst, char const (&src)[N], usize i) -> void {
   for (usize j = 0; j < N; j++) {
     dst[i++] = src[j];
@@ -67,11 +69,12 @@ void test_string_pack() {
 
 
 /// Provides a formatter for String to enable integration with the fmt API.
-finline cexpr fmt::string_view format_as(String_Pack const& sp) noexce {
+inln cons fmt::string_view format_as(String_Pack const& sp) noexce {
   return {sp.buf, sp.len};
 }
 
-}  // namespace cx::str
+}       // namespace cx::str
+#endif  // CX_STR_STRING_PACK_HH
 
 
 CX_BASIC_TYPE_ASSERT(decltype(cx::str::StringPack{"Walter", "White"}));

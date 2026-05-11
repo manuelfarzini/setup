@@ -20,10 +20,10 @@ namespace cx::mem {
     @ret
     - the total size in bytes
 **/
-template<typename... Ts> finline cexpr proc size_of_multi(isize num) noexce -> isize
+template<typename... Ts> inln cons fn size_of_multi(isize num) noexce -> isize
 {
     isize tot = 0;
-    ((tot = (mem::align_up(tot, ialign_of(Ts))), tot += isize_of(Ts) * num), ...);
+    ((tot = (mem::align_up(tot, align_of(Ts))), tot += size_of(Ts) * num), ...);
     return tot;
 }
 
@@ -32,50 +32,50 @@ template<typename... Ts> finline cexpr proc size_of_multi(isize num) noexce -> i
 /// element. This operation computes the offset to next element with proper
 /// alignment. Returns: the computed offset.
 template<typename T, typename U>
-finline cexpr proc align_up_multi(anyptr ptr, usize num) noexce -> anyptr
+inln cons fn align_up_multi(anyptr ptr, usize num) noexce -> anyptr
 {
-  ptr = (anyptr) ((uptr) ptr + num * isize_of(T));
-  uptr aln = ialign_of(U);
+  ptr = (anyptr) ((uptr) ptr + num * size_of(T));
+  uptr aln = align_of(U);
   return (anyptr) ((uptr(ptr) + (aln - 1)) & ~(aln - 1));
 }
 
 /// Copies `num` elements of each type in `Ts...` from `src` to `dst` tuple-wise.
 /// Requires: each pointer in `src` and `dst` refers to `num` elements.
 template<CpAsble... Ts>
-proc copy_multi(uti::Tuple<Ts*...> const& dst, uti::Tuple<Ts*...> const& src, usize num) -> void
+fn copy_multi(uti::Tuple<Ts*...> const& dst, uti::Tuple<Ts*...> const& src, usize num) -> void
 {
-  [&]<usize... I>(uti::IndexSeq<I...>) finline_clos -> void {
-    (mem::mem_copy(uti::get<I>(dst), uti::get<I>(src), num * isize_of(Ts)), ...);
+  [&]<usize... I>(uti::IndexSeq<I...>) inln_clos -> void {
+    (mem::mem_copy(uti::get<I>(dst), uti::get<I>(src), num * size_of(Ts)), ...);
   }(uti::index_seq_pack<Ts...>{});
 }
 
 /// XXX:
 template<arr::CArrayType<anyptr> Arr, CpAsble... Ts>
-proc copy_multi(Arr& dst, Arr& src, usize num) -> void
+fn copy_multi(Arr& dst, Arr& src, usize num) -> void
 {
   usize i = 0;
-  [&]() finline_clos -> void {
-    ((mem::mem_copy(dst[i], src[i], num * isize_of(Ts)), i++), ...);
+  [&]() inln_clos -> void {
+    ((mem::mem_copy(dst[i], src[i], num * size_of(Ts)), i++), ...);
   }();
 }
 
 /// Moves `num` elements of each type in `Ts...` from `src` to `dst` tuple-wise.
 /// Requires: each pointer in `src` and `dst` refers to `num` elements.
 template<CpOrMvAsble... Ts>
-proc take_multi(uti::Tuple<Ts*...> const& dst, uti::Tuple<Ts*...> const& src, usize num) -> void
+fn take_multi(uti::Tuple<Ts*...> const& dst, uti::Tuple<Ts*...> const& src, usize num) -> void
 {
-  [&]<usize... I>(uti::IndexSeq<I...>) finline_clos -> void {
-    (mem::mem_take_type<Ts>(uti::get<I>(dst), uti::get<I>(src), num * isize_of(Ts)), ...);
+  [&]<usize... I>(uti::IndexSeq<I...>) inln_clos -> void {
+    (mem::mem_take_type<Ts>(uti::get<I>(dst), uti::get<I>(src), num * size_of(Ts)), ...);
   }(uti::index_seq_pack<Ts...>{});
 }
 /// XXX:
 ///
 template<arr::CArrayType<anyptr> Arr>
-proc take_multi(Arr& dst, Arr& src, usize num) -> void
+fn take_multi(Arr& dst, Arr& src, usize num) -> void
 {
   using Seq = Arr::Types;
   usize i = 0;
-  [&]<usize... I>(uti::IndexSeq<I...>) finline_clos -> void {
+  [&]<usize... I>(uti::IndexSeq<I...>) inln_clos -> void {
     ((mem::mem_take_type<uti::TypeAt<I, Seq>>(dst[i], src[i], num), i++), ...);
   }(uti::IndexSeq<uti::type_seq_size<Seq>>{});
 }
@@ -88,7 +88,7 @@ proc take_multi(Arr& dst, Arr& src, usize num) -> void
 /// Returns: `[ptr, null]` on success,
 ///          `[null, err]` if `num == 0` or allocation fails,
 /// Note: `size_of_multi<Ts...>(num)` bytes aligned to `max(alignof(Ts)...)`.
-template<typename... Ts> proc allocate_multi(usize num) noexce -> Res<anyptr, ErrorCode>
+template<typename... Ts> fn allocate_multi(usize num) noexce -> Res<anyptr, ErrorCode>
 {
   if (num == 0) {
     return {nullptr, Invalid_Arg};
@@ -97,7 +97,7 @@ template<typename... Ts> proc allocate_multi(usize num) noexce -> Res<anyptr, Er
 
   cx_unused(bytes);
   // TODO: from here till end
-  // isize align = cx::max({ialign_of(Ts)...});
+  // isize align = cx::max({align_of(Ts)...});
   // anyptr res = ::operator new(bytes, Align{align}, nothrow);
   return {null, none};
 }
@@ -108,7 +108,7 @@ template<typename... Ts> proc allocate_multi(usize num) noexce -> Res<anyptr, Er
 ///          `{null, err}` if `ptr == null` or `num == 0`.
 /// Layout: `[T₀[num]][padding(T₀)][T₁[num]][padding(T₁)] ... [Tₙ[num]]`.
 template<DefInitble... Ts>
-proc place_multi_zii(anyptr ptr, usize num) noexce -> Result<anyptr>
+fn place_multi_zii(anyptr ptr, usize num) noexce -> Result<anyptr>
 {
   if (ptr == nullptr) {
     return {nullptr, cx_null_err("`ptr` cannot be `null`")};
@@ -118,7 +118,7 @@ proc place_multi_zii(anyptr ptr, usize num) noexce -> Result<anyptr>
   }
 
   anyptr p = ptr;
-  proc do_place = [&]<typename T>() finline_clos -> void {
+  fn do_place = [&]<typename T>() inln_clos -> void {
     p = mem::align_up<T>(p);
     for (usize i = 0; i < num; i++) {
       ::new ((T*) p + i) T();
@@ -137,7 +137,7 @@ proc place_multi_zii(anyptr ptr, usize num) noexce -> Result<anyptr>
 /// Requires: valid storage at `ptr` for `num` objects of each `T` in `Ts...`.
 ///
 template<typename... Ts>
-proc place_multi(usize num, anyptr ptr, initls<Ts>... lists) noexce -> Result<anyptr>
+fn place_multi(usize num, anyptr ptr, initls<Ts>... lists) noexce -> Result<anyptr>
 {
   if (!ptr) {
     return {nullptr, cx_arg_err("`ptr` cannot be `null`")};
@@ -150,7 +150,7 @@ proc place_multi(usize num, anyptr ptr, initls<Ts>... lists) noexce -> Result<an
   }
 
   anyptr p = ptr;
-  proc do_place = [&]<typename T>(initls<T> list) finline_clos -> void {
+  fn do_place = [&]<typename T>(initls<T> list) inln_clos -> void {
     p = mem::align_up<T>(p);
     auto it = list.begin();
     for (usize i = 0; i < list.size(); i++) {
@@ -168,7 +168,7 @@ proc place_multi(usize num, anyptr ptr, initls<Ts>... lists) noexce -> Result<an
 /// Returns: `{ptr, null}` on success;
 ///          `{null, err}` if `num == 0` or allocation fails.
 /// Layout: `[T₀[num]] [padding(T₀)] [T₁[num]] [padding(T₁)] ... [Tₙ[num]]`.
-template<typename... Ts> proc make_multi_zii(usize num) -> Result<anyptr>
+template<typename... Ts> fn make_multi_zii(usize num) -> Result<anyptr>
 {
   auto [ptr, err] = mem::allocate_multi<Ts...>(num);
   if (err) {
@@ -183,7 +183,7 @@ template<typename... Ts> proc make_multi_zii(usize num) -> Result<anyptr>
 ///          `{null, err}` if `num == 0`, allocation fails or `{list.size > num, ...}`.
 /// Layout: `[T₀[num]] [padding(T₀)] [T１[num]] [padding(T１)] ... [Tₙ[num]]`.
 template<typename... Ts>
-proc make_multi(usize num, initls<Ts>... lists) noexce -> Result<anyptr>
+fn make_multi(usize num, initls<Ts>... lists) noexce -> Result<anyptr>
 {
   auto [ptr, err] = mem::allocate_multi<Ts...>(num);
   if (err) {
@@ -196,12 +196,12 @@ proc make_multi(usize num, initls<Ts>... lists) noexce -> Result<anyptr>
 /// Returns: `{{}, null}` on success;
 ///          `{{}, err}` if `ptr == null`.
 /// Note: does not destroy objects.
-template<typename... Ts> proc deallocate_multi(anyptr ptr) noexce -> Result<>
+template<typename... Ts> fn deallocate_multi(anyptr ptr) noexce -> Result<>
 {
   if (!ptr) {
     return {empty, cx_null_err("`ptr` cannot be `null`")};
   }
-  usize align = std::max({ialign_of(Ts)...});
+  usize align = std::max({align_of(Ts)...});
   ::operator delete(ptr, Align{align}, nothrow);
   return {empty, nullptr};
 }
@@ -209,9 +209,9 @@ template<typename... Ts> proc deallocate_multi(anyptr ptr) noexce -> Result<>
 /// Computes the begin pointers of each `[Ts[new_num]]` block inside `ptr`.
 /// Returns: `Tuple<Ts*...>` begin pointers, in `Ts...` order.
 template<typename... Ts>
-finline cexpr proc priv__bind_multi_tup(anyptr ptr, usize new_num) -> Tuple<Ts*...>
+inln cons fn priv__bind_multi_tup(anyptr ptr, usize new_num) -> Tuple<Ts*...>
 {
-  proc bind_and_advance = [&]<typename T>() finline_clos -> T* {
+  fn bind_and_advance = [&]<typename T>() inln_clos -> T* {
     ptr = mem::align_up<T>(ptr);
     T* beg = cast(T*, ptr);
     ptr = cast(anyptr, beg + new_num);
@@ -223,10 +223,10 @@ finline cexpr proc priv__bind_multi_tup(anyptr ptr, usize new_num) -> Tuple<Ts*.
 
 ///
 template<typename... Ts>
-finline cexpr proc priv__bind_multi_arr(anyptr ptr, usize new_num)
+inln cons fn priv__bind_multi_arr(anyptr ptr, usize new_num)
   -> arr::Array<anyptr, sizeof...(Ts)>
 {
-  proc bind_and_advance = [&]<typename T>() finline_clos -> anyptr {
+  fn bind_and_advance = [&]<typename T>() inln_clos -> anyptr {
     ptr = mem::align_up<T>(ptr);
     T* beg = cast(T*, ptr);
     ptr = beg + new_num;
@@ -241,7 +241,7 @@ finline cexpr proc priv__bind_multi_arr(anyptr ptr, usize new_num)
 ///          `[old_ptr, err]` on failure (old storage is kept).
 /// Note: does not destroy objects (trivially destructible types).
 template<typename... Ts>
-proc
+fn
 reallocate_multi(Tuple<Ts*...> src, usize num, usize new_num) noexce -> Result<anyptr>
 // assumes always grows
 {
@@ -266,7 +266,7 @@ reallocate_multi(Tuple<Ts*...> src, usize num, usize new_num) noexce -> Result<a
 #ifdef CX_TEST
 #include <libcx/io/io.hh>
 
-template<typename T> proc print_from(anyptr ptr, usize const off, usize const num) -> void
+template<typename T> fn print_from(anyptr ptr, usize const off, usize const num) -> void
 {
   using CX;
   T* tmp = (T*) mem::ptr_add(ptr, off);
@@ -275,7 +275,7 @@ template<typename T> proc print_from(anyptr ptr, usize const off, usize const nu
   }
 }
 
-template<typename T> proc print_n(anyptr ptr, usize const num) -> void
+template<typename T> fn print_n(anyptr ptr, usize const num) -> void
 {
   using CX;
   T* tmp = (T*) ptr;
@@ -298,7 +298,7 @@ void test_make_multi_1()
   print_from<f64>(ptr, 16, 3);
 }
 
-proc test_memcopy_multi_1() -> void
+fn test_memcopy_multi_1() -> void
 {
   using CX;
   auto [p, err] = mem::make_multi<u8, f32, i16, f64>(
@@ -325,7 +325,7 @@ proc test_memcopy_multi_1() -> void
   print_n<f64>(q, 4);
 }
 
-proc test_bind_multi_1() -> void
+fn test_bind_multi_1() -> void
 {
   using CX;
   u8 backing[100]{};
@@ -341,7 +341,7 @@ proc test_bind_multi_1() -> void
 #endif  // CX_TEST
 
 ///
-// template<typename... Ts> finline cexpr Result<anyptr>
+// template<typename... Ts> inln cons Result<anyptr>
 // place_multi(usize num, anyptr ptr, Ts(&...els)) noexce
 // {
 //   if (!ptr) {
@@ -350,7 +350,7 @@ proc test_bind_multi_1() -> void
 //   if (num == 0) {
 //     return {nullptr, cx_arg_err("`num` cannot be `0`")};
 //   }
-//   if (num < std::max({icount_of(els)...})) {
+//   if (num < std::max({count_of(els)...})) {
 //     return {nullptr, cx_arg_err("`num` cannot be less than the longest array")};
 //   }
 //   anyptr tmp = ptr;

@@ -1,4 +1,4 @@
-/// \file libcx/mem/shared_pointer_mk2.hh
+/** @file libcx/mem/shared_pointer_mk2.hh **/
 /// Not supported:
 ///   - weak pointers,
 ///   - multiple inheritance,

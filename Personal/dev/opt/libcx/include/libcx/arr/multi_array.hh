@@ -68,7 +68,7 @@
 #define CX_FOR_EACH(M, ...) \
   CX_EXPAND(CX_JOIN2(CX_FOR_EACH_, CX_COUNT_ARGS(__VA_ARGS__))(M, __VA_ARGS__))
 
-#define CX_KONST(T) onedef cexpr usize CX_JOIN2(K, T) = (usize)__COUNTER__;
+#define CX_KONST(T) onedef cons usize CX_JOIN2(K, T) = (usize)__COUNTER__;
 
 /// \file libcx/arr/multi_array.hh
 #ifndef CX_ARR_MULTI_ARRAY_HH
@@ -123,15 +123,15 @@ template<typename U, typename... Ts> concept LegalTypeAmong =
 template<CLegalType... Ts> requires(sizeof...(Ts) > 1)
 struct MultiArray {
   using Types = uti::TypeList<Ts...>;
-  glob onedef cexpr usize rows = sizeof...(Ts);
-  glob onedef cexpr Array<usize, rows> sizes{isize_of(Ts)...};
-  glob onedef cexpr Array<usize, rows> aligns{ialign_of(Ts)...};
+  glob onedef cons usize rows = sizeof...(Ts);
+  glob onedef cons Array<usize, rows> sizes{size_of(Ts)...};
+  glob onedef cons Array<usize, rows> aligns{align_of(Ts)...};
 
   arr::Array<void*, rows> ptrs;
   usize len{};
   usize cap{};
 
-  // cexpr proc operator[](this auto& arr, usize row, usize col) noexce
+  // cons fn operator[](this auto& arr, usize row, usize col) noexce
   //   -> void* { return mem::ptr_add(arr.ptrs[row], col * sizes[row]); }
 };
 
@@ -148,7 +148,7 @@ CX_CONCEPT_GEN_TEMPL(MultiArray, is_multi_array, CMultiArray,
   X(f64)              \
   X(u8)
 #define X(T) \
-  onedef cexpr usize k##T = (usize) __COUNTER__;
+  onedef cons usize k##T = (usize) __COUNTER__;
 MULTI_ROWS(X);
 #undef X
 
@@ -161,7 +161,7 @@ MULTI_ROWS(X);
 
 /// Get…
 ///
-template<CMultiArray Arr> proc get(Arr& arr, usize row, usize col) -> void*
+template<CMultiArray Arr> fn get(Arr& arr, usize row, usize col) -> void*
 {
   return *mem::ptr_add(arr.ptrs[row], col * Arr::sizes[row]);
 }
@@ -169,7 +169,7 @@ template<CMultiArray Arr> proc get(Arr& arr, usize row, usize col) -> void*
 ///
 ///
 template<CMultiArray Arr, usize Row>
-proc get(Arr& arr, usize col) -> uti::TypeAt<Row, typename Arr::Types>&
+fn get(Arr& arr, usize col) -> uti::TypeAt<Row, typename Arr::Types>&
 {
   return *mem::ptr_add(arr.ptrs[Row], col * Arr::sizes[Row]);
 }
@@ -178,7 +178,7 @@ proc get(Arr& arr, usize col) -> uti::TypeAt<Row, typename Arr::Types>&
 ///
 template<usize N, CLegalType... Ts, 
          EnableIf(N >= 8 && uti::is_power_of_two(N))>
-proc initialize(MultiArray<Ts...>& arr) -> Result<>
+fn initialize(MultiArray<Ts...>& arr) -> Result<>
 {
   auto [ptr, err] = mem::make_multi_zii<Ts...>(N);
   if (err) {
@@ -193,7 +193,7 @@ proc initialize(MultiArray<Ts...>& arr) -> Result<>
 ///
 // template<usize N, CLegalType... Ts, 
 //          EnableIf(N >= 8 && uti::is_power_of_two(N))>
-// proc initialize(MultiArray<Ts...>& arr) -> Result<>
+// fn initialize(MultiArray<Ts...>& arr) -> Result<>
 // {
 //   auto [ptr, err] = mem::make_multi_zii<Ts...>(N);
 //   if (err) {
@@ -207,7 +207,7 @@ proc initialize(MultiArray<Ts...>& arr) -> Result<>
 
 #define base_ptr(multi_arr) multi_arr.ptrs[0]
 
-template<CLegalType... Ts> proc reallocate(MultiArray<Ts...>& arr) -> Result<>
+template<CLegalType... Ts> fn reallocate(MultiArray<Ts...>& arr) -> Result<>
 {
   arr::Array old_begs = arr.ptrs;
   usize new_cap = arr.cap * 2;
@@ -230,7 +230,7 @@ template<CLegalType... Ts> proc reallocate(MultiArray<Ts...>& arr) -> Result<>
 }
 
 ///
-// template<CLegalType... Ts> proc reallocate(MultiArray<Ts...>& arr) -> Result<>
+// template<CLegalType... Ts> fn reallocate(MultiArray<Ts...>& arr) -> Result<>
 // {
 //   Tuple<Ts*...> old_begs = arr.ptrs;
 //   usize new_cap = arr.cap * 2;
@@ -255,7 +255,7 @@ template<CLegalType... Ts> proc reallocate(MultiArray<Ts...>& arr) -> Result<>
 ///
 // template<CMultiArray Arr, typename... Ts,
 //          Requires(same_or_ref_multi<typename Arr::Types, uti::TypeList<Ts...>>)>
-// proc push_back(Arr& arr, Ts&&... els) -> Result<>
+// fn push_back(Arr& arr, Ts&&... els) -> Result<>
 // {
 //   if (arr.cap == arr.len) {
 //     auto [_, err] = arr::reallocate(arr);
@@ -266,7 +266,7 @@ template<CLegalType... Ts> proc reallocate(MultiArray<Ts...>& arr) -> Result<>
 //
 //   auto tup = std::forward_as_tuple(uti::forward<Ts>(els)...);
 //
-//   [&]<usize... I>(std::index_sequence<I...>) finline_clos -> void {
+//   [&]<usize... I>(std::index_sequence<I...>) inln_clos -> void {
 //     ((std::get<I>(arr.ptrs)[arr.len] = std::get<I>(tup)), ...);
 //   }(std::index_sequence_for<Ts...>{});
 //
@@ -277,7 +277,7 @@ template<CLegalType... Ts> proc reallocate(MultiArray<Ts...>& arr) -> Result<>
 /// Questo qui!!!!
 template<CMultiArray Arr, typename... Ts,
          Requires(same_or_ref_multi<typename Arr::Types, uti::TypeList<Ts...>>)>
-proc push_back(Arr& arr, Ts&&... els) -> Result<>
+fn push_back(Arr& arr, Ts&&... els) -> Result<>
 {
   using L = uti::TypeList<Ts...>;
   if (arr.cap == arr.len) {
@@ -287,13 +287,13 @@ proc push_back(Arr& arr, Ts&&... els) -> Result<>
     }
   }
  
-  proc unfold = [&]<usize I>(auto&& elm) finline_clos -> void {
+  fn unfold = [&]<usize I>(auto&& elm) inln_clos -> void {
     using T = uti::rm_cvref<uti::TypeAt<I, L>>;
     T* dst = (T*) mem::ptr_add(arr.ptrs[I], arr.len * Arr::sizes[I]);
     *dst = uti::forward<decltype(elm)>(elm);
   };
     
-  [&]<usize... I>(std::index_sequence<I...>) finline_clos -> void {
+  [&]<usize... I>(std::index_sequence<I...>) inln_clos -> void {
     (unfold.template operator()<I>(uti::forward<Ts>(els)), ...);
   }(std::index_sequence_for<Ts...>{});
 

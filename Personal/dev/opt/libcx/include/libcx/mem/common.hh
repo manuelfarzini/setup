@@ -1,5 +1,8 @@
-#ifndef  CX_MEM_BASE_HH
-#define  CX_MEM_BASE_HH
+/** @file libcx/mem/common.hh **/
+
+#ifndef CX_MEM_COMMON_HH
+#define CX_MEM_COMMON_HH
+
 #include <libcx/config.hh>
 #include <libcx/traits.hh>
 #include <libcx/concepts.hh>
@@ -8,31 +11,15 @@
 
 namespace cx::mem {
 
-// enum AllocatorError : u8 {
-//     Alctor_OutOfMem,
-//     Alctor_InvalidPtr,
-//     Alctor_InvalidArg,
-//     Alctor_InvalidMode,
-// };
+onedef cons isize PTR_SIZE  = size_of(ptrany);
+onedef cons isize PTR_ALIGN = align_of(ptrany);
+onedef cons isize MAX_SIZE  = size_of(max_align_t);
+onedef cons isize MAX_ALIGN = align_of(max_align_t);
+onedef cons isize DEF_ALIGN = 2 * MAX_ALIGN;
 
-onedef cexpr u8 Operation_Fail = 1;
-onedef cexpr u8 Invalid_Ptr = 2;
-onedef cexpr u8 Invalid_Arg = 3;
-onedef cexpr u8 Bad_Alloc = 4;
-onedef cexpr u8 Invalid_Mode = 5;
-using ErrorCode = u8;
-using AllocatorError = u8;
-using InitError = u8;
-
-onedef cexpr isize PTR_SIZE = isize_of(ptrany);
-onedef cexpr isize PTR_ALIGN = ialign_of(ptrany);
-onedef cexpr isize MAX_SIZE = isize_of(max_align_t);
-onedef cexpr isize MAX_ALIGN = ialign_of(max_align_t);
-onedef cexpr isize DEF_ALIGN = 2 * MAX_ALIGN;
-
-static_assert(MAX_ALIGN % PTR_ALIGN == 0, "`max_align` must be a multiple of `ptr_align`");
-static_assert((MAX_ALIGN & (MAX_ALIGN - 1)) == 0, "`max_align` must be a power of 2");
-static_assert(DEF_ALIGN == 8  || DEF_ALIGN == 16, "`def_align` must be 8 or 16");
+static_assert(MAX_ALIGN % PTR_ALIGN == 0, "`MAX_ALIGN` must be a multiple of `ptr_align`");
+static_assert((MAX_ALIGN & (MAX_ALIGN - 1)) == 0, "`MAX_ALIGN` must be a power of 2");
+static_assert(DEF_ALIGN == 8  || DEF_ALIGN == 16, "`DEF_ALIGN` should be 8 or 16");
 
 /** 
     Copies `size` bytes from `src` to `dst`.
@@ -44,14 +31,14 @@ static_assert(DEF_ALIGN == 8  || DEF_ALIGN == 16, "`def_align` must be 8 or 16")
     @pre
     - `src` and `dst` have `size` bytes.
 **/
-onedef cexpr proc mem_copy(ptrany dst, ptrcany src, usize size) -> void
+cons fn mem_copy(ptrany dst, readany src, usize size) -> void
 {
     // NOTE(manu)
     // should i implement mem_copy? libc is already heavily optimized
     ::memcpy(dst, src, size);
 }
 
-/**
+/** 
     Copies `num` elements of type `T` from `src` to `dst`.
   
     @para
@@ -62,7 +49,7 @@ onedef cexpr proc mem_copy(ptrany dst, ptrcany src, usize size) -> void
     - `src` and `dst` have `num` elements
 **/
 template<typename T>
-onedef cexpr proc mem_copy_ty(T* dst, T const* src, usize num) noexce -> void
+cons fn mem_copy_ty(T* dst, T const* src, usize num) noexce -> void
 {
     if consteval {
         for (usize i = 0; i < num; i++) {
@@ -70,9 +57,8 @@ onedef cexpr proc mem_copy_ty(T* dst, T const* src, usize num) noexce -> void
         }
         return;
     }
-    // XXX:(manu)#zero_init# custom predicate
-    if constexpr (is_triv_dtble<T>) {
-        mem_copy(dst, src, num * isize_of(T));
+    if constexpr (is_zero_initble<T>) {
+        mem_copy(dst, src, num * size_of(T));
     } else {
         for (usize i = 0; i < num; i++) {
             dst[i] = src[i];
@@ -80,7 +66,7 @@ onedef cexpr proc mem_copy_ty(T* dst, T const* src, usize num) noexce -> void
     }
 }
 
-/**
+/** 
     Takes `num` elements of type `T` from `src` to `dst`
     If `T` is not move assignable, then behaves like `memcopy`.
   
@@ -92,14 +78,14 @@ onedef cexpr proc mem_copy_ty(T* dst, T const* src, usize num) noexce -> void
     - `src` and `dst` have `num` elements
 **/
 template<CpOrMvAsble T>
-onedef cexpr proc mem_take_ty(T* dst, T* src, usize num) noexce -> void
+cons fn mem_take_ty(T* dst, T* src, usize num) noexce -> void
 {
     for (usize i = 0; i < num; i++) {
-        dst[i] = uti::take(src[i]);
+        dst[i] = take(src[i]);
     }
 }
 
-/**
+/** 
     Sets `n` bytes of memory at `data` to `v`.
   
     @para
@@ -110,7 +96,7 @@ onedef cexpr proc mem_take_ty(T* dst, T* src, usize num) noexce -> void
     @pre
     - `data` has at least `n` bytes.
 **/
-onedef cexpr proc mem_set(ptrany data, u8 val, usize size) -> ErrorCode
+cons fn mem_set(ptrany data, u8 val, usize size) -> ErrorCode
 {
     //  NOTE(manu)
     //  > libc wrapper, actually is the fastest
@@ -127,7 +113,7 @@ onedef cexpr proc mem_set(ptrany data, u8 val, usize size) -> ErrorCode
     return none;
 }
 
-/**
+/** 
     Zeroes `size` bytes of memory at `data`.
 
     @para
@@ -141,12 +127,12 @@ onedef cexpr proc mem_set(ptrany data, u8 val, usize size) -> ErrorCode
     - `data` has at least `size` bytes.
     - `data` is not null
 **/
-onedef cexpr proc mem_zero(ptrany data, usize size) -> ErrorCode
+cons fn mem_zero(ptrany data, usize size) -> ErrorCode
 {
     return mem_set(data, 0, size);
 }
 
-/**
+/** 
     Zeroes `size` bytes of memory at `data`.
   
     @para
@@ -163,7 +149,7 @@ onedef cexpr proc mem_zero(ptrany data, usize size) -> ErrorCode
     - intended to be used when dealing with virtual memory as it
       would be already mapped to a 0 page
 **/
-onedef cexpr proc mem_zero_condition(ptrany data, isize size) -> ErrorCode
+cons fn mem_zero_condition(ptrany data, isize size) -> ErrorCode
 {
     // NOTE(manu)
     // gb.h memset inspired version
@@ -214,7 +200,7 @@ onedef cexpr proc mem_zero_condition(ptrany data, isize size) -> ErrorCode
     size -= k;
     size &= -4;
     u64* d64 = ptru64(d);
-    while (size >= 32) {
+    for (; size >= 32 ;) {
         if ((d64[0] | d64[1] | d64[2] | d64[3]) != 0) {
             d64[0] = 0;
             d64[1] = 0;
@@ -226,7 +212,7 @@ onedef cexpr proc mem_zero_condition(ptrany data, isize size) -> ErrorCode
         size -= 32;
     }
 
-    while (size >= 4) {
+    for (; size >= 4 ;) {
         zero_if_not(*ptru32(d));
         d += 4;
         size -= 4;
@@ -237,7 +223,7 @@ onedef cexpr proc mem_zero_condition(ptrany data, isize size) -> ErrorCode
     return none;
 }
 
-/**
+/** 
     Zero intializes `num` contiguous `T` objects at `ptr`.
   
     @para
@@ -251,10 +237,8 @@ onedef cexpr proc mem_zero_condition(ptrany data, isize size) -> ErrorCode
     @pre
     - sufficient, properly aligned storage at `ptr`.
 **/
-template<DefInitble T>
-nodisc finline onedef cexpr proc init_ty(ptrany ptr, usize num) noexce
-    -> Res<T*, InitError>
-// XXX:(manu)#zero_init# is it the correct concept?
+template<ZeroInitble T>
+nodisc inln cons fn init_ty(ptrany ptr, usize num) noexce -> Res<T*, ErrorCode>
 {
     if (num == 0) {
         return {null, Invalid_Arg};
@@ -271,14 +255,28 @@ nodisc finline onedef cexpr proc init_ty(ptrany ptr, usize num) noexce
 }
 
 /**
- 
+    Initializes `num` contiguous `T` objects at `ptr` using `args` for each.
 
+    @para
+    - `ptr`: the pointer to the first element;
+    - `num`: the number of elements;
+    - `args`: the arguments to the constructor.
+
+    @ret
+    - `[null, err]` if `ptr == null` or `num` == `0`;
+    - `[ptr, none]` otherwise.
+
+    @pre
+    - Sufficient, properly aligned storage at `ptr`.
+
+    @note
+    - `args` are reused `num` times so they are taken by `const&` not forwarded.
 **/
 template<typename T, typename... Args>
-nodisc onedef cexpr proc init_va(
+nodisc cons fn init_va(
     ptrany ptr, isize num, Args const&... args
-) noexce -> Res<T*, InitError>
-    where is_def_initble<T> || is_ctble<T, Args...> // XXX:(manu)#zero_init#
+) noexce -> Res<T*, ErrorCode>
+    where is_def_initble<T> || is_ctble<T, Args const&...>
 {
     if (num == 0) {
         return {null, Invalid_Arg};
@@ -287,31 +285,30 @@ nodisc onedef cexpr proc init_va(
         return {null, Invalid_Ptr};
     }
     for (isize i = 0; i < num; i++) {
-        ::new (cast(T*, ptr) + i) T{uti::forward<Args>(args)...};
+        ::new (cast(T*, ptr) + i) T{args...};
     }
     return {cast(T*, ptr), none};
-
 }
 
-/**
+/** 
     Create and place `num` contiguous `T` objects given by `list` at `ptr`.
 
     @para
-    - `ptr`: the pointer to the first element
-    - `list`: the initializer list
+    - `ptr`: the pointer to the first element;
+    - `list`: the initializer list.
 
     @ret
     - `[null, err]` if `ptr` is `null` or `num` is `0`;
     - `[ptr, none]` otherwise.
 
     @pre
-    - sufficient, properly aligned storage at `ptr`.
+    - Sufficient, properly aligned storage at `ptr`.
 
     @nota
-    - The elements are copied
+    - The elements are copied.
 **/
 template<typename T, typename U>
-nodisc onedef cexpr proc init_ls(ptrany ptr, initls<U> lst) noexce -> Res<T*, InitError>
+nodisc cons fn init_ls(ptrany ptr, initls<U> lst) noexce -> Res<T*, ErrorCode>
     where is_ctble<T, U const&>
 {
     if (ptr == null) {
@@ -333,36 +330,38 @@ nodisc onedef cexpr proc init_ls(ptrany ptr, initls<U> lst) noexce -> Res<T*, In
     Uninitializes `num` contiguous `T` objects at `ptr`.
 
     @para
-    - `ptr`: the pointer to the objects
-    - `num`: the number of objects
+    - `T`: the type of the objects.
+
+    @arg
+    - `ptr`: the pointer to the objects.
+    - `num`: the number of objects.
 
     @ret
-    - `[null, err]` if `ptr == null` or `num == 0`
-    - `[empty, none]` otherwise
+    - `[null, err]` if `ptr == null` or `num == 0`,
+    - `[empty, none]` otherwise.
 
     @pre
-    - `ptr` was obtained from `heap_alloc_aligned<T>`
-    - `ptr` has `num` elements
+    - `ptr` was obtained from `alloc_aligned<T>`.
+    - `ptr` has `num` elements.
 **/
 template<typename T>
-nodisc onedef proc deinit_ty(T* ptr, usize num) noexce -> Res<EmptyType, InitError>
+nodisc fn deinit_ty(T* ptr, usize num) noexce -> ErrorCode
 {
     if (ptr == null) {
-        return {empty, Invalid_Ptr};
+        return Invalid_Ptr;
     }
     if (num == 0) {
-        return {empty, Invalid_Arg};
+        return Invalid_Arg;
     }
-    if constexpr (is_triv_dtble<T>) {
-    //  XXX:(manu) #zero_init# custom predicate
-        return {empty, none};
+    if constexpr (is_zero_initble<T>) {
+        return none;
     } else {
         for (usize i = 0; i < num; i++) {
             ptr[num].~T();
         }
-        return {empty, none};
+        return none;
     }
 }
 
 }       // namespace cx::mem
-#endif  // CX_MEM_BASE_HH
+#endif  // CX_MEM_COMMON_HH
