@@ -1,4 +1,4 @@
-/// \file cx/os/file/file.hh
+/** @file cx/os/file/file.hh **/
 #pragma once
 #include <libcx/uti/utilities.hh>
 

@@ -1,12 +1,15 @@
-/// \file libcx/rnd/xoroshiro128plus.hpp
-/// SIMD-friendly adaptation of the xoroshiro128+ generator by Sebastiano Vigna
-/// and David Blackman.
-/// `xoroshiro128p` is tailored for fast generation of 32-bit audio noise.
+/** 
+    @file rnd/xoroshiro128plus.cc
+    SIMD-friendly adaptation of the xoroshiro128+ PRG by Vigna and Blackman.
+    tailored for fast generation of 32-bit audio noise.
+**/
+
 #ifndef CX_RND_XOROSHIRO128P_HH
 #define CX_RND_XOROSHIRO128P_HH
-#include <libcx/uti/utilities.hh>
 
-#define F32_NORM_TO_01 (2.0f/4294967296.0f)
+#include "libcx/uti/utilities.hh"
+
+glob cons f32 F32_NORM_TO_01 = 2.0f/4294967296.0f;
 
 namespace cx::rnd {
 
@@ -72,7 +75,7 @@ inln cons fn generate_one(Xoroshiro128p& xoro) noexce -> f32
 /// Returns: a pointer to the internal `simd buffer`.
 inln cons fn generate_four(Xoroshiro128p& xoro) noexce -> f32*
 {
-    #if defined(CX_SSE2)
+    #if CX_SSE2
         __m128i vi = _mm_set_epi32(
             int(next(xoro)),
             int(next(xoro) >> 32),
@@ -90,7 +93,7 @@ inln cons fn generate_four(Xoroshiro128p& xoro) noexce -> f32*
 
         return xoro.simd_buff;
 
-    #elif defined(CX_NEON)
+    #elif CX_NEON
     float32x4_t vf = vcvtq_f32_u32(
         uint32x4_t{
             u32(xoro.state[0] >> 32),

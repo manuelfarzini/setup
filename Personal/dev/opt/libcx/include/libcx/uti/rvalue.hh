@@ -1,11 +1,12 @@
-/// \file libcx/uti/rvalue.hh
+/** @file libcx/uti/rvalue.hh **/
+
 #ifndef CX_UTI_RVALUE_HH
 #define CX_UTI_RVALUE_HH
-#include <libcx/config.hh>
-#include <libcx/traits.hh>
-#include <libcx/uti/sfinae.hh>
-#include <libcx/uti/decay.hh>
-#include <libcx/uti/common_ref.hh>
+
+#include "libcx/conf/macro.hh"
+#include "libcx/uti/sfinae.hh"
+#include "libcx/uti/decay.hh"
+#include "libcx/uti/common_ref.hh"
 
 namespace cx {
 inline namespace uti {

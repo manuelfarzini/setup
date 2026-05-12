@@ -370,25 +370,26 @@ typedef ptrdiff_t isize;
 
 typedef void* ptrany;
 typedef void const* readany;
-typedef void** viewany;
+typedef void** diptrany;
 
 typedef u8* ptru8;
-typedef u8* const cptru8;
-typedef u8 const* ptrcu8;
-typedef u8** viewu8;
+typedef u8 const* readu8;
+typedef u8** diptru8;
 
 typedef u16* ptru16;
-typedef u16 const* ptrcu16;
+typedef u16 const* readu16;
+typedef u16** diptru16;
 
 typedef u32* ptru32;
-typedef u32 const* ptrcu32;
-typedef u32** viewu32;
+typedef u32 const* readu32;
+typedef u32** diptru32;
 
 typedef u64* ptru64;
-typedef u64 const* ptrcu64;
+typedef u64 const* readu64;
+typedef u64** diptru64;
 
-typedef uptr* viewuptr;
-typedef iptr* viewiptr;
+typedef uptr* diuptr;
+typedef iptr* diiptr;
 
 typedef float f32;
 typedef double f64;

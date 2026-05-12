@@ -36,7 +36,7 @@ cons fn heap_resize(ptrany ptr, isize new_size) noexce -> ptrany
 cons fn heap_aligned_free(ptrany ptr) noexce -> void
 {
     if (ptr != null) {
-        ::free(viewany(ptr)[-1]);
+        ::free(diptrany(ptr)[-1]);
     }
 }
 
@@ -63,7 +63,7 @@ nodisc cons fn heap_aligned_alloc(
 
     ptrany alloced_mem = null;
     if (old_ptr != null && !force_copy) {
-        ptrany origin_ptr = viewany(old_ptr)[-1];
+        ptrany origin_ptr = diptrany(old_ptr)[-1];
         alloced_mem = heap_resize(origin_ptr, space);
     } else {
         alloced_mem = heap_alloc(space, zero_mem);
@@ -78,7 +78,7 @@ nodisc cons fn heap_aligned_alloc(
     ptrany aligned_mem = ptr_add(alloced_mem, PTR_SIZE);
     uptr aligned_ptr = (uptr(aligned_mem) + align - 1) & ~(align - 1);
     aligned_mem = ptrany(aligned_ptr);
-    (viewany(aligned_mem))[-1] = alloced_mem;
+    (diptrany(aligned_mem))[-1] = alloced_mem;
 
     if (force_copy) {
         mem_copy(aligned_mem, old_ptr, cx_min2(size, old_size));
@@ -133,7 +133,7 @@ cons fn heap_aligned_resize(
 // nodisc cons fn heap_aligned_alloc_type(
 //     isize     num        = 1,
 //     isize     align      = align_of(T),
-//     anyptr    old_ptr    = null,
+//     ptrany    old_ptr    = null,
 //     isize     old_num    = 0
 // ) noexce -> Res<T*, AllocatorError> {
 //     auto [new_ptr, err] = heap_aligned_alloc(

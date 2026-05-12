@@ -1,4 +1,4 @@
-/// \file libcx/str/string.hh
+/** @file libcx/str/string.hh **/
 #ifndef CX_STR_STRING_HH
 #define CX_STR_STRING_HH
 #include <libcx/str/zero_string.hh>

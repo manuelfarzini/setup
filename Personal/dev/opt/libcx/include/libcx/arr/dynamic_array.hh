@@ -50,7 +50,16 @@ template<typename Tp, typename... Up>
 Array(Tp, Up...)
     -> Array<enable_if<bvariand<same_as<Tp, Up>...>, Tp>>;
 
-CX_CONCEPT_GEN_TEMPL(Array, is_array_type, SomeArray, typename Tp, Tp);
+CX_CONCEPT_GEN_TEMPL(
+    Array, is_array, SomeArray,
+    VA_(typename Tp, typename Sz, mem::SomeAllocator Alc), VA_(Tp, Sz, Alc)
+);
+
+template<typename Tp, typename Elm> predicate is_array_of = false;
+template<typename Tp, typename Sz, mem::SomeAllocator Alc> predicate is_array_of<Array<Tp, Sz, Alc>, Tp> = true;
+template<typename Arr, typename Elm> concept SomeArrayOf = is_array_of<Arr, Elm>;
+
+
 
 // with duplicates
 template<

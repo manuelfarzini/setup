@@ -1,4 +1,4 @@
-/// \file cx_enum_base_demo.hh
+/** \file cx_enum_base_demo.hh **/
 // TODO: review all the file
 #pragma once
 #include <llvm/Support/raw_os_ostream.h>

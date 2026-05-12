@@ -1,13 +1,16 @@
-/// \file libcx/err/error.hh
+/** @file libcx/err/error.hh **/
+
 // NOTE: seems to work
 // TODO: heavy testing with sanitizer.
+
 #ifndef CX_ERR_ERROR_HH
-    #define CX_ERR_ERROR_HH
-    #include <libcx/config.hh>
-    #include <libcx/mem/common.hh>
-    #include <libcx/uti/utilities.hh>
-    #include <libcx/err/macro.hh>
-    #include <libcx/err/result_pair.hh>
+#define CX_ERR_ERROR_HH
+
+#include <libcx/config.hh>
+#include <libcx/mem/common.hh>
+#include <libcx/uti/utilities.hh>
+#include <libcx/err/macro.hh>
+#include <libcx/err/result_pair.hh>
 
 namespace cx::err {
 

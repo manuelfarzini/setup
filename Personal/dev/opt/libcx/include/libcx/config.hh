@@ -1,4 +1,4 @@
-/// \file libcx/conf/config.hh
+/** @file libcx/conf/config.hh **/
 
 #ifndef CX__CONFIG_HH
 #define CX__CONFIG_HH

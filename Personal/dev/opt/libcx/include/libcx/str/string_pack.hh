@@ -3,7 +3,7 @@
 #ifndef CX_STR_STRING_PACK_HH
 #define CX_STR_STRING_PACK_HH
 
-#include <libcx/err/error.hh>
+#include "libcx/err/error.hh"
 
 namespace cx::str {
 

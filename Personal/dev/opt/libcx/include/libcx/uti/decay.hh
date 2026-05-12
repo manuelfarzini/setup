@@ -1,7 +1,10 @@
+/** @file libcx/uti/decay.hh **/
+
 #ifndef CX_UTI_DECAY_HH
 #define CX_UTI_DECAY_HH
-#include <libcx/traits.hh>
-#include <libcx/uti/sfinae.hh>
+
+#include "libcx/traits.hh"
+#include "libcx/uti/sfinae.hh"
 
 namespace cx {
 inline namespace uti {

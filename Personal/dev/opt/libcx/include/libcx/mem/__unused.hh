@@ -7,7 +7,7 @@
 // using Nothrow = std::nothrow_t const&;
 // onedef cons Nothrow No_Throw = std::nothrow;
 
-onedef cons fn u64__mem_set(anyptr data, u8 v, usize n) -> ErrorCode {
+onedef cons fn u64__mem_set(ptrany data, u8 v, usize n) -> ErrorCode {
 //  NOTE(manu)
 //  u64 splat version, it's faster than gb.h inspired version but it's 
 //  slower than libc ::memset
@@ -49,7 +49,7 @@ onedef cons fn u64__mem_set(anyptr data, u8 v, usize n) -> ErrorCode {
     return none;
 }
 
-onedef cons fn gb__mem_set(anyptr data, u8 v, usize n) -> ErrorCode {
+onedef cons fn gb__mem_set(ptrany data, u8 v, usize n) -> ErrorCode {
 //  NOTE(manu) 
 //  gb.h mem_set inspired version
 //  maybe I should use conditional compilation
@@ -124,7 +124,7 @@ onedef cons fn gb__mem_set(anyptr data, u8 v, usize n) -> ErrorCode {
     return none;
 }
 
-onedef cons fn odin__mem_zero_condition(anyptr data, isize size) -> void
+onedef cons fn odin__mem_zero_condition(ptrany data, isize size) -> void
 //  NOTE(manu)
 //  odin like version
 //  it's slower compared to the gb.h memset inspired one

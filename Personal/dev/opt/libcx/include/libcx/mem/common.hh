@@ -1,15 +1,16 @@
 /** @file libcx/mem/common.hh **/
 
-#ifndef CX_MEM_COMMON_HH
-#define CX_MEM_COMMON_HH
+#ifndef LIBCX_MEM_COMMON_HH
+#define LIBCX_MEM_COMMON_HH
 
-#include <libcx/config.hh>
-#include <libcx/traits.hh>
-#include <libcx/concepts.hh>
-#include <libcx/__utils/ownership.hh>
-#include <libcx/uti/tuple.hh>
+#include "libcx/config.hh"
+#include "libcx/traits.hh"
+#include "libcx/concepts.hh"
+#include "libcx/__utils/ownership.hh"
+#include "libcx/uti/tuple.hh"
 
-namespace cx::mem {
+namespace cx {
+namespace mem {
 
 onedef cons isize PTR_SIZE  = size_of(ptrany);
 onedef cons isize PTR_ALIGN = align_of(ptrany);
@@ -48,8 +49,8 @@ cons fn mem_copy(ptrany dst, readany src, usize size) -> void
     @pre
     - `src` and `dst` have `num` elements
 **/
-template<typename T>
-cons fn mem_copy_ty(T* dst, T const* src, usize num) noexce -> void
+template<typename T> where (not is_void<T>)
+cons fn mem_copy(T* dst, T const* src, usize num) noexce -> void
 {
     if consteval {
         for (usize i = 0; i < num; i++) {
@@ -77,8 +78,8 @@ cons fn mem_copy_ty(T* dst, T const* src, usize num) noexce -> void
     @pre
     - `src` and `dst` have `num` elements
 **/
-template<CpOrMvAsble T>
-cons fn mem_take_ty(T* dst, T* src, usize num) noexce -> void
+template<CpOrMvAsble T> where (not is_void<T>)
+cons fn mem_take(T* dst, T* src, usize num) noexce -> void
 {
     for (usize i = 0; i < num; i++) {
         dst[i] = take(src[i]);
@@ -98,11 +99,11 @@ cons fn mem_take_ty(T* dst, T* src, usize num) noexce -> void
 **/
 cons fn mem_set(ptrany data, u8 val, usize size) -> ErrorCode
 {
-    //  NOTE(manu)
-    //  > libc wrapper, actually is the fastest
-    //  > found that is the fastest on my m1 macbook pro
-    //    since it is implemented in arm64 asm
-    //  > maybe on other platoforms I should use another version
+    // NOTE(manu)
+    // > libc wrapper, actually is the fastest
+    // > found that is the fastest on my m1 macbook pro
+    //   since it is implemented in arm64 asm
+    // > maybe on other platoforms I should use another version
 
     // #if defined(CX_SYSTEM_OSX)
         ptrany res = ::memset(data, val, size);
@@ -199,7 +200,7 @@ cons fn mem_zero_condition(ptrany data, isize size) -> ErrorCode
     d += k;
     size -= k;
     size &= -4;
-    u64* d64 = ptru64(d);
+    auto d64 = ptru64(d);
     for (; size >= 32 ;) {
         if ((d64[0] | d64[1] | d64[2] | d64[3]) != 0) {
             d64[0] = 0;
@@ -363,5 +364,6 @@ nodisc fn deinit_ty(T* ptr, usize num) noexce -> ErrorCode
     }
 }
 
-}       // namespace cx::mem
-#endif  // CX_MEM_COMMON_HH
+}       // namespace mem 
+}       // namespace cx
+#endif  // LIBCX_MEM_COMMON_HH

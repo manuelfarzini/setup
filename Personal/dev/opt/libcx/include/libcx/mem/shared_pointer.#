@@ -1,4 +1,4 @@
-/** \file libcx/mem/shared_pointer.hh **/
+/** @file libcx/mem/shared_pointer.hh **/
 #include <libcx/mem/memory.hh>
 #include <atomic>
 

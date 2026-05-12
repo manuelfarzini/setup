@@ -18,12 +18,12 @@
 namespace cx {
 namespace mem {
 
-using AllocError = u8;
-onedef cons u8 Operation_Fail = 1;
-onedef cons u8 Invalid_Ptr = 2;
-onedef cons u8 Invalid_Arg = 3;
-onedef cons u8 Bad_Alloc = 4;
-onedef cons u8 Invalid_Mode = 5;
+using AllocatorError = i32;
+onedef cons i32 Operation_Fail = 1;
+onedef cons i32 Invalid_Ptr = 2;
+onedef cons i32 Invalid_Arg = 3;
+onedef cons i32 Bad_Alloc = 4;
+onedef cons i32 Invalid_Mode = 5;
 
 
 onedef cons u32 ALCTOR_FLAG__ZERO    = BIT<0>;
@@ -38,14 +38,14 @@ onedef cons u32 ALCTOR_FLAG__DEFAULT = ALCTOR_FLAG__ZERO;
         Alc&   alc,                      isize   size,                               \
         isize  align     = DEF_ALIGN,    ptrany  old_ptr  = null,                    \
         isize  old_size  = 0,            u32     flags    = ALCTOR_FLAG__DEFAULT     \
-    ) noexce -> Res<ptrany, i32>
+    ) noexce -> Res<ptrany, AllocatorError>
 
 #define ALIGNED_RESIZE(name, Alc)                                                    \
     nodisc cons fn name(                                                             \
         Alc&   alc,                                                                  \
         ptrany ptr,       isize  old_size,    isize  new_size,                       \
         isize new_align = DEF_ALIGN,          u32    flags = ALCTOR_FLAG__DEFAULT    \
-    ) noexce -> Res<ptrany, i32>
+    ) noexce -> Res<ptrany, AllocatorError>
 
 #define ALIGNED_FREE(name, Alc)                                                      \
     cons fn name(Alc&  alc,    ptrany  ptr) noexce -> void
@@ -54,13 +54,13 @@ onedef cons u32 ALCTOR_FLAG__DEFAULT = ALCTOR_FLAG__ZERO;
     nodisc fn name(                                                                  \
         ptrany data,      isize  size,        isize  align,                          \
         ptrany old_ptr,   isize  old_size,    u32    flags                           \
-    ) noexce -> Res<ptrany, i32>
+    ) noexce -> Res<ptrany, AllocatorError>
 
 #define ALIGNED_RESIZE_VIEW(name)                                                    \
     nodisc fn name(                                                                  \
         ptrany data,       ptrany ptr,        isize  old_size,                       \
         isize  new_size,   isize new_align,   u32    flags                           \
-    ) noexce -> Res<ptrany, i32>
+    ) noexce -> Res<ptrany, AllocatorError>
 
 #define ALIGNED_FREE_VIEW(name)                                                      \
     fn name(ptrany data,    ptrany ptr) noexce -> void
@@ -70,13 +70,13 @@ concept SomeAllocator = requires(
     Alc&    alc,         isize   new_size,        
     isize   align,       ptrany  ptr,
     ptrany  old_ptr,     isize   new_align,
-    isize   old_size,   u32     flags
+    isize   old_size,    u32     flags
 ) {
     { aligned_alloc(alc, new_size, align, old_ptr, old_size, flags) }
-    noexce -> SameAs<Res<ptrany, i32>>;
+    noexce -> SameAs<Res<ptrany, AllocatorError>>;
 
     { aligned_resize(alc, ptr, old_size, new_size, new_align, flags) }
-    noexce -> SameAs<Res<ptrany, i32>>;
+    noexce -> SameAs<Res<ptrany, AllocatorError>>;
 
     { aligned_free(alc, ptr) } noexce -> SameAs<void>;
 };
@@ -85,19 +85,20 @@ using AlignedAllocProc = clos(
     ptrany  data,        isize   size,
     isize   align,       ptrany  old_ptr,
     isize   old_size,    u32     flags
-) noexce -> Res<ptrany, i32>;
+) noexce -> Res<ptrany, AllocatorError>;
 
 using AlignedResizeProc = clos(
     ptrany  data,         ptrany  ptr,
     isize   old_size,     isize   new_size,
     isize   new_align,    u32     flags
-) noexce -> Res<ptrany, i32>;
+) noexce -> Res<ptrany, AllocatorError>;
 
 using AlignedFreeProc = clos(
     ptrany data, ptrany ptr
 ) noexce -> void;
 
-struct AllocatorView{
+struct AllocatorView
+{
     ptrany              data;
     AlignedAllocProc*   alloc;
     AlignedResizeProc*  resize;
@@ -151,7 +152,7 @@ nodisc fn allocator_view(Alc& alc) noexce -> AllocatorView
 }
 
 // =========================================
-// Implementation
+// Heap allocator definition
 // =========================================
 
 cons fn heap_alloc(isize size, b32 zero_mem = true) noexce -> ptrany
@@ -167,17 +168,25 @@ cons fn heap_alloc(isize size, b32 zero_mem = true) noexce -> ptrany
     }
 }
 
-cons fn heap_free(ptrany ptr) noexce -> void
-{
-    return ::free(ptr);
-}
-
 cons fn heap_resize(ptrany ptr, isize new_size) noexce -> ptrany
 {
     return ::realloc(ptr, new_size);
 }
 
-struct HeapAllocator{};
+cons fn heap_free(ptrany ptr) noexce -> void
+{
+    return ::free(ptr);
+}
+
+struct HeapAllocator {};
+
+ALIGNED_FREE(aligned_free, HeapAllocator)
+{
+    cx_unused(alc);
+    if (ptr != null) {
+        ::free(diptrany(ptr)[-1]);
+    }
+}
 
 ALIGNED_ALLOC(aligned_alloc, HeapAllocator) {
     //  NOTE(manu)
@@ -196,7 +205,7 @@ ALIGNED_ALLOC(aligned_alloc, HeapAllocator) {
 
     ptrany alloced_mem = null;
     if (old_ptr != null && !force_copy) {
-        ptrany origin_ptr = viewany(old_ptr)[-1];
+        ptrany origin_ptr = diptrany(old_ptr)[-1];
         alloced_mem = heap_resize(origin_ptr, space);
     } else {
         alloced_mem = heap_alloc(space, flags);
@@ -211,7 +220,7 @@ ALIGNED_ALLOC(aligned_alloc, HeapAllocator) {
     ptrany aligned_mem = ptr_add(alloced_mem, PTR_SIZE);
     uptr aligned_ptr = (uptr(aligned_mem) + align - 1) & ~(align - 1);
     aligned_mem = ptrany(aligned_ptr);
-    (viewany(aligned_mem))[-1] = alloced_mem;
+    (diptrany(aligned_mem))[-1] = alloced_mem;
 
     if (force_copy) {
         mem_copy(aligned_mem, old_ptr, cx_min2(size, old_size));
@@ -244,24 +253,36 @@ ALIGNED_RESIZE(aligned_resize, HeapAllocator) {
     return {new_ptr, none};
 }
 
-ALIGNED_FREE(aligned_free, HeapAllocator)
-{
-    cx_unused(alc);
-    if (ptr != null) {
-        ::free(viewany(ptr)[-1]);
-    }
-}
 
 fn heap_allocator() noexce -> HeapAllocator { return HeapAllocator{}; }
 
-struct ArenaAllocator{
+// =========================================
+// Arena allocator definition
+// =========================================
+
+struct ArenaAllocator
+{
     u8*      data;
     isize    size;
     isize    used;
 };
 
+ALIGNED_FREE(aligned_free, ArenaAllocator)
+{
+    cx_unreachable();
+}
+
+ALIGNED_ALLOC(aligned_alloc, ArenaAllocator)
+{
+    cx_unreachable();
+}
+ALIGNED_RESIZE(aligned_resize, ArenaAllocator)
+{
+    cx_unreachable();
+}
+
 static_assert(SomeAllocator<HeapAllocator>);
-// static_assert(SomeAllocator<ArenaAllocator>);
+static_assert(SomeAllocator<ArenaAllocator>);
 static_assert(SomeAllocator<AllocatorView>);
 
 }       // namespace mem

@@ -135,6 +135,13 @@
         #define inln_clos
     #endif
 #endif
+#ifndef noinln_clos
+    #if CX_COMPILER_GCC || CX_COMPILER_CLANG
+        #define noinln_clos __attribute__((noinline, cold))
+    #else
+        #define noinln_clos
+    #endif
+#endif
 
 // =========================================
 // Text generation
@@ -393,37 +400,19 @@
 // Probability branch
 // =========================================
 
-#if CX_COMPILER_CLANG || CX_COMPILER_GCC
-    #ifndef CX_PROBABILITY_BRANCH
-        #define CX_PROBABILITY_BRANCH
-        #define cx_rare(_BLK_)                        \
-            [[unlikely]] {                            \
-                [&] __attribute__((noinln, cold)) { \
-                    _BLK_;                            \
-                }();                                  \
-            }
+#ifndef CX_PROBABILITY_BRANCH
+    #define CX_PROBABILITY_BRANCH
+    #define cx_rare(_BLK_) \
+        [[unlikely]] { [&] noinln_clos { _BLK_; }(); }
 
-        #define cx_rare_if(b, _BLK_)                  \
-            if (b) [[unlikely]] {                     \
-                [&] __attribute__((noinln, cold)) { \
-                    _BLK_;                            \
-                }();                                  \
-            }
+    #define cx_rare_if(b, _BLK_) \
+        if (b) [[unlikely]] { [&] noinln_clos { _BLK_; }(); }
 
-        #define cx_often(_BLK_)                               \
-            [[likely]] {                                      \
-                [&] __attribute__((__always_inline__, hot)) { \
-                    _BLK_;                                    \
-                }();                                          \
-            }
+    #define cx_often(_BLK_) \
+        [[likely]] { [&] inln_clos { _BLK_; }(); }
 
-        #define cx_often_if(b, _BLK_)                         \
-            if (b) [[likely]] {                               \
-                [&] __attribute__((__always_inline__, hot)) { \
-                    _BLK_;                                    \
-                }();                                          \
-            }
-    #endif
+    #define cx_often_if(b, _BLK_) \
+        if (b) [[likely]] { [&] inln_clos { _BLK_; }(); }
 #endif
 
 // =========================================
@@ -432,16 +421,16 @@
 
 #ifndef CX_UNDEF_KEYWORDS
     #define CX_UNDEF_KEYWORDS \
-        #undef cons          \
-        #undef comp          \
+        #undef cons           \
+        #undef comp           \
         #undef glob           \
         #undef implicit       \
-        #undef priv         \
+        #undef priv           \
         #undef noexce         \
         #undef persist        \
         #undef predicate      \
-        #undef fn           \
-        #undef glob          \
+        #undef fn             \
+        #undef glob           \
         #undef onedef
 #endif
       
