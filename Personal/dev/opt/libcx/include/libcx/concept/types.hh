@@ -12,9 +12,9 @@ template<typename T> concept CSintegral = is_sintegral<T>;
 template<typename T> concept CUintegral = is_uintegral<T>;
 template<typename T> concept CIntegral = is_sintegral<T> || is_uintegral<T>;
 
-template<typename T> concept CFunctionAny = is_func_any<T>;
-template<typename T> concept CFunctorType = is_fntor_type<T>;
-template<typename T> concept CCallableType = is_callable<T>;
+template<typename T> concept SomeFunction = is_func_any<T>;
+template<typename T> concept SomeFunctor = is_fntor_type<T>;
+template<typename T> concept SomeCallable = is_callable<T>;
 
 template<typename T> concept CRawPointer = is_raw_ptr<T>;
 template<typename U> concept CPlainArithmetic = is_arithmetic<U> && !is_cv_qual<U>;

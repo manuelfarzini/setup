@@ -3,6 +3,8 @@
 #ifndef LIBCX_MEM_COMMON_HH
 #define LIBCX_MEM_COMMON_HH
 
+#include <new>  // XXX: needed for placement new expression
+
 #include "libcx/config.hh"
 #include "libcx/traits.hh"
 #include "libcx/concepts.hh"
@@ -24,11 +26,9 @@ static_assert(DEF_ALIGN == 8  || DEF_ALIGN == 16, "`DEF_ALIGN` should be 8 or 16
 
 /** 
     Copies `size` bytes from `src` to `dst`.
-  
     @para
     - `dst`: the destination pointer
     - `src`: the source pointer
-
     @pre
     - `src` and `dst` have `size` bytes.
 **/
@@ -41,16 +41,14 @@ cons fn mem_copy(ptrany dst, readany src, usize size) -> void
 
 /** 
     Copies `num` elements of type `T` from `src` to `dst`.
-  
     @para
     - `dst`: the destination pointer
     - `src`: the source pointer
-
     @pre
     - `src` and `dst` have `num` elements
 **/
-template<typename T> where (not is_void<T>)
-cons fn mem_copy(T* dst, T const* src, usize num) noexce -> void
+template<typename T>
+cons fn mem_copy(T* dst, T const* src, usize num) noexce -> void where (not is_void<T>)
 {
     if consteval {
         for (usize i = 0; i < num; i++) {
@@ -70,16 +68,14 @@ cons fn mem_copy(T* dst, T const* src, usize num) noexce -> void
 /** 
     Takes `num` elements of type `T` from `src` to `dst`
     If `T` is not move assignable, then behaves like `memcopy`.
-  
     @para
     - `dst`: the destination pointer
     - `src`: the source pointer
-
     @pre
     - `src` and `dst` have `num` elements
 **/
-template<CpOrMvAsble T> where (not is_void<T>)
-cons fn mem_take(T* dst, T* src, usize num) noexce -> void
+template<CpOrMvAsble T>
+cons fn mem_take(T* dst, T* src, usize num) noexce -> void where (not is_void<T>)
 {
     for (usize i = 0; i < num; i++) {
         dst[i] = take(src[i]);
@@ -88,12 +84,10 @@ cons fn mem_take(T* dst, T* src, usize num) noexce -> void
 
 /** 
     Sets `n` bytes of memory at `data` to `v`.
-  
     @para
     - `data`: pointer to the memory to be set
     - `v`: value to set the memory to
     - `n`: size of the memory to be set [Byte]
-
     @pre
     - `data` has at least `n` bytes.
 **/
@@ -116,14 +110,11 @@ cons fn mem_set(ptrany data, u8 val, usize size) -> ErrorCode
 
 /** 
     Zeroes `size` bytes of memory at `data`.
-
     @para
     - `data`: pointer to the memory to be zeroed
     - `size`: size of the memory to be zeroed [Byte]
-
     @ret
     - `ErrorCode`
-
     @pre
     - `data` has at least `size` bytes.
     - `data` is not null
@@ -135,17 +126,13 @@ cons fn mem_zero(ptrany data, usize size) -> ErrorCode
 
 /** 
     Zeroes `size` bytes of memory at `data`.
-  
     @para
     - `data`: pointer to the memory to be zeroed
     - `size`: size of the memory to be zeroed [Byte]
-  
     @ret
     - The generated `ErrorCode` if any, `none` otherwise
-
     @pre
     - `data` has at least `size` bytes.
-
     @nota
     - intended to be used when dealing with virtual memory as it
       would be already mapped to a 0 page
@@ -226,15 +213,12 @@ cons fn mem_zero_condition(ptrany data, isize size) -> ErrorCode
 
 /** 
     Zero intializes `num` contiguous `T` objects at `ptr`.
-  
     @para
     - `ptr`: the pointer to the first element
     - `num`: the number of elements
-
     @ret
     - `[null, err]` if `ptr == null` or `num` == `0`;
     - `[ptr, none]` otherwise.
-
     @pre
     - sufficient, properly aligned storage at `ptr`.
 **/
@@ -257,19 +241,15 @@ nodisc inln cons fn init_ty(ptrany ptr, usize num) noexce -> Res<T*, ErrorCode>
 
 /**
     Initializes `num` contiguous `T` objects at `ptr` using `args` for each.
-
     @para
     - `ptr`: the pointer to the first element;
     - `num`: the number of elements;
     - `args`: the arguments to the constructor.
-
     @ret
     - `[null, err]` if `ptr == null` or `num` == `0`;
     - `[ptr, none]` otherwise.
-
     @pre
     - Sufficient, properly aligned storage at `ptr`.
-
     @note
     - `args` are reused `num` times so they are taken by `const&` not forwarded.
 **/
@@ -277,7 +257,7 @@ template<typename T, typename... Args>
 nodisc cons fn init_va(
     ptrany ptr, isize num, Args const&... args
 ) noexce -> Res<T*, ErrorCode>
-    where is_def_initble<T> || is_ctble<T, Args const&...>
+    where (is_def_initble<T> || is_ctble<T, Args const&...>)
 {
     if (num == 0) {
         return {null, Invalid_Arg};
@@ -291,20 +271,16 @@ nodisc cons fn init_va(
     return {cast(T*, ptr), none};
 }
 
-/** 
+/**
     Create and place `num` contiguous `T` objects given by `list` at `ptr`.
-
     @para
     - `ptr`: the pointer to the first element;
     - `list`: the initializer list.
-
     @ret
     - `[null, err]` if `ptr` is `null` or `num` is `0`;
     - `[ptr, none]` otherwise.
-
     @pre
     - Sufficient, properly aligned storage at `ptr`.
-
     @nota
     - The elements are copied.
 **/
@@ -329,18 +305,14 @@ nodisc cons fn init_ls(ptrany ptr, initls<U> lst) noexce -> Res<T*, ErrorCode>
 
 /**
     Uninitializes `num` contiguous `T` objects at `ptr`.
-
     @para
     - `T`: the type of the objects.
-
     @arg
     - `ptr`: the pointer to the objects.
     - `num`: the number of objects.
-
     @ret
     - `[null, err]` if `ptr == null` or `num == 0`,
     - `[empty, none]` otherwise.
-
     @pre
     - `ptr` was obtained from `alloc_aligned<T>`.
     - `ptr` has `num` elements.

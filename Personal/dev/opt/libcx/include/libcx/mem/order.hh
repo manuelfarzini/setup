@@ -3,8 +3,10 @@
 #ifndef CX_MEM_ORDER_HH
 #define CX_MEM_ORDER_HH
 
-#include <libcx/conf/macro.hh>
 #include <atomic>
+#include <compare>
+
+#include "libcx/conf/macro.hh"
 
 namespace cx::mem {
 

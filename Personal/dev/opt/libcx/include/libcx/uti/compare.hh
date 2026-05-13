@@ -3,10 +3,10 @@
 #ifndef CX_UTI_COMPARE_HH
 #define CX_UTI_COMPARE_HH
 
-#include <libcx/config.hh>
-#include <libcx/__utils/ownership.hh>
-#include <libcx/traits/logic.hh>
-#include <libcx/uti/common_ref.hh>
+#include "libcx/config.hh"
+#include "libcx/__utils/ownership.hh"
+#include "libcx/traits/logic.hh"
+#include "libcx/uti/common_ref.hh"
 
 namespace cx {
 inline namespace uti {

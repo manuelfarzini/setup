@@ -182,7 +182,9 @@ inln cons fn get(Tup const& tup) -> auto const&
 #endif  // CX_UTI_TUPLE_HH
 
 #if CX_TEST
-fn test() -> void
+#ifndef CX_TEST_TUPLE
+#define CX_TEST_TUPLE
+fn test_tuple_basic() -> void
 {
     using CX;
     Tuple tup = {i64(42), 'c', 3.14};
@@ -193,8 +195,8 @@ fn test() -> void
     cx_unused(x);
     cx_unused(c);
 }
-
-#endif  // CX_TEST
+#endif
+#endif
 
 // template<typename... Us> where (sizeof...(Us) > 0)
 // struct Tuple;

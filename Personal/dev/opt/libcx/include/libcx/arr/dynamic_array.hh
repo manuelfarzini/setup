@@ -59,13 +59,9 @@ template<typename Tp, typename Elm> predicate is_array_of = false;
 template<typename Tp, typename Sz, mem::SomeAllocator Alc> predicate is_array_of<Array<Tp, Sz, Alc>, Tp> = true;
 template<typename Arr, typename Elm> concept SomeArrayOf = is_array_of<Arr, Elm>;
 
-
-
 // with duplicates
 template<
-    SomeArray         Arr,
-    typename          Key,
-    EqualOrderType    Cmp = uti::Leq
+    SomeArray Arr, typename Key, EqualOrderType Cmp = uti::Leq
 >
 cons fn find_last(Arr const& arr, Key const& key, Cmp cmp) noexce -> isize
     where is_total_ordered_w<ElemIn<Arr>, PlainT<Key>>
@@ -172,7 +168,9 @@ inln priv cons fn rep_ok(SomeArray auto& arr) noexce -> bool
 }
 
 #if CX_TEST 
-fn test() -> void
+#ifndef CX_TEST_DYNARR
+#define CX_TEST_DYNARR
+fn test_dyn_array_basic() -> void
 {
     using CX;
     dynarr<i32> arr{};
@@ -186,6 +184,7 @@ fn test() -> void
     arr::push(arr, 42);
     arr::push(arr, rvr);
 }
+#endif
 #endif
 
 

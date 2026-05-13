@@ -18,8 +18,8 @@ namespace mem {
 template<typename T> inln cons fn max(T& x) noexce -> T& { return x; }
 
 template<typename Head, typename... Rest>
-    where (sizeof...(Rest) > 0 && bvariand<same_as<Head, Rest>...>)
 inln cons fn max(Head& head, Rest&... rest) noexce -> Head&
+    where (sizeof...(Rest) > 0 && bvariand<same_as<Head, Rest>...>)
 {
     Head& tail = max(rest...);
 

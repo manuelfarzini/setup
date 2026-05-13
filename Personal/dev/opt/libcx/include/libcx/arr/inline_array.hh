@@ -3,10 +3,8 @@
 #ifndef CX_ARR_INLINE_ARRAY_HH
 #define CX_ARR_INLINE_ARRAY_HH
 
-// #include <libcx/io/io.hh>
-// #include <libcx/err/error.hh>
-// #include <libcx/mem/memory.hh>
-#include <libcx/uti/utilities.hh>
+#include "libcx/uti/utilities.hh"
+#include "libcx/mem/common.hh"
 
 // TODO:
 // - To manage `StaticString` or  StackArray` maybe should use Base<Derived>
@@ -25,192 +23,189 @@
 // - FlexBuffer
 // - FlexArray
 
-
 namespace cx::arr {
-
-template<typename T, usize C, typename S = usize> struct InlineArray;
-CX_CONCEPT_GEN_TEMPL(
-    InlineArray, is_inline_array, CInlineArray,
-    VA_(typename T, usize C, typename S), VA_(T, C, S));
-#define Inline_Array cx::arr::CInlineArray auto
 
 /// Contiguous `buf`fer of `T` objects with a fixed `cap`acity `C`
 /// and a `len`gth indicating current active elements.
-template<typename T, usize C, typename S> struct InlineArray {
-  static_assert(C > 0, "Array capacity must be greater than zero");
-  static_assert(
-      std::default_initializable<T>,
-      "Element type `T` must be default initializable");
-  /// FIX: Is it better to not impose triviality here?
-  static_assert(
-      std::is_trivially_destructible_v<T>,
-      "Element type `T` must be trivially destructible");
+template<typename Tp, usize Cap, typename Sz = usize>
+struct InlineArray
+{
+    static_assert(Cap > 0, "Array capacity must be greater than zero");
+    static_assert(is_zero_initble<Tp>, "Element type `T` must be zero initializable");
+    CX_MEMBER_ALIASES(Tp, Sz);
+    using Self = InlineArray<Elem, Cap, Size>;
 
-  using Elem = T;
-  using Size = S;
-  using Iter = Elem*;
-  using CIter = Elem const*;
-  using Self = InlineArray<Elem, C, Size>;
+    inline static cons Size cap{Cap};
+    Elem buf[Cap]{};
+    Size len{};
 
-  inline static cons Size cap = C;
-  Elem buf[C]{};
-  Size len{};
+    inln cons fn operator[](usize const i) noexce -> Elem& { return buf[i]; }
+    inln cons fn operator[](usize const i) const noexce -> Elem const& { return buf[i]; }
 
-  inln cons fn operator[](usize const i) noexce
-    -> Elem& { return buf[i]; }
-  inln cons fn operator[](usize const i) const noexce
-    -> Elem const& { return buf[i]; }
-
-  inln cons fn begin() noexce -> Iter { return buf; }
-  inln cons fn end() noexce -> Iter { return buf + len; }
-  inln cons fn begin() const noexce -> CIter { return buf; }
-  inln cons fn end() const noexce -> CIter { return buf + len; }
+    inln cons fn begin() noexce -> Iter { return buf; }
+    inln cons fn end() noexce -> Iter { return buf + len; }
+    inln cons fn begin() const noexce -> Kter { return buf; }
+    inln cons fn end() const noexce -> Kter { return buf + len; }
 };
+
+CX_CONCEPT_GEN_TEMPL(InlineArray, is_inline_array, SomeInlineArray,
+                     VA_(typename Tp, usize Cap, typename Sz), VA_(Tp, Cap, Sz));
+#define Inline_Array cx::arr::SomeInlineArray auto
 
 /// Equality operator.
 cons fn operator==(Inline_Array const& a, Inline_Array const& b) noexce -> bool
 {
-  if (&a == &b) {
-    return true;
-  }
-  if (a.len != b.len) {
-    return false;
-  }
-
-  for (usize i = 0; i < a.len; i++) {
-    if (a[i] != b[i]) {
-      return false;
+    if (&a == &b) {
+        return true;
     }
-  }
+    if (a.len != b.len) {
+        return false;
+    }
 
-  return true;
+    for (usize i = 0; i < a.len; i++) {
+        if (a[i] != b[i]) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /// Comparison operator.
-cons fn operator<=>(Inline_Array const& a, Inline_Array const& b) noexce -> auto
+cons fn operator<=>(Inline_Array const& a, Inline_Array const& b) noexce -> i8
 {
-  if (a.len < b.len) {
-    return std::strong_ordering::less;
-  }
-  if (a.len > b.len) {
-    return std::strong_ordering::greater;
-  }
-  for (usize i = 0; i < a.len; i++) {
-    if (a[i] < b[i]) {
-      return std::strong_ordering::less;
+    if (a.len < b.len) {
+        return -1;
     }
-    if (a[i] > b[i]) {
-      return std::strong_ordering::greater;
+    if (a.len > b.len) {
+        return 1;
     }
-  }
-  return std::strong_ordering::equal;
+    for (usize i = 0; i < a.len; i++) {
+        if (a[i] < b[i]) {
+            return -1;
+        }
+        if (a[i] > b[i]) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
+// =========================================
+// Inline Array public API
+// =========================================
+
 /// Returns `true` if the array is empty.
-cons fn is_empty(Inline_Array arr) noexce -> bool { return arr.len == 0; }
+cons fn is_empty(Inline_Array arr) noexce -> bool
+{
+    return arr.len == 0;
+}
 
 /// Returns `true` if the array is full.
-cons fn is_full(Inline_Array arr) noexce -> bool { return arr.len == arr.cap; }
+cons fn is_full(Inline_Array arr) noexce -> bool
+{
+    return arr.len == arr.cap;
+}
 
 /// Shifts the `arr`'s elements to the right from `i` to `j` by `off` positions.
 /// Returns `true` if the shift was successful.
-///
-template<CInlineArray Arr, typename Size = uti::SizeIn<Arr>>
+template<SomeInlineArray Arr, typename Size = SizeIn<Arr>>
 inln cons fn shift_right(Arr& arr, Size i, Size j, Size off) noexce -> bool
 {
-  if (off == 0 || j >= arr.cap || i >= j || i + off > j) {
-    return false;
-  }
+    if (off == 0 || j >= arr.cap || i >= j || i + off > j) {
+        return false;
+    }
 
-  for (; j >= i; j--) {
-    arr[j] = arr[j - off];
-  }
+    for (; j >= i; j--) {
+        arr[j] = arr[j - off];
+    }
 
-  return true;
+    return true;
 }
 
 /// Shifts the `arr`'s elements to the left from `i` to `j` by `off` positions.
 /// Returns `true` if the shift was successful.
-///
-template<CInlineArray Arr, typename Size = uti::SizeIn<Arr>>
-inln cons fn shift_left(Arr& arr, Size i, Size j, Size off) noexce
-    -> bool
+template<SomeInlineArray Arr, typename Size = SizeIn<Arr>>
+inln cons fn shift_left(Arr& arr, Size i, Size j, Size off) noexce -> bool
 {
-  if (off == 0 || j >= arr.cap || i >= j || i + off > j) {
-    return false;
-  }
-  for (; i < j - off; i++) {
-    arr[i] = arr[i + off];
-  }
-  return true;
+    if (off == 0 || j >= arr.cap || i >= j || i + off > j) {
+        return false;
+    }
+    for (; i < j - off; i++) {
+        arr[i] = arr[i + off];
+    }
+    return true;
 }
 
 ///
 template<
-    CInlineArray Arr, typename Size = uti::SizeIn<Arr>, typename... Args,
-    Requires(uti::same_or_cvref<uti::ElemIn<Arr>, Args>&&...)>
-cons fn push_back(Arr& arr, Size num, Args&&... args) noexce -> bool
+    SomeInlineArray Arr,
+    typename Size = SizeIn<Arr>,
+    typename... Args>
+cons fn push_back(Arr& arr, Size num, Args&&... args) noexce -> ErrorCode
+    where (same_or_cvref<ElemIn<Arr>, Args>&&...)
 {
-  if (num == 0) {
-    return false;
-  }
-  mem::place<ElemIn(arr)>(&arr.buf[arr.len], num, args...);
-  arr.len += num;
-  return true;
+    if (num == 0) {
+        return false;
+    }
+    auto [_, err] = mem::init_va<ElemIn<Arr>>(&arr.buf[arr.len], num, args...) or_return Operation_Fail;
+    arr.len += num;
+    return none;
 }
 
 ///
-template<CInlineArray Arr, typename Elm = uti::ElemIn<Arr>>
-onedef fn push_back(Arr& arr, initlist<Elm> lst) noexce -> bool
+template<SomeInlineArray Arr, typename Elm = ElemIn<Arr>>
+fn push_back(Arr& arr, initls<Elm> lst) noexce -> bool
 {
-  if (lst.size() == 0 && lst.size() + arr.len > arr.cap) {
-    return false;
-  }
-  mem::place<ElemIn(arr)>(&arr.buf[arr.len], lst);
-  arr.len += lst.size();
-  return true;
+    if (lst.size() == 0 && lst.size() + arr.len > arr.cap) {
+        return false;
+    }
+    mem::init_ls<ElemIn<Arr>>(&arr.buf[arr.len], lst);
+    arr.len += lst.size();
+    return true;
 }
 
 ///
-template<CInlineArray Arr, typename Elm = uti::ElemIn<Arr>>
-onedef fn pop_back(Arr& arr, Elm& res) noexce -> bool
+template<SomeInlineArray Arr, typename Elm = ElemIn<Arr>>
+fn pop_back(Arr& arr, Elm& res) noexce -> bool
 {
-  if (arr.len == 0) {
-    return false;
-  }
-  res = arr[arr.len - 1];
-  mem::unplace<ElemIn(arr)>(&arr.buf[arr.len - 1]);  // trival dtble → nop
-  arr.len--;
-  return true;
+    if (arr.len == 0) {
+        return false;
+    }
+    res = arr[arr.len - 1];
+    mem::deinit_ty<ElemIn<Arr>>(&arr.buf[arr.len - 1]);  // trival dtble → nop
+    arr.len--;
+    return true;
 }
 
 /// Find operation with `ElemType` and an order comparator provided by `cx::uti::`
-template<CInlineArray Arr, typename Elm, uti::COrderComp Cmp = uti::Lne,
-         Requires(std::totally_ordered<uti::ElemIn<Arr>> &&
-                      uti::same_or_cvref<uti::ElemIn<Arr>, Elm>)>
-cons fn find(Arr& arr, Elm&& elm, Cmp cmp = uti::lne) noexce -> isize
+template<
+    SomeInlineArray Arr, typename Elm, OrderType Cmp = Lne
+>
+cons fn find(Arr& arr, Elm&& elm, Cmp cmp = lne) noexce -> isize
+    where is_total_ordered<ElemIn<Arr>> && same_or_cvref<ElemIn<Arr>, Elm>
 {
-  usize i;
-  if cons (uti::same_as<decltype(cmp), uti::Lne>) {
-    i = 0;
-    while (i < arr.len && cmp(arr[i], elm)) {
-      i++;
-    }
-    if (i < arr.len && !cmp(arr[i], elm) && uti::eq(arr[i], elm)) {
-      return (isize) i;
+    usize i;
+    if constexpr (same_as<declt(cmp), Lne>) {
+        i = 0;
+        while (i < arr.len && cmp(arr[i], elm)) {
+            i++;
+        }
+        if (i < arr.len && !cmp(arr[i], elm) && eq(arr[i], elm)) {
+            return (isize) i;
+        }
+
+    } else if constexpr (same_as<declt(cmp), Gne>) {
+        i = arr.len;
+        while (i > 0 && cmp(arr[i - 1], elm)) {
+            i--;
+        }
+        if (i > 0 && !cmp(arr[i - 1], elm) && eq(arr[i - 1], elm)) {
+            return (isize) i - 1;
+        }
     }
 
-  } else if cons (uti::same_as<decltype(cmp), uti::Gne>) {
-    i = arr.len;
-    while (i > 0 && cmp(arr[i - 1], elm)) {
-      i--;
-    }
-    if (i > 0 && !cmp(arr[i - 1], elm) && uti::eq(arr[i - 1], elm)) {
-      return (isize) i - 1;
-    }
-  }
-
-  return -i - 1;
+    return -i - 1;
 }
 
 /// Find operation with `key` whose type may differ from the `ElemType`
@@ -218,51 +213,76 @@ cons fn find(Arr& arr, Elm&& elm, Cmp cmp = uti::lne) noexce -> isize
 /// Assumes the array is sorted in ascending order.
 /// Returns the insert position `-i - 1` if not found, otherwise `i`,
 /// where `i` is the index.
-///
-template<CInlineArray Arr, typename Key, typename Cmp,
-         Requires(!uti::SomeComparator<Cmp> && // disambiguate
-                    std::totally_ordered<uti::ElemIn<Arr>> &&
-                    std::totally_ordered_with<uti::ElemIn<Arr>, uti::PlainT<Key>> &&
-                    std::is_invocable_v<Cmp, uti::ElemIn<Arr>, uti::PlainT<Key>>)>
+// FIX:(manu) custom is_callable with parameters to add in the requires
+// is_callable<Cmp, ElemIn<Arr>, PlainT<Key>>
+template<
+    SomeInlineArray Arr, typename Key, typename Cmp
+> 
 cons fn find(Arr& arr, auto&& key, auto&& cmp) noexce -> isize
+    where (!SomeComparator<Cmp>
+           && is_total_ordered<ElemIn<Arr>>
+           && is_total_ordered_w<ElemIn<Arr>, PlainT<Key>>)
 {
-  usize i = 0;
-  while (i < arr.len && cmp(arr[i], key)) {
-    i++;
-  }
-  if (i < arr.len && !cmp(arr[i], key) && uti::eq(arr[i], key)) {
-    return (isize) i;
-  }
-  return -i - 1;
+    usize i = 0;
+    while (i < arr.len && cmp(arr[i], key)) {
+        i++;
+    }
+    if (i < arr.len && !cmp(arr[i], key) && eq(arr[i], key)) {
+        return (isize) i;
+    }
+    return -i - 1;
 }
 
 ///
-template<CInlineArray Arr, typename Elm, uti::COrderComp Cmp = uti::Lne,
-         Requires(std::totally_ordered<uti::ElemIn<Arr>>&&
-                    uti::same_or_cvref<uti::ElemIn<Arr>, Elm>)>
-cons fn insert(Arr& arr, Elm&& elm, Cmp cmp = uti::lne) noexce -> isize
+template<
+    SomeInlineArray Arr, typename Elm, OrderType Cmp = Lne
+>
+cons fn insert(Arr& arr, Elm&& elm, Cmp cmp = lne) noexce -> isize
+    where is_total_ordered<ElemIn<Arr>>&& same_or_cvref<ElemIn<Arr>, Elm>
 {
-  if (arr.len == arr.cap) {
-    return -1;
-  }
+    if (arr.len == arr.cap) {
+        return -1;
+    }
 
-  isize i = arr::find(arr, elm, cmp);
-  if (i >= 0) {
-    return -1;
-  }
-  i = -i - 1;
+    isize i = arr::find(arr, elm, cmp);
+    if (i >= 0) {
+        return -1;
+    }
+    i = -i - 1;
 
-  for (isize j = arr.len; j > i; j--) {
-    arr[j] = arr[j - 1];
-  }
+    for (isize j = arr.len; j > i; j--) {
+        arr[j] = arr[j - 1];
+    }
 
-  arr[i] = elm;
-  arr.len++;
-  return i;
+    arr[i] = elm;
+    arr.len++;
+    return i;
 }
 
 // cons fn remove(Inline_Array& arr, KeyIn(arr) key) -> isize {
 // }
+
+// =========================================
+// Testing
+// =========================================
+
+#ifdef CX_TEST
+#ifndef CX_TEST_INLINE_ARRAY
+#define CX_TEST_INLINE_ARRAY
+#include <stdio.h>
+
+fn test_inline_array_compare() -> void
+{
+    using CX;
+    InlineArray<i32, 8> a{};
+    push_back(a, 42);
+    InlineArray<i32, 6> b{};
+    bool x = a > b;
+    printf("%d\n", x);
+}
+
+#endif
+#endif
 
 }  // namespace cx::arr
 
