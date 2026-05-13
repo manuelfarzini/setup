@@ -1,9 +1,10 @@
 /** @file mem/allocator.hh **/
+
 #ifndef CX_MEM_ALLOCATOR_HH
 #define CX_MEM_ALLOCATOR_HH
 
-#include <libcx/mem/common.hh>
-#include <libcx/mem/heap.hh>
+#include "libcx/mem/common.hh"
+#include "libcx/mem/heap.hh"
 
 namespace cx::mem {
 
@@ -28,7 +29,7 @@ typedef auto AllocatorProc(
     ptrany           old_ptr,
     isize            old_size,
     b32              zero_mem
-) noexce -> Res<ptrany, AllocatorError>;
+) noexce -> Res<ptrany, ErrorCode>;
 
 #define CX_ALLOCATOR_PROC(name)                   \
     onedef auto name(                             \
@@ -39,7 +40,7 @@ typedef auto AllocatorProc(
         ptrany           old_ptr     = null,      \
         isize            old_size    = 0,         \
         b32              zero_mem    = true       \
-    ) noexce -> Res<ptrany, AllocatorError>
+    ) noexce -> Res<ptrany, ErrorCode>
 
 struct Allocator {
     AllocatorProc*    call;
@@ -48,14 +49,14 @@ struct Allocator {
 
 fn cx_mem_alloc(
     Allocator alctor, isize size, isize align = DEF_ALIGN, b32 zero_mem = true
-) noexce -> Res<ptrany, AllocatorError> {
+) noexce -> Res<ptrany, ErrorCode> {
     if (size == 0) {
         return {null, Invalid_Arg};
     }
     return alctor.call(alctor.data, Mode_Alloc, size, align, null, 0, zero_mem);
 }
 
-inln fn cx_mem_free(Allocator alctor, ptrany ptr) -> Res<ptrany, AllocatorError>
+inln fn cx_mem_free(Allocator alctor, ptrany ptr) -> Res<ptrany, ErrorCode>
 {
     return alctor.call(alctor.data, Mode_Free, 0, 0, ptr, 0, true);
 }
@@ -66,7 +67,7 @@ inln fn cx_mem_resize(
     isize        old_size,
     isize        new_size,
     isize        align        = DEF_ALIGN 
-) noexce -> Res<ptrany, AllocatorError> {
+) noexce -> Res<ptrany, ErrorCode> {
     if (new_size == 0) {
         if (ptr != null) {
             return alctor.call(alctor.data, Mode_Free, 0, 0, ptr, old_size, true);
@@ -80,7 +81,7 @@ inln fn cx_mem_resize(
     return alctor.call(alctor.data, Mode_Resize, new_size, align, ptr, old_size, true);
 }
 
-inln fn cx_mem_free_all(Allocator alctor) noexce -> Res<ptrany, AllocatorError>
+inln fn cx_mem_free_all(Allocator alctor) noexce -> Res<ptrany, ErrorCode>
 {
     return alctor.call(alctor.data, Mode_FreeAll, 0, 0, null, 0, true);
 }
@@ -91,7 +92,7 @@ inln fn cx_mem_free_all(Allocator alctor) noexce -> Res<ptrany, AllocatorError>
 **/
 fn cx_mem_free_size(
     Allocator alctor, ptrany ptr, isize size
-) noexce -> Res<ptrany, AllocatorError> {
+) noexce -> Res<ptrany, ErrorCode> {
     return alctor.call(alctor.data, Mode_Free, 0, 0, ptr, size, true);
 }
 
@@ -230,7 +231,7 @@ nodisc fn delete_array(
 //   - `ptr` has `num` elements
 // **/
 // template<typename T>
-// onedef fn heap_remove_type(T* ptr, isize num) noexce -> Res<Empty, AllocatorError> {
+// onedef fn heap_remove_type(T* ptr, isize num) noexce -> Res<Empty, ErrorCode> {
 //     auto [_, err] = deinit_type<T>(ptr, num);
 //     if (err) {
 //         return {_, uti::take(err)};

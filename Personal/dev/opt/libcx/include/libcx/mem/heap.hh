@@ -46,7 +46,7 @@ nodisc cons fn heap_aligned_alloc(
     ptrany    old_ptr     = null,
     isize     old_size    = 0,
     b32       zero_mem    = true
-) noexce -> Res<ptrany, AllocatorErr> {
+) noexce -> Res<ptrany, ErrorCode> {
     //  NOTE(manu)
     //  should I impose bytes % align == 0 like std::aligned_alloc?
 
@@ -94,7 +94,7 @@ cons fn heap_aligned_resize(
     isize     new_size,
     isize     new_align,
     b32       zero_mem    = true
-) noexce -> Res<ptrany, AllocatorErr> {
+) noexce -> Res<ptrany, ErrorCode> {
     if (ptr == null) {
         return heap_aligned_alloc(new_size, new_align, null, size, zero_mem);
     }

@@ -18,34 +18,34 @@
 namespace cx {
 namespace mem {
 
-using AllocatorError = i32;
 onedef cons i32 Operation_Fail = 1;
 onedef cons i32 Invalid_Ptr = 2;
 onedef cons i32 Invalid_Arg = 3;
 onedef cons i32 Bad_Alloc = 4;
 onedef cons i32 Invalid_Mode = 5;
 
-
 onedef cons u32 ALCTOR_FLAG__ZERO    = BIT<0>;
 onedef cons u32 ALCTOR_FLAG__DEFAULT = ALCTOR_FLAG__ZERO;
 
 // =========================================
-// Allocator API
+// Allocator public API
 // =========================================
+
+// Allocator interface contract.
 
 #define ALIGNED_ALLOC(name, Alc)                                                     \
     nodisc cons fn name(                                                             \
         Alc&   alc,                      isize   size,                               \
         isize  align     = DEF_ALIGN,    ptrany  old_ptr  = null,                    \
         isize  old_size  = 0,            u32     flags    = ALCTOR_FLAG__DEFAULT     \
-    ) noexce -> Res<ptrany, AllocatorError>
+    ) noexce -> Res<ptrany, ErrorCode>
 
 #define ALIGNED_RESIZE(name, Alc)                                                    \
     nodisc cons fn name(                                                             \
         Alc&   alc,                                                                  \
         ptrany ptr,       isize  old_size,    isize  new_size,                       \
         isize new_align = DEF_ALIGN,          u32    flags = ALCTOR_FLAG__DEFAULT    \
-    ) noexce -> Res<ptrany, AllocatorError>
+    ) noexce -> Res<ptrany, ErrorCode>
 
 #define ALIGNED_FREE(name, Alc)                                                      \
     cons fn name(Alc&  alc,    ptrany  ptr) noexce -> void
@@ -54,13 +54,13 @@ onedef cons u32 ALCTOR_FLAG__DEFAULT = ALCTOR_FLAG__ZERO;
     nodisc fn name(                                                                  \
         ptrany data,      isize  size,        isize  align,                          \
         ptrany old_ptr,   isize  old_size,    u32    flags                           \
-    ) noexce -> Res<ptrany, AllocatorError>
+    ) noexce -> Res<ptrany, ErrorCode>
 
 #define ALIGNED_RESIZE_VIEW(name)                                                    \
     nodisc fn name(                                                                  \
         ptrany data,       ptrany ptr,        isize  old_size,                       \
         isize  new_size,   isize new_align,   u32    flags                           \
-    ) noexce -> Res<ptrany, AllocatorError>
+    ) noexce -> Res<ptrany, ErrorCode>
 
 #define ALIGNED_FREE_VIEW(name)                                                      \
     fn name(ptrany data,    ptrany ptr) noexce -> void
@@ -73,36 +73,38 @@ concept SomeAllocator = requires(
     isize   old_size,    u32     flags
 ) {
     { aligned_alloc(alc, new_size, align, old_ptr, old_size, flags) }
-    noexce -> SameAs<Res<ptrany, AllocatorError>>;
+    noexce -> SameAs<Res<ptrany, ErrorCode>>;
 
     { aligned_resize(alc, ptr, old_size, new_size, new_align, flags) }
-    noexce -> SameAs<Res<ptrany, AllocatorError>>;
+    noexce -> SameAs<Res<ptrany, ErrorCode>>;
 
     { aligned_free(alc, ptr) } noexce -> SameAs<void>;
 };
 
-using AlignedAllocProc = clos( 
+// Allocator view runtime adapter.
+
+using ViewAlignedFree = clos(
+    ptrany data, ptrany ptr
+) noexce -> void;
+
+using ViewAlignedAlloc = clos( 
     ptrany  data,        isize   size,
     isize   align,       ptrany  old_ptr,
     isize   old_size,    u32     flags
-) noexce -> Res<ptrany, AllocatorError>;
+) noexce -> Res<ptrany, ErrorCode>;
 
-using AlignedResizeProc = clos(
+using ViewAlignedResize = clos(
     ptrany  data,         ptrany  ptr,
     isize   old_size,     isize   new_size,
     isize   new_align,    u32     flags
-) noexce -> Res<ptrany, AllocatorError>;
-
-using AlignedFreeProc = clos(
-    ptrany data, ptrany ptr
-) noexce -> void;
+) noexce -> Res<ptrany, ErrorCode>;
 
 struct AllocatorView
 {
     ptrany              data;
-    AlignedAllocProc*   alloc;
-    AlignedResizeProc*  resize;
-    AlignedFreeProc*    free;
+    ViewAlignedAlloc*   alloc;
+    ViewAlignedResize*  resize;
+    ViewAlignedFree*    free;
 };
 
 ALIGNED_ALLOC(aligned_alloc, AllocatorView)
@@ -120,7 +122,7 @@ ALIGNED_FREE(aligned_free, AllocatorView)
     return alc.free(alc.data, ptr);
 }
 
-// Allocator view adapter implementation.
+// Allocator view definition.
 
 template<SomeAllocator Alc>
 ALIGNED_ALLOC_VIEW(aligned_alloc_view)
@@ -276,6 +278,7 @@ ALIGNED_ALLOC(aligned_alloc, ArenaAllocator)
 {
     cx_unreachable();
 }
+
 ALIGNED_RESIZE(aligned_resize, ArenaAllocator)
 {
     cx_unreachable();
