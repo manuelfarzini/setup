@@ -6,7 +6,8 @@
 #include "libcx/mem/common.hh"
 #include "libcx/mem/heap.hh"
 
-namespace cx::mem {
+namespace cx {
+inline namespace mem {
 
 // -----------------------------------------
 // Common
@@ -176,7 +177,8 @@ nodisc fn delete_array(
     return cx_mem_free_size(alctor, ptr, num);
 }
 
-}       // namespace cx::mem
+}       // namespace mem
+}       // namespace cx
 #endif  // CX_MEM_ALLOCATOR_HH
 
 

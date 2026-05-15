@@ -5,6 +5,14 @@
 
 #include "libcx/conf/hal.hh"
 
+#ifndef CX_HIDE_FROM_ABI
+    #if CX_COMPILER_MSVC
+        #define CX_HIDE_FROM_ABI
+    #else
+        #define CX_HIDE_FROM_ABI __attribute__((__visibility__("hidden")))
+    #endif
+#endif
+
 // =========================================
 // Syntax
 // =========================================
@@ -67,10 +75,12 @@
 #ifndef proc
     #define proc(_name_, ...) inline auto _name_(__VA_ARGS__) noexcept ->
 #endif
+#ifndef func
+    #define func auto
+#endif
 #ifndef clos
     #define clos auto
 #endif
-
 #ifndef comp
     #define comp consteval
 #endif
@@ -141,6 +151,10 @@
     #else
         #define noinln_clos
     #endif
+#endif
+
+#ifndef CX_DEFINE
+    #define CX_DEFINE inline
 #endif
 
 // =========================================

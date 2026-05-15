@@ -1,14 +1,15 @@
 // #include <libcx/mem/multi.hh>
+
 #include "stdio.h"
-#include "libcx/mem/const.hh"
+#include "_allocator.hh"
 
 int main() {
-  // puts("\nmemcopy_multi_1");
-  // test_memcopy_multi_1();
+    using namespace cx::mem;
+    i8 arr[10];
 
-  // puts("\nbind_multi_1");
-  // test_bind_multi_1();
-
-  puts("\ntest_const_1");
-  test_const_1();
+    init_ls<u8>(arr, {1, 2, 3, 4, 5});
+    for (int i = 0; i < 10; i++) {
+        printf("%td\n", (isize) arr[i]);
+    }
+    return 0;
 }

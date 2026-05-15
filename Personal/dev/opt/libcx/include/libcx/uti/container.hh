@@ -12,16 +12,33 @@ namespace cx {
 inline namespace uti {
 
 // =========================================
-//  Type erasure
+// Type erasure
 // =========================================
 
-/** Predicate `true` if `T` is a container with a raw `storage`. **/
+/** Predicate `true` if `C` is a container with raw erased byte storage. **/
 template<typename C>
 predicate is_erased_container = requires(C c) {
-    requires is_raw_array<declt(c.storage)>;
-    requires same_as<
-        cx::rm_extent<rm_ref<declt(c.storage)>>, u8
-    >;
+    where (
+        (
+            is_raw_array<rm_cvref<declt(c.storage)>>
+            && same_as<rm_extent<rm_cvref<declt(c.storage)>>, u8>
+        ) || (
+            is_raw_ptr<rm_cvref<declt(c.storage)>>
+            && same_as<rm_ptr<rm_cvref<declt(c.storage)>>, u8>
+        ) || (
+            is_raw_array<rm_cvref<declt(c.data)>>
+            && same_as<rm_extent<rm_cvref<declt(c.data)>>, u8>
+        ) || (
+            is_raw_ptr<rm_cvref<declt(c.data)>>
+            && same_as<rm_ptr<rm_cvref<declt(c.data)>>, u8>
+        ) || (
+            is_raw_array<rm_cvref<declt(c.buf)>>
+            && same_as<rm_extent<rm_cvref<declt(c.buf)>>, u8>
+        ) || (
+            is_raw_ptr<rm_cvref<declt(c.ptr)>>
+            && same_as<rm_ptr<rm_cvref<declt(c.ptr)>>, u8>
+        )
+    );
 };
 
 /** Predicate `true` if `T` is a container with a raw `storage`.   **/
@@ -36,8 +53,8 @@ concept SomeErasedContainer = is_erased_container<C>;
     - To be used after constructing or re-constructing an object in existing
       storage, so the returned pointer refers to the current live object.
 **/
-template<typename T req (!is_func<T> && !is_void<T>)>
-nodisc cons fn launder(T* p) noexce -> T*
+template<typename T>
+nodisc cons fn launder(T* p) noexce -> T* where (!is_func<T> && !is_void<T>)
 {
     return __builtin_launder(p);
 }

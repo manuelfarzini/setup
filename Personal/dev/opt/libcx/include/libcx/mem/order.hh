@@ -4,11 +4,11 @@
 #define CX_MEM_ORDER_HH
 
 #include <atomic>
-#include <compare>
 
 #include "libcx/conf/macro.hh"
 
-namespace cx::mem {
+namespace cx {
+inline namespace mem {
 
     onedef cons auto order_relaxed = std::memory_order::relaxed;
     onedef cons auto order_acquire = std::memory_order::acquire;
@@ -16,5 +16,6 @@ namespace cx::mem {
     onedef cons auto order_acq_rel = std::memory_order::acq_rel;
     onedef cons auto order_seq_cst = std::memory_order::seq_cst;
 
-}       // namespace cx::mem
+}       // namespace mem
+}       // namespace cx
 #endif  // CX_MEM_ORDER_HH

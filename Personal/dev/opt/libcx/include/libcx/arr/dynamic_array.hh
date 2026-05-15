@@ -29,11 +29,11 @@ struct Array {
     //     return std::forward_like<declt(arr)>(arr.ptr[idx]);
     // }
 
-    inln cons auto operator[](this auto& arr, isize const idx) noexce -> Elem&
+    inln cons fn operator[](this auto& arr, isize const idx) noexce -> Elem&
     {
         return arr.ptr[idx];
     }
-    inln cons auto operator[](this auto const& arr, isize const idx) noexce
+    inln cons fn operator[](this auto const& arr, isize const idx) noexce
     {
         return arr.ptr[idx];
     }
@@ -61,7 +61,7 @@ template<typename Arr, typename Elm> concept SomeArrayOf = is_array_of<Arr, Elm>
 
 // with duplicates
 template<
-    SomeArray Arr, typename Key, EqualOrderType Cmp = uti::Leq
+    SomeArray Arr, typename Key, EqualOrderType Cmp = Leq
 >
 cons fn find_last(Arr const& arr, Key const& key, Cmp cmp) noexce -> isize
     where is_total_ordered_w<ElemIn<Arr>, PlainT<Key>>
@@ -83,7 +83,7 @@ cons fn find_last(Arr const& arr, Key const& key, Cmp cmp) noexce -> isize
 //     }
 //     auto [new_ptr, err] = mem::reallocate<elem_in(arr)>(arr.ptr, arr.cap, arr.cap * 2);
 //     if (err) {
-//         return {cx::empty, uti::take(err)};
+//         return {cx::empty, take(err)};
 //     }
 //     arr.ptr = new_ptr;
 //     arr.cap = arr.cap * 2;
@@ -123,7 +123,7 @@ cons fn find_last(Arr const& arr, Key const& key, Cmp cmp) noexce -> isize
 //
 //     auto [ptr, err] = mem::allocate<elem_in(arr)>(cap);
 //     if (err) {
-//         return {cx::empty, uti::take(err)};
+//         return {cx::empty, take(err)};
 //     }
 //
 //     arr.ptr = ptr;
@@ -141,16 +141,16 @@ cons fn find_last(Arr const& arr, Key const& key, Cmp cmp) noexce -> isize
 
 ///
 template<SomeArray Arr, typename Elm>
-cons fn push(Arr& arr, Elm&& elm) noexce -> mem::AllocatorError
-    where same_or_cvref<uti::ElemIn<Arr>, Elm>
+cons fn push(Arr& arr, Elm&& elm) noexce -> ErrorCode
+    where same_or_cvref<ElemIn<Arr>, Elm>
 {
     // if (arr.len == arr.cap) {
     //     auto [val, err] = arr::reallocate(arr);
     //     if (err) {
-    //         return {empty, uti::take(err)};
+    //         return {empty, take(err)};
     //     }
     // }
-    arr[arr.len] = uti::forward<Elm>(elm);
+    arr[arr.len] = forward<Elm>(elm);
     arr.len += 1;
     return none;
 }

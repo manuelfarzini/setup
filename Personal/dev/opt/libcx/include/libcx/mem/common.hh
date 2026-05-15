@@ -3,16 +3,20 @@
 #ifndef LIBCX_MEM_COMMON_HH
 #define LIBCX_MEM_COMMON_HH
 
-#include <new>  // XXX: needed for placement new expression
-
 #include "libcx/config.hh"
 #include "libcx/traits.hh"
 #include "libcx/concepts.hh"
 #include "libcx/__utils/ownership.hh"
 #include "libcx/uti/tuple.hh"
 
+CX_HIDE_FROM_ABI
+nodisc cons fn operator new(usize, void* __p) noexce -> void* { return __p; }
+
+CX_HIDE_FROM_ABI
+fn operator delete(void*, void*) noexce -> void {}
+
 namespace cx {
-namespace mem {
+inline namespace mem {
 
 onedef cons isize PTR_SIZE  = size_of(ptrany);
 onedef cons isize PTR_ALIGN = align_of(ptrany);
@@ -23,6 +27,12 @@ onedef cons isize DEF_ALIGN = 2 * MAX_ALIGN;
 static_assert(MAX_ALIGN % PTR_ALIGN == 0, "`MAX_ALIGN` must be a multiple of `ptr_align`");
 static_assert((MAX_ALIGN & (MAX_ALIGN - 1)) == 0, "`MAX_ALIGN` must be a power of 2");
 static_assert(DEF_ALIGN == 8  || DEF_ALIGN == 16, "`DEF_ALIGN` should be 8 or 16");
+
+/** 
+    Predicate that is `true` if `Tp` requires more alignment than `max_align_t`.
+**/
+template<typename Tp>
+predicate is_over_aligned =  align_of(Tp) > align_of(max_align_t);
 
 /** 
     Copies `size` bytes from `src` to `dst`.
@@ -50,6 +60,7 @@ cons fn mem_copy(ptrany dst, readany src, usize size) -> void
 template<typename T>
 cons fn mem_copy(T* dst, T const* src, usize num) noexce -> void where (not is_void<T>)
 {
+    // XXX:
     if consteval {
         for (usize i = 0; i < num; i++) {
             dst[i] = src[i];
@@ -223,7 +234,7 @@ cons fn mem_zero_condition(ptrany data, isize size) -> ErrorCode
     - sufficient, properly aligned storage at `ptr`.
 **/
 template<ZeroInitble T>
-nodisc inln cons fn init_ty(ptrany ptr, usize num) noexce -> Res<T*, ErrorCode>
+nodisc inln cons fn init_ty(ptrany ptr, isize num) noexce -> Res<T*, ErrorCode>
 {
     if (num == 0) {
         return {null, Invalid_Arg};
@@ -232,7 +243,7 @@ nodisc inln cons fn init_ty(ptrany ptr, usize num) noexce -> Res<T*, ErrorCode>
         return {null, Invalid_Ptr};
     }
 
-    for (usize i = 0; i < num; i++) {
+    for (isize i = 0; i < num; i++) {
         ::new (cast(T*, ptr) + i) T();
     }
 
@@ -253,11 +264,11 @@ nodisc inln cons fn init_ty(ptrany ptr, usize num) noexce -> Res<T*, ErrorCode>
     @note
     - `args` are reused `num` times so they are taken by `const&` not forwarded.
 **/
-template<typename T, typename... Args>
+template<ZeroInitble T, typename... Args>
 nodisc cons fn init_va(
     ptrany ptr, isize num, Args const&... args
 ) noexce -> Res<T*, ErrorCode>
-    where (is_def_initble<T> || is_ctble<T, Args const&...>)
+    where is_ctble<T, Args const&...>
 {
     if (num == 0) {
         return {null, Invalid_Arg};
@@ -285,22 +296,22 @@ nodisc cons fn init_va(
     - The elements are copied.
 **/
 template<typename T, typename U>
-nodisc cons fn init_ls(ptrany ptr, initls<U> lst) noexce -> Res<T*, ErrorCode>
+cons fn init_ls(ptrany ptr, initls<U> lst) noexce -> ErrorCode
     where is_ctble<T, U const&>
 {
     if (ptr == null) {
-        return {null, Invalid_Ptr};
+        return Invalid_Ptr;
     }
 
     if (lst.size() == 0) {
-        return {null, Invalid_Arg};
+        return Invalid_Arg;
     }
 
-    usize i = 0;
+    isize i = 0;
     for (auto const& elem : lst) {
         ::new (cast(T*, ptr) + i++) T(elem);
     }
-    return {cast(T*, ptr), none};
+    return null; 
 }
 
 /**

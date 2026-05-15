@@ -8,7 +8,8 @@
 #include "libcx/mem/common.hh"
 #include "libcx/mem/pointer.hh"
 
-namespace cx::mem {
+namespace cx
+namespace mem {
 
 cons fn heap_free(ptrany ptr) noexce -> void
 {
@@ -117,7 +118,8 @@ cons fn heap_aligned_resize(
     return {new_ptr, none};
 }
 
-}  // namespace cx::mem
+}       // namespace mem
+}       // namespace cx
 #endif  // CX_MEM_HEAP_HH
 
 

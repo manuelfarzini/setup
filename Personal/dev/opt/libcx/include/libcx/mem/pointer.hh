@@ -5,12 +5,13 @@
 
 #include <assert.h>
 
-#include <libcx/config.hh>
-#include <libcx/traits.hh>
-#include <libcx/concepts.hh>
-#include <libcx/uti/utilities.hh>
+#include "libcx/config.hh"
+#include "libcx/traits.hh"
+#include "libcx/concepts.hh"
+#include "libcx/uti/utilities.hh"
 
-namespace cx::mem {
+namespace cx {
+inline namespace mem {
 
 // /**
 //     Prints the full address of `ptr` in hex.
@@ -22,9 +23,6 @@ namespace cx::mem {
 // {
 //     printf("%0*" PRIXPTR "\n", int(size_of(uptr) * 2), uptr(ptr));
 // }
-
-/// Predicate that is `true` if `Tp` requires more alignment than `std::max_align_t`.
-template<typename Tp> predicate is_over_aligned =  align_of(Tp) > align_of(max_align_t);
 
 /**
     Aligns `ptr` upward to the `aln` boundary.
@@ -172,6 +170,6 @@ template<CRawPointer Ptr> inln cons fn ptr_untag(ptrany ptr, uptr msk) noexce ->
     return Ptr(uptr(ptr) & ~msk);
 }
 
-};  // namespace cx::mem
-
-#endif
+}       // namespace mem
+}       // namespace cx
+#endif  // CX_MEM_POINTER_HH

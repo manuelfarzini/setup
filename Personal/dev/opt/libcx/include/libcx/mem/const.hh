@@ -1,10 +1,10 @@
-#include <libcx/mem/common.hh>
+#include "libcx/mem/common.hh"
 
-cexpr usize MEM_LIMIT = 1024 * 1024 * 1024;
+cons usize MEM_LIMIT = 1024 * 1024 * 1024;
 
-intern u8 global_buf[MEM_LIMIT] = {};
+priv u8 global_buf[MEM_LIMIT] = {};
 
-onedef ceval proc get_global_buf() -> u8*
+comp fn get_global_buf() -> ptru8
 {
     return global_buf;
 }
@@ -12,7 +12,7 @@ onedef ceval proc get_global_buf() -> u8*
 #define CX_TEST 1
 #if CX_TEST
 
-onedef ceval proc test_const_1() -> void
+comp fn test_const_1() -> void
 {
     auto buf = get_global_buf();
 }
