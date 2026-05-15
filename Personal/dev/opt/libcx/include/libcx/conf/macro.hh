@@ -121,7 +121,7 @@
 #endif
 #ifndef noinln
     #if CX_COMPILER_MSVC
-        #define noinln __declspec(noinln)
+        #define noinln __declspec(noinline)
     #elif CX_COMPILER_CLANG || CX_COMPILER_GCC
         #define noinln __attribute__((noinline))
     #else
