@@ -1,9 +1,11 @@
-// #include "libcx/arr/multi_array.hh"
+/* @file arr/proto_main.cc */
 
-#include "libcx/arr/inline_array.hh"
+// #include "libcx/arr/multi_array.hh"
+// #include "libcx/arr/inline_array.hh"
+#include "libcx/arr/dynamic_array.hh"
 
 int main()
 {
-    cx::arr::test_inline_array_compare();
-    // test_multi_array_1();
+    using namespace cx::arr;
+    test_dyn_array_basic();
 }

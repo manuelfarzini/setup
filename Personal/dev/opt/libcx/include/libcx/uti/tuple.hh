@@ -186,7 +186,7 @@ inln cons fn get(Tup const& tup) -> auto const&
 #define CX_TEST_TUPLE
 fn test_tuple_basic() -> void
 {
-    using CX;
+    using namespace cx;
     Tuple tup = {i64(42), 'c', 3.14};
     usize size = tup.size;
     i64 x = get<0>(tup);

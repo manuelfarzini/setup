@@ -27,7 +27,7 @@ inln cons fn is_power_of_two(isize const x) noexce -> b32
 }
 
 /// Holds if `x` is a power of two.
-template<usize x>
+template<isize x>
 predicate is_power_two = is_power_of_two(x);
 
 }       // namespace uti

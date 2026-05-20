@@ -3,17 +3,15 @@
 #ifndef LIBCX_MEM_COMMON_HH
 #define LIBCX_MEM_COMMON_HH
 
+#include <cstdio>
 #include "libcx/config.hh"
 #include "libcx/traits.hh"
 #include "libcx/concepts.hh"
 #include "libcx/__utils/ownership.hh"
 #include "libcx/uti/tuple.hh"
 
-CX_HIDE_FROM_ABI
-nodisc cons fn operator new(usize, void* __p) noexce -> void* { return __p; }
-
-CX_HIDE_FROM_ABI
-fn operator delete(void*, void*) noexce -> void {}
+CX_HIDE_FROM_ABI nodisc cons fn operator new(usize, void* __p) noexce -> void* { return __p; }
+CX_HIDE_FROM_ABI        cons fn operator delete(void*, void*)  noexce -> void  {             }
 
 namespace cx {
 inline namespace mem {
@@ -42,11 +40,11 @@ predicate is_over_aligned =  align_of(Tp) > align_of(max_align_t);
     @pre
     - `src` and `dst` have `size` bytes.
 **/
-cons fn mem_copy(ptrany dst, readany src, usize size) -> void
+cons fn mem_copy(muta<> dst, read<> src, isize size) -> void
 {
     // NOTE(manu)
     // should i implement mem_copy? libc is already heavily optimized
-    ::memcpy(dst, src, size);
+    ::memmove(dst, src, size);
 }
 
 /** 
@@ -58,22 +56,9 @@ cons fn mem_copy(ptrany dst, readany src, usize size) -> void
     - `src` and `dst` have `num` elements
 **/
 template<typename T>
-cons fn mem_copy(T* dst, T const* src, usize num) noexce -> void where (not is_void<T>)
+cons fn mem_copy(muta<T> dst, read<T> src, isize num) noexce -> void where (not is_void<T>)
 {
-    // XXX:
-    if consteval {
-        for (usize i = 0; i < num; i++) {
-            dst[i] = src[i];
-        }
-        return;
-    }
-    if constexpr (is_zero_initble<T>) {
-        mem_copy(dst, src, num * size_of(T));
-    } else {
-        for (usize i = 0; i < num; i++) {
-            dst[i] = src[i];
-        }
-    }
+    mem_copy(dst, src, num * size_of(T));
 }
 
 /** 
@@ -86,9 +71,9 @@ cons fn mem_copy(T* dst, T const* src, usize num) noexce -> void where (not is_v
     - `src` and `dst` have `num` elements
 **/
 template<CpOrMvAsble T>
-cons fn mem_take(T* dst, T* src, usize num) noexce -> void where (not is_void<T>)
+cons fn mem_take(muta<T> dst, read<T> src, isize num) noexce -> void where (not is_void<T>)
 {
-    for (usize i = 0; i < num; i++) {
+    for (isize i = 0; i < num; i++) {
         dst[i] = take(src[i]);
     }
 }
@@ -102,7 +87,7 @@ cons fn mem_take(T* dst, T* src, usize num) noexce -> void where (not is_void<T>
     @pre
     - `data` has at least `n` bytes.
 **/
-cons fn mem_set(ptrany data, u8 val, usize size) -> ErrorCode
+cons fn mem_set(ptrany data, u8 val, isize size) -> ErrorCode
 {
     // NOTE(manu)
     // > libc wrapper, actually is the fastest
@@ -130,7 +115,7 @@ cons fn mem_set(ptrany data, u8 val, usize size) -> ErrorCode
     - `data` has at least `size` bytes.
     - `data` is not null
 **/
-cons fn mem_zero(ptrany data, usize size) -> ErrorCode
+cons fn mem_zero(ptrany data, isize size) -> ErrorCode
 {
     return mem_set(data, 0, size);
 }
@@ -234,20 +219,20 @@ cons fn mem_zero_condition(ptrany data, isize size) -> ErrorCode
     - sufficient, properly aligned storage at `ptr`.
 **/
 template<ZeroInitble T>
-nodisc inln cons fn init_ty(ptrany ptr, isize num) noexce -> Res<T*, ErrorCode>
+nodisc inln cons fn init_ty(ptrany ptr, isize num) noexce -> ErrorCode
 {
     if (num == 0) {
-        return {null, Invalid_Arg};
+        return Invalid_Arg;
     }
     if (ptr == null) {
-        return {null, Invalid_Ptr};
+        return Invalid_Ptr;
     }
 
     for (isize i = 0; i < num; i++) {
         ::new (cast(T*, ptr) + i) T();
     }
 
-    return {cast(T*, ptr), none};
+    return none;
 }
 
 /**
@@ -329,7 +314,7 @@ cons fn init_ls(ptrany ptr, initls<U> lst) noexce -> ErrorCode
     - `ptr` has `num` elements.
 **/
 template<typename T>
-nodisc fn deinit_ty(T* ptr, usize num) noexce -> ErrorCode
+nodisc fn deinit_ty(T* ptr, isize num) noexce -> ErrorCode
 {
     if (ptr == null) {
         return Invalid_Ptr;
@@ -340,7 +325,7 @@ nodisc fn deinit_ty(T* ptr, usize num) noexce -> ErrorCode
     if constexpr (is_zero_initble<T>) {
         return none;
     } else {
-        for (usize i = 0; i < num; i++) {
+        for (isize i = 0; i < num; i++) {
             ptr[num].~T();
         }
         return none;

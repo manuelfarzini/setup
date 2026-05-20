@@ -1,7 +1,11 @@
 #!/bin/sh
 
-/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++2b -O3 -o $2 \
-  -DCX_TEST \
+src="$1"
+out="$2"
+shift 2
+
+/opt/homebrew/opt/llvm/bin/clang++ -std=gnu++2b -O3 -o "$out" \
+  "$@" \
   -Iinclude \
   -I/opt/homebrew/include \
   -I/opt/homebrew/include/fmt \
@@ -13,4 +17,4 @@
   -L/opt/homebrew/lib \
   -L/usr/local/lib \
   -L/opt/homebrew/opt/llvm/lib \
-  $1 -lfmt
+  "$src" -lfmt

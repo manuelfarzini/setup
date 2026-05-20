@@ -388,6 +388,10 @@ typedef u64* ptru64;
 typedef u64 const* readu64;
 typedef u64** diptru64;
 
+typedef i64* ptri64;
+typedef i64 const* readi64;
+typedef i64** diptri64;
+
 typedef uptr* diuptr;
 typedef iptr* diiptr;
 

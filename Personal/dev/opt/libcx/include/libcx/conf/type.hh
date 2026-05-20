@@ -12,14 +12,15 @@ namespace cx {
 
 using cstring = char const*;
 
-template<typename T>
-using Void = void;
+template<typename T>        using Void = void;
+template<typename T>        using initls = std::initializer_list<T>;
+template<typename T = void> using read = T const*;
+template<typename T = void> using muta = T*;
+template<typename... Ts>    using Res = Tuple<Ts...>;
+
 
 struct EmptyType {};
-onedef cons EmptyType empty;
-
-template<typename T> 
-using initls = std::initializer_list<T>;
+onedef cons EmptyType Empty_Value;
 
 struct ZeroType {
     cons operator isize() const noexce { return 0; }
@@ -29,8 +30,6 @@ struct ZeroType {
 onedef cons ZeroType null;
 onedef cons ZeroType none;
 
-template<typename... Ts>
-using Res = Tuple<Ts...>;
 
 }       // namespace cx
 #endif  // CX_CONF_TYPES_HH

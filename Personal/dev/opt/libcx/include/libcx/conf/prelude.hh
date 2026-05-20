@@ -9,8 +9,8 @@ namespace cx {
 
 template<bool B> predicate kpred = B;
 
-template<isize bit>
-onedef cons isize BIT = 1ull << bit;
+template<usize bit>
+onedef cons usize BIT = 1ull << bit;
 
 using ErrorCode = i32;
 onedef cons i32 Error_None = 0;
