@@ -8,8 +8,8 @@
 #include "libcx/mem/common.hh"
 #include "libcx/mem/pointer.hh"
 
-namespace cx
-namespace mem {
+namespace cx {
+inline namespace mem {
 
 cons fn heap_free(ptrany ptr) noexce -> void
 {

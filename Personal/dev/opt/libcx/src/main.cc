@@ -1,7 +1,8 @@
 /** @file src/main.cc **/
-// #include <libcx/io/io.hh>
 
 #include <stdio.h>
+
+#include "libcx/conf/type.hh"
 
 // using CX;
 
@@ -23,16 +24,12 @@
 //   io::printfn("Hello from `main`: {}", (void*)file.fp);
 // }
 
-#ifndef fn
-    #define fn auto
-#endif
-
 fn test_dummy() -> void
 {
     printf("Hello, this is a dummy test\n");
 }
 
-fn main() -> int
+int main()
 {
     test_dummy();
 }

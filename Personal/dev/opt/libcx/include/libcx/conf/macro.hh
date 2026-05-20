@@ -5,14 +5,6 @@
 
 #include "libcx/conf/hal.hh"
 
-#ifndef CX_HIDE_FROM_ABI
-    #if CX_COMPILER_MSVC
-        #define CX_HIDE_FROM_ABI
-    #else
-        #define CX_HIDE_FROM_ABI __attribute__((__visibility__("hidden")))
-    #endif
-#endif
-
 // =========================================
 // Syntax
 // =========================================
@@ -43,10 +35,10 @@
     #define unlike [[unlikely]]
 #endif
 #ifndef cx_no_uniq_addr
-    #if CX_COMPILER_MSVC
-        #define cx_no_uniq_addr [[msvc::no_unique_address]]
-    #else
+    #if CX_COMPILER_CLANG || CX_COMPILER_GCC
         #define cx_no_uniq_addr [[no_unique_address]]
+    #else
+        #define cx_no_uniq_addr [[msvc::no_unique_address]]
     #endif
 #endif
 
@@ -108,10 +100,22 @@
 
 #ifndef Requires
     #define Requires(...)                                                                \
-        typename = cx::uti::enable_if<true> > requires (__VA_ARGS__) && cx::kpred < true
+        typename = cx::enable_if<true> > requires (__VA_ARGS__) && cx::kpred < true
 #endif
 #ifndef req
     #define req(...) , typename = cx::uti::enable_if<(__VA_ARGS__)>
+#endif
+
+// =========================================
+// Attributes and decorators
+// =========================================
+
+#ifndef CX_HIDE_FROM_ABI
+    #if CX_COMPILER_MSVC
+        #define CX_HIDE_FROM_ABI
+    #else
+        #define CX_HIDE_FROM_ABI __attribute__((__visibility__("hidden")))
+    #endif
 #endif
 
 #ifndef inln
@@ -153,16 +157,62 @@
     #endif
 #endif
 
-#ifndef CX_DEFINE
-    #define CX_DEFINE inline
+#ifndef cx_restrict
+    #if CX_COMPILER_GCC or CX_COMPILER_CLANG
+        #define cx_restrict __restrict__
+    #else
+        #define cx_restrict __restrict
+    #endif
+#endif
+#endif
+
+#if CX_COMPILER_CLANG
+    #ifndef cx_non_null
+        #define cx_non_null _Nonnull
+    #endif
+    #ifndef cx_nullable
+        #define cx_nullable _Nullable
+    #endif
+    #ifndef cx_null_unspec
+        #define cx_null_unspec _Null_unspecified
+    #endif
+#else
+    #ifndef cx_non_null
+        #define cx_non_null
+    #endif
+    #ifndef cx_nullable
+        #define cx_nullable
+    #endif
+    #ifndef cx_null_unspec
+        #define cx_null_unspec
+    #endif
+#endif
+
+
+#ifndef CX_PRINTF_ARGS
+    #if CX_COMPILER_GCC or CX_COMPILER_CLANG
+        #define CX_PRINTF_ARGS(fmt) __attribute__((format(printf, fmt, (fmt + 1))))
+    #else
+        #define CX_PRINTF_ARGS(fmt)
+    #endif
 #endif
 
 // =========================================
-// Text generation
+// Text manipulation
 // =========================================
 
-#ifndef CX
-    #define CX namespace cx
+#ifndef LIBCX
+    #define LIBCX namespace cx
+#endif
+#ifndef NS_
+    #define NS_(name) name::
+#endif
+#ifndef STR_
+    #define CX__STR_(x) #x
+    #define STR_(x) CX__STR_(x)
+#endif
+#ifndef VA_
+    #define VA_(...) __VA_ARGS__
 #endif
 
 #ifndef CX_LINE
@@ -181,21 +231,8 @@
     #endif
 #endif
 
-#ifndef NS
-    #define NS_(name) name::
-#endif
-
-#ifndef STR_
-    #define CX__STR_(x) #x
-    #define STR_(x) CX__STR_(x)
-#endif
-
-#ifndef VA_
-    #define VA_(...) __VA_ARGS__
-#endif
-
-#ifndef CX_JOIN_MACROS
-    #define CX_JOIN_MACROS 1
+#ifndef CX_JOIN
+    #define CX_JOIN 1
     #define CX__JOIN2(a, b) a##b
     #define CX_JOIN2(a, b) CX__JOIN2(a, b)
     #define CX_JOIN3(a, b, c) CX_JOIN2(CX_JOIN2(a, b), c)
@@ -207,143 +244,39 @@
     #define CX_UNIQ(base) CX__UNIQ(base, __COUNTER__)
 #endif
 
-#ifndef CX_DEF
-    #define CX_DEF
-#endif
-#ifndef CX_UNDEF
-    #define CX_UNDEF
-#endif
-#ifndef CX_BEG
-    #define CX_BEG {
-#endif
-#ifndef CX_END
-    #define CX_END }
-#endif
-#ifndef CX_HASH
-    #define CX_HASH #
-#endif
-#ifndef CX_EMPTY
-    #define CX_EMPTY
-#endif
-
 // =========================================
-// Concepts generators
+// Function like macros
 // =========================================
 
-#ifndef CX_CONCEPT_GEN
-    #define CX_CONCEPT_GEN(TypeName, is_type_name, CConceptName)                  \
-        template<typename T> predicate is_type_name = false;                      \
-        template<> predicate is_type_name<TypeName> = true;                       \
-        template<typename T> concept CConceptName = is_type_name<cx::rm_cvref<T>>
-#endif
-
-#ifndef CX_CONCEPT_GEN_TEMPL
-    #define CX_CONCEPT_GEN_TEMPL(                                                 \
-        TypeName, is_type_name, CConceptName, _TPARAMS_, _TARGS_                  \
-    )                                                                             \
-        template<typename T> predicate is_type_name = false;                      \
-        template<_TPARAMS_> predicate is_type_name<TypeName<_TARGS_>> = true;     \
-        template<typename T> concept CConceptName = is_type_name<cx::rm_cvref<T>>
-#endif
-
-// =========================================
-// Member aliases
-// =========================================
-
-#define CX_MEMBER_ALIASES(E, S)          \
-    using Elem = E;                      \
-    using Size = S;                      \
-    using Iter = Elem*;                  \
-    using Kter = Elem const*;            \
-    using Rter = uti::RevIterator<Iter>; \
-    using KRter = uti::RevIterator<Kter>
-
-#define CX_EXTRACT_ALIASES(cont)                              \
-    using Elem = typename cx::rm_cvref<decltype(cont)>::Elem; \
-    using Size = typename cx::rm_cvref<decltype(cont)>::Size; \
-    using Iter = Elem*;                                       \
-    using Kter = Elem const*;                                 \
-    using Rter = uti::RevIterator<Iter>;                      \
-    using KRter = uti::RevIterator<Kter>
-
-// =========================================
-// Type assertions
-// =========================================
-
-#ifndef CX_TYPE_ASSERT
-    #define CX_BASIC_TYPE_ASSERT(_BODY_)         \
-        static_assert(cx::is_def_ctble<_BODY_>); \
-        static_assert(cx::is_cp_ctble<_BODY_>);  \
-        static_assert(cx::is_mv_ctble<_BODY_>);  \
-        static_assert(cx::is_cp_asble<_BODY_>);  \
-        static_assert(cx::is_mv_asble<_BODY_>);  \
-        static_assert(cx::is_dtble<_BODY_>)
-#endif
-#ifndef CX_TRIVIAL_TYPE_ASSERT
-    #define CX_TRIVIAL_TYPE_ASSERT(_BODY_)           \
-        static_assert(cx::is_triv_cp_ctble<_BODY_>); \
-        static_assert(cx::is_triv_mv_ctble<_BODY_>); \
-        static_assert(cx::is_triv_cp_asble<_BODY_>); \
-        static_assert(cx::is_triv_mv_asble<_BODY_>); \
-        static_assert(cx::is_triv_dtble<_BODY_>)
-#endif
-
-// =========================================
-// Unreachable
-// =========================================
-
-#ifndef CX__UNREACHABLE
-    #if CX_COMPILER_MSVC
-        #define CX__UNREACHABLE \
-            __assume(0);        \
-            __debugbreak();     \
-            for (;;) {}
-    #else // GCC || CLANG
-        #define CX__UNREACHABLE      \
-            __builtin_unreachable(); \
-            __builtin_trap();        \
-            for (;;) {}
-    #endif
-#endif
-#ifndef cx_unreachable
-    #define cx_unreachable() CX__UNREACHABLE
-#endif
-
-// =========================================
-// Function like
-// =========================================
+// Signed memory operators.
 
 #ifndef size_of
     #define size_of(x) (isize(sizeof(x)))
 #endif
 #ifndef offset_of
-    #define offset_of(Type, elem) (cast(isize) & ((cast(Type*) 0)->elem))
+    #define offset_of(T, elem) (cast(isize) & ((cast(T*) 0)->elem))
 #endif
 #ifndef align_of
-    #define align_of(Type) alignof(Type)
+    #define align_of(X) alignof(X)
 #endif
 #ifndef align_of
-    #define align_of(Type) isize(alignof(Type))
+    #define align_of(X) isize(alignof(X))
 #endif
 #ifndef count_of
     #define count_of(x) \
-        ((size_of(x) / size_of(0 [x])) / (cast(isize, !(size_of(x) % size_of(0 [x])))))
+        ((size_of(x) / size_of(0 [x])) / (cast(isize, not (size_of(x) % size_of(0 [x])))))
 #endif
 
 #ifndef cx_between
     #define cx_between(lower, val, upper) lower < val&& val < upper
 #endif
 #ifndef cx_between_enum
-    #define cx_between_enum(EnumName, val)                                 \
-        cx_between(usize(EnumName##Beg), usize(val), usize(EnumName##End))
+    #define cx_between_enum(EnumName, val)                                   \
+        cx_between(usize(EnumName_##Beg), isize(val), isize(EnumName_##End))
 #endif
 #ifndef cx_between_enum_ns
     #define cx_between_enum_ns(EnumName, val)                                      \
-        cx_between(usize(NS_(EnumName) Beg), usize(val), usize(NS_(EnumName) End))
-#endif
-
-#ifndef cx_bit
-    #define cx_bit(x) (1 << (x))
+        cx_between(isize(NS_(EnumName) Beg), isize(val), isize(NS_(EnumName) End))
 #endif
 
 #ifndef cx_max2
@@ -385,18 +318,16 @@
         }
 #endif
 
-// =========================================
 // Array operations
-// =========================================
 
 #ifndef cx_extract4
     #define cx_extract4(src) {src[0], src[1], src[2], src[3]}
 #endif
-#ifndef cx_extract4_rev
-    #define cx_extract4_rev(src) {src[3], src[2], src[1], src[0]}
-#endif
 #ifndef cx_extract4_z
     #define cx_extract4_z(src) {src[0], src[1], src[2], src[3], 0}
+#endif
+#ifndef cx_extract4_rev
+    #define cx_extract4_rev(src) {src[3], src[2], src[1], src[0]}
 #endif
 #ifndef cx_extract4_revz
     #define cx_extract4_revz(src) {src[3], src[2], src[1], src[0], 0}
@@ -405,28 +336,164 @@
     #define cx_print4_ul(src) printf("%ul %ul %ul %ul\n", src[0], src[1], src[2], src[3])
 #endif
 #ifndef cx_extract16
-#define cx_extract16(arr)                                                  \
-    {arr[0], arr[1], arr[2],  arr[3],  arr[4],  arr[5],  arr[6],  arr[7],  \
-     arr[8], arr[9], arr[10], arr[11], arr[12], arr[13], arr[14], arr[15]}
+    #define cx_extract16(arr)                                                  \
+        {arr[0], arr[1], arr[2],  arr[3],  arr[4],  arr[5],  arr[6],  arr[7],  \
+         arr[8], arr[9], arr[10], arr[11], arr[12], arr[13], arr[14], arr[15]}
+#endif
+
+// Probability branch.
+
+// NOTE:(manu) Is this portable?
+#ifndef CX_PROBABILITY_BRANCH
+    #define CX_PROBABILITY_BRANCH
+    #define cx_rare(_BLK_)                                    \
+        [[unlikely]] { [&] noinln_clos { _BLK_; }(); }
+    #define cx_rare_if(b, _BLK_)                              \
+        if (b) [[unlikely]] { [&] noinln_clos { _BLK_; }(); }
+    #define cx_often(_BLK_)                                   \
+        [[likely]] { [&] inln_clos { _BLK_; }(); }
+    #define cx_often_if(b, _BLK_)                             \
+        if (b) [[likely]] { [&] inln_clos { _BLK_; }(); }
 #endif
 
 // =========================================
-// Probability branch
+// Assertion handling
 // =========================================
 
-#ifndef CX_PROBABILITY_BRANCH
-    #define CX_PROBABILITY_BRANCH
-    #define cx_rare(_BLK_) \
-        [[unlikely]] { [&] noinln_clos { _BLK_; }(); }
+#ifndef CX_DEBUG_TRAP
+#if CX_COMPILER_MSVC
+    #if _MSC_VER  < 1300
+        #define CX_DEBUG_TRAP __asm int 3
+    #else
+        #define CX_DEBUG_TRAP __debugbreak()
+    #endif
+#else
+    #define CX_DEBUG_TRAP __builtin_trap()
+#endif
 
-    #define cx_rare_if(b, _BLK_) \
-        if (b) [[unlikely]] { [&] noinln_clos { _BLK_; }(); }
+#ifndef CX__UNREACHABLE
+    #if CX_COMPILER_GCC or CX_COMPILER_CLANG
+        #define CX__UNREACHABLE              \
+            __builtin_unreachable();         \
+            CX_DEBUG_TRAP;                   \
+            for(;;){}
+    #else
+        #define CX__UNREACHABLE              \
+            __assume(0);                     \
+            CX_DEBUG_TRAP;                   \
+            for(;;){}
+    #endif
+        #define cx_unreachable() CX__UNREACHABLE
+#endif
 
-    #define cx_often(_BLK_) \
-        [[likely]] { [&] inln_clos { _BLK_; }(); }
+#ifndef cx_assert_msg
+#define cx_assert_msg(cond, msg, ...)                                             \
+    if (!(cond)) {                                                                \
+        cx_assert_handler("Assertion Failure", STR_(cond), CX_FILE, i64(CX_LINE), \
+                          msg __VA_OPT__(,) __VA_ARGS__);                         \
+        CX_DEBUG_TRAP;                                                            \
+    }
+#endif
 
-    #define cx_often_if(b, _BLK_) \
-        if (b) [[likely]] { [&] inln_clos { _BLK_; }(); }
+#ifdef CX_DISABLE_ASSERT
+#   define cx_assert(cond) cx_unused(cond)
+#endif
+
+#ifndef cx_assert
+    #define cx_assert(cond) cx_assert_msg(cond, null);
+#endif
+
+#ifndef cx_assert_msg
+    #define cx_assert_msg(cond, msg, ...)                                             \
+        if (!(cond)) {                                                                \
+            cx_assert_handler("Assertion Failure", STR_(cond), CX_FILE, i64(CX_LINE), \
+                              msg, ##__VA_ARGS__);                                    \
+            CX_DEBUG_TRAP;                                                            \
+        }
+#endif
+
+#ifndef cx_panic
+    #define cx_panic(msg, ...) \
+        cx_assert_handler("Panic", null, CX_FILE, i64(CX_LINE), msg, ##__VA_ARGS__);
+        
+#endif
+
+// =========================================
+// Type related macros
+// =========================================
+
+// Generators for concepts.
+
+#ifndef CX_CONCEPT_GEN
+    #define CX_CONCEPT_GEN(TypeName, is_type_name, CConceptName)                  \
+        template<typename T> predicate is_type_name = false;                      \
+        template<> predicate is_type_name<TypeName> = true;                       \
+        template<typename T> concept CConceptName = is_type_name<cx::rm_cvref<T>>
+#endif
+#ifndef CX_CONCEPT_GEN_TEMPL
+    #define CX_CONCEPT_GEN_TEMPL(                                                 \
+            TypeName, is_type_name, CConceptName, _TPARAMS_, _TARGS_              \
+        )                                                                         \
+        template<typename T> predicate is_type_name = false;                      \
+        template<_TPARAMS_> predicate is_type_name<TypeName<_TARGS_>> = true;     \
+        template<typename T> concept CConceptName = is_type_name<cx::rm_cvref<T>>
+#endif
+
+// Generators for containers member types.
+
+#ifndef CX_DEFINE_MEMBER_TYPES
+    #define CX_DEFINE_MEMBER_TYPES(E, S)     \
+        using Elem = E;                      \
+        using Size = S;                      \
+        using Iter = Elem*;                  \
+        using Kter = Elem const*;            \
+        using Rter = cx::RevIterator<Iter>;  \
+        using KRter = cx::RevIterator<Kter>
+#endif
+#ifndef CX_USING_MEMBER_TYPES_OF
+    #define CX_USING_MEMBER_TYPES_OF(cont)                        \
+        using Elem = typename cx::rm_cvref<decltype(cont)>::Elem; \
+        using Size = typename cx::rm_cvref<decltype(cont)>::Size; \
+        using Iter = Elem*;                                       \
+        using Kter = Elem const*;                                 \
+        using Rter = cx::RevIterator<Iter>;                       \
+        using KRter = cx::RevIterator<Kter>
+#endif
+
+#ifndef CX_TYPE_ASSERT
+    #define CX_BASIC_TYPE_ASSERT(_BODY_)         \
+        static_assert(cx::is_def_ctble<_BODY_>); \
+        static_assert(cx::is_cp_ctble<_BODY_>);  \
+        static_assert(cx::is_mv_ctble<_BODY_>);  \
+        static_assert(cx::is_cp_asble<_BODY_>);  \
+        static_assert(cx::is_mv_asble<_BODY_>);  \
+        static_assert(cx::is_dtble<_BODY_>)
+#endif
+
+#ifndef CX_TRIVIAL_TYPE_ASSERT
+    #define CX_TRIVIAL_TYPE_ASSERT(_BODY_)           \
+        static_assert(cx::is_triv_cp_ctble<_BODY_>); \
+        static_assert(cx::is_triv_mv_ctble<_BODY_>); \
+        static_assert(cx::is_triv_cp_asble<_BODY_>); \
+        static_assert(cx::is_triv_mv_asble<_BODY_>); \
+        static_assert(cx::is_triv_dtble<_BODY_>)
+#endif
+
+// =========================================
+// Miscellaneous
+// =========================================
+
+#ifndef BEG_
+    #define BEG_ {
+#endif
+#ifndef END_
+    #define END_ }
+#endif
+#ifndef CX_HASH
+    #define CX_HASH #
+#endif
+#ifndef CX_EMPTY
+    #define CX_EMPTY
 #endif
 
 // =========================================
@@ -438,7 +505,6 @@
         #undef cons           \
         #undef comp           \
         #undef glob           \
-        #undef implicit       \
         #undef priv           \
         #undef noexce         \
         #undef persist        \

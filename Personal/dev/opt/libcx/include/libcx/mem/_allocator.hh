@@ -18,69 +18,19 @@
 namespace cx {
 inline namespace mem {
 
-onedef cons i32 Operation_Fail = 1;
-onedef cons i32 Invalid_Ptr    = 2;
-onedef cons i32 Invalid_Arg    = 3;
-onedef cons i32 Bad_Alloc      = 4;
-onedef cons i32 Invalid_Mode   = 5;
+// onedef cons i32 Operation_Fail = 1;
+// onedef cons i32 Invalid_Ptr    = 2;
+// onedef cons i32 Invalid_Arg    = 3;
+// onedef cons i32 Bad_Alloc      = 4;
+// onedef cons i32 Invalid_Mode   = 5;
 
 onedef cons u32 AllocFlags_None    = 0;
 onedef cons u32 AllocFlags_Zero    = BIT<0>;
 onedef cons u32 AllocFlags_Default = AllocFlags_Zero;
 
 // =========================================
-// Allocator public API
+// Allocator contract
 // =========================================
-
-// Static allocator interface.
-
-#define ALIGNED_ALLOC(name, Alc) \
-    cons func name(               \
-        Alc&     alc,            \
-        isize    size,           \
-        isize    align,          \
-        u32      flags           \
-    ) noexce -> Res<ptrany, ErrorCode>
-
-#define ALIGNED_RESIZE(name, Alc)  \
-    cons func name(                 \
-        Alc&      alc,             \
-        ptrany    old_ptr,         \
-        isize     new_size,        \
-        isize     old_size,        \
-        isize     new_align,       \
-        isize     old_align,       \
-        u32       flags            \
-    ) noexce -> Res<ptrany, ErrorCode>
-
-#define ALIGNED_FREE(name, Alc)  \
-    cons func name(Alc& alc, ptrany  ptr) noexce -> ErrorCode
-
-// Runtime allocator interface.
-
-#define ALIGNED_ALLOC_VIEW(name)  \
-    func name(                     \
-        ptrany    data,           \
-        isize     size,           \
-        isize     align,          \
-        u32       flags           \
-    ) noexce -> Res<ptrany, ErrorCode>
-
-#define ALIGNED_RESIZE_VIEW(name)                   \
-    func name(                                       \
-        ptrany    data,                             \
-        ptrany    old_ptr,                          \
-        isize     old_size,                         \
-        isize     new_size,                         \
-        isize     old_align  =  DEF_ALIGN,          \
-        isize     new_align  =  DEF_ALIGN,          \
-        u32       flags      =  AllocFlags_Default  \
-    ) noexce -> Res<ptrany, ErrorCode>
-
-#define ALIGNED_FREE_VIEW(name) \
-    func name(ptrany data, ptrany ptr) noexce -> ErrorCode
-
-// Allocator contract.
 
 template<typename Alc>
 concept SomeAllocator = requires(
@@ -101,9 +51,71 @@ concept SomeAllocator = requires(
     { aligned_free(alc, old_ptr) } noexce -> SameAs<ErrorCode>;
 };
 
-// Allocator view runtime adapter.
+// =========================================
+// Allocator public API
+// =========================================
 
-using AlignedFreeView = func(ptrany data, ptrany ptr) noexce -> ErrorCode;
+// Static allocator interface.
+
+#define ALIGNED_ALLOC(name, Alc)               \
+    cons fn name(                              \
+        Alc&     alc,                          \
+        isize    size,                         \
+        isize    align  =  DEF_ALIGN,          \
+        u32      flags  =  AllocFlags_Default  \
+    ) noexce -> Res<ptrany, ErrorCode>
+
+#define ALIGNED_RESIZE(name, Alc)                   \
+    cons fn name(                                   \
+        Alc&      alc,                              \
+        ptrany    old_ptr,                          \
+        isize     new_size,                         \
+        isize     old_size,                         \
+        isize     new_align  =  DEF_ALIGN,          \
+        isize     old_align  =  DEF_ALIGN,          \
+        u32       flags      =  AllocFlags_Default  \
+    ) noexce -> Res<ptrany, ErrorCode>
+
+#define ALIGNED_FREE(name, Alc)  \
+    cons fn name(                \
+        Alc& alc, ptrany ptr     \
+    ) noexce -> ErrorCode
+
+// Runtime allocator interface.
+
+#define ALIGNED_ALLOC_VIEW(name)                \
+    fn name(                                    \
+        ptrany    alc,                          \
+        isize     size,                         \
+        isize     align  =  DEF_ALIGN,          \
+        u32       flags  =  AllocFlags_Default  \
+    ) noexce -> Res<ptrany, ErrorCode>
+
+#define ALIGNED_RESIZE_VIEW(name)                   \
+    fn name(                                        \
+        ptrany    alc,                              \
+        ptrany    old_ptr,                          \
+        isize     old_size,                         \
+        isize     new_size,                         \
+        isize     old_align  =  DEF_ALIGN,          \
+        isize     new_align  =  DEF_ALIGN,          \
+        u32       flags      =  AllocFlags_Default  \
+    ) noexce -> Res<ptrany, ErrorCode>
+
+#define ALIGNED_FREE_VIEW(name)  \
+    fn name(                     \
+        ptrany alc, ptrany ptr   \
+    ) noexce -> ErrorCode
+
+// =========================================
+// Allocator view runtime adapter
+// =========================================
+
+// Allocator view definition.
+
+using AlignedFreeView = func(
+    ptrany data, ptrany ptr
+) noexce -> ErrorCode;
 
 using AlignedAllocView = func( 
     ptrany    data,
@@ -113,10 +125,13 @@ using AlignedAllocView = func(
 ) noexce -> Res<ptrany, ErrorCode>;
 
 using AlignedResizeView = func(
-    ptrany  data,         ptrany  old_ptr,
-    isize   new_size,     isize   old_size,
-    isize   new_align,    isize   old_align,
-    u32     flags
+    ptrany    data, 
+    ptrany    old_ptr,
+    isize     new_size,
+    isize     old_size,
+    isize     new_align,
+    isize     old_align,
+    u32       flags
 ) noexce -> Res<ptrany, ErrorCode>;
 
 struct AllocatorView
@@ -126,6 +141,26 @@ struct AllocatorView
     AlignedResizeView*  resize;
     AlignedFreeView*    free;
 };
+
+template<SomeAllocator Alc>
+ALIGNED_ALLOC_VIEW(aligned_alloc_view)
+{
+    return aligned_alloc(cast(Alc*, alc)->data, size, align, flags);
+}
+
+template<SomeAllocator Alc>
+ALIGNED_RESIZE_VIEW(aligned_resize_view)
+{
+    return aligned_resize(cast(Alc*, alc)->data, old_ptr, new_size, old_size, new_align, old_align, flags);
+}
+
+template<SomeAllocator Alc>
+ALIGNED_FREE_VIEW(aligned_free_view)
+{
+    return aligned_free(cast(Alc*, alc)->data, ptr);
+}
+
+// Allocator view dispatcher.
 
 ALIGNED_ALLOC(aligned_alloc, AllocatorView)
 {
@@ -142,33 +177,13 @@ ALIGNED_FREE(aligned_free, AllocatorView)
     return alc.free(alc.data, ptr);
 }
 
-// Allocator view definition.
-
-template<SomeAllocator Alc>
-ALIGNED_ALLOC_VIEW(aligned_alloc_view)
-{
-    return aligned_alloc(*cast(Alc*, data), size, align, flags);
-}
-
-template<SomeAllocator Alc>
-ALIGNED_RESIZE_VIEW(aligned_resize_vew)
-{
-    return aligned_resize(*cast(Alc*, data), old_ptr, new_size, old_size, new_align, old_align, flags);
-}
-
-template<SomeAllocator Alc>
-ALIGNED_FREE_VIEW(aligned_free_view)
-{
-    return aligned_free(*cast(Alc*, data), ptr);
-}
-
 template<SomeAllocator Alc>
 nodisc fn allocator_view(Alc& alc) noexce -> AllocatorView
 {
     return AllocatorView{
         ptrany(&alc),
         aligned_alloc_view<Alc>,
-        aligned_resize_vew<Alc>,
+        aligned_resize_view<Alc>,
         aligned_free_view<Alc>
     };
 }
@@ -217,7 +232,7 @@ ALIGNED_ALLOC(aligned_alloc, HeapAllocator) {
 
     cx_unused(alc);
     // TODO:(what if size < 0, can I implement some logic?)
-    if (size == 0) {
+    if (size <= 0) {
         return {null, Invalid_Arg};
     }
     if (align < DEF_ALIGN) {
@@ -241,6 +256,12 @@ ALIGNED_ALLOC(aligned_alloc, HeapAllocator) {
     return {aligned_mem, none};
 }
 
+
+/**
+    @ret
+    - `[new_ptr, none]` on success
+    - otherwise `panic`
+**/
 ALIGNED_RESIZE(aligned_resize, HeapAllocator) {
     if (new_size <= 0) {
         aligned_free(alc, old_ptr);
@@ -290,7 +311,8 @@ ALIGNED_RESIZE(aligned_resize, HeapAllocator) {
 }
 
 
-fn heap_allocator() noexce -> HeapAllocator { return HeapAllocator{}; }
+glob HeapAllocator HEAP_ALLOCATOR{};
+comp fn heap_allocator() noexce -> HeapAllocator& { return HEAP_ALLOCATOR; }
 
 // =========================================
 // Arena allocator definition
@@ -298,10 +320,10 @@ fn heap_allocator() noexce -> HeapAllocator { return HeapAllocator{}; }
 
 struct ArenaAllocator
 {
-    ptru8    buf      {};
-    isize    buf_cap  {};
-    isize    cur_off  {};
-    isize    pre_off  {};
+    ptru8    data      {};
+    isize    data_cap  {};
+    isize    curr_off  {};
+    isize    prev_off  {};
 };
 
 fn arena_init(ArenaAllocator& alc, isize cap) noexce -> void
@@ -309,7 +331,7 @@ fn arena_init(ArenaAllocator& alc, isize cap) noexce -> void
     alc = ArenaAllocator{ptru8(heap_alloc(cap)), cap, 0, 0};
 }
 
-CX_DEFINE ALIGNED_FREE(aligned_free, ArenaAllocator)
+ALIGNED_FREE(aligned_free, ArenaAllocator)
 {
     cx_unused(alc);
     cx_unused(ptr);
@@ -317,14 +339,14 @@ CX_DEFINE ALIGNED_FREE(aligned_free, ArenaAllocator)
 }
 
 // NOTE(manu) Actually super basic version, should implement virtual mem allocator too.
-CX_DEFINE ALIGNED_ALLOC(aligned_alloc, ArenaAllocator)
+ALIGNED_ALLOC(aligned_alloc, ArenaAllocator)
 {
-    ptru8 old_ptr = ptr_add(alc.buf, alc.cur_off);
-    isize off = align_up(isize(old_ptr), align) - isize(alc.buf);
-    if (off + size <= alc.buf_cap) {
-        ptrany ptr = ptr_add(alc.buf, off);
-        alc.pre_off = off;
-        alc.cur_off = off + size;
+    ptru8 old_ptr = ptr_add(alc.data, alc.curr_off);
+    isize off = align_up(isize(old_ptr), align) - isize(alc.data);
+    if (off + size <= alc.data_cap) {
+        ptrany ptr = ptr_add(alc.data, off);
+        alc.prev_off = off;
+        alc.curr_off = off + size;
         if (flags & AllocFlags_Zero) {
             mem_zero(ptr, size);
         }
@@ -333,14 +355,9 @@ CX_DEFINE ALIGNED_ALLOC(aligned_alloc, ArenaAllocator)
     return {null, Bad_Alloc};
 }
 
-// ALIGNED_RESIZE(aligned_resize, ArenaAllocator)
-// {
-//     cx_unreachable();
-// }
-
 static_assert(SomeAllocator<HeapAllocator>);
 // static_assert(SomeAllocator<ArenaAllocator>);
-static_assert(SomeAllocator<AllocatorView>);
+// static_assert(SomeAllocator<AllocatorView>);
 
 }       // namespace mem
 }       // namespace cx

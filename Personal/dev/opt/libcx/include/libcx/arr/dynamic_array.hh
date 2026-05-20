@@ -13,15 +13,15 @@
 
 namespace cx::arr {
 
-template<typename Tp, typename Sz = isize, mem::SomeAllocator Alc = mem::HeapAllocator>
+template<typename Tp, typename Sz = isize, SomeAllocator Alc = HeapAllocator>
 struct Array {
-    CX_MEMBER_ALIASES(Tp, Sz);
+    CX_DEFINE_MEMBER_TYPES(Tp, Sz);
     using Self = Array<Tp, Sz>;
 
-    Elem* ptr{null};
-    Size len{0};
-    Size cap{0};
-    Alc alc{};
+    Elem*    ptr{null};
+    Size     len{0};
+    Size     cap{0};
+    Alc      alc{};
 
     // this can also take by moving that is not always what we want to do
     // inln cons fn operator[](this auto&& arr, isize const idx) noexce -> auto&&
@@ -59,6 +59,45 @@ template<typename Tp, typename Elm> predicate is_array_of = false;
 template<typename Tp, typename Sz, mem::SomeAllocator Alc> predicate is_array_of<Array<Tp, Sz, Alc>, Tp> = true;
 template<typename Arr, typename Elm> concept SomeArrayOf = is_array_of<Arr, Elm>;
 
+// TODO: basic implementation, always increase capacity
+cons fn resize(SomeArray auto& arr) noexce -> ErrorCode
+{
+    if (arr.ptr == null) {
+        auto [ptr, err] = aligned_alloc(arr.alc, 8, align_of(elem_in(arr)))
+            or_return err;
+        arr.ptr = ptr;
+        arr.cap = 8;
+        return null;
+    }
+    auto [ptr, err] = aligned_resize(arr.ptr, arr.cap * 2, arr.cap, align_of(elem_in(arr)))
+        or_return err;
+    arr.ptr = ptr;
+    arr.cap = arr.cap * 2;
+    return null;
+}
+
+// forwarding, do I want to do that?
+cons fn push_back(SomeArray auto& arr, auto&& elm) noexce -> ErrorCode
+    where same_or_cvref<elem_in(arr), declt(elm)>
+{
+    if (arr.len == arr.cap) {
+        auto err = resize(arr) or_return err;
+    }
+    arr.ptr[arr.len] = forward<declt(elm)>(elm);
+    arr.len++;
+    return null;
+}
+
+// now always returns a copy
+cons fn pop_back(SomeArray auto& arr) noexce -> Res<elem_in(arr), ErrorCode>
+{
+    if (arr.len == 0) {
+        return {null, Operation_Fail};
+    }
+    arr.len--;
+    return {arr.ptr[arr.len], null};
+}
+
 // with duplicates
 template<
     SomeArray Arr, typename Key, EqualOrderType Cmp = Leq
@@ -75,20 +114,6 @@ cons fn find_last(Arr const& arr, Key const& key, Cmp cmp) noexce -> isize
     // passing a primitive or little struct rather than a reference
 }
 
-// always increase capacity
-// inln cons fn reallocate(SomeArray auto& arr) noexce -> Result<>
-// {
-//     if (arr.ptr == null) {
-//         return {cx::empty, cx_null_err("`arr.ptr` is `null`")};
-//     }
-//     auto [new_ptr, err] = mem::reallocate<elem_in(arr)>(arr.ptr, arr.cap, arr.cap * 2);
-//     if (err) {
-//         return {cx::empty, take(err)};
-//     }
-//     arr.ptr = new_ptr;
-//     arr.cap = arr.cap * 2;
-//     return {cx::empty, null};
-// }
 //
 // /// XXX:(manu): possible unsafe shrink?
 // inln onedef cons fn reallocate(dyn_arr& arr, isize const new_cap) noexce

@@ -3,10 +3,10 @@
 #ifndef CX___CONTAINER_STRING_HH
 #define CX___CONTAINER_STRING_HH
 
-#include <libcx/config.hh>
-#include <libcx/traits.hh>
-#include <libcx/mem/allocator.hh>
-#include <libcx/__container/string_view.hh>
+#include "libcx/config.hh"
+#include "libcx/traits.hh"
+#include "libcx/mem/allocator.hh"
+#include "libcx/__container/string_view.hh"
 
 namespace cx {
 
@@ -17,7 +17,7 @@ struct ___ShortStr { u8 buf[16]; };
     A string …
 **/
 struct string {
-    CX_MEMBER_ALIASES(u8, isize);
+    CX_DEFINE_MEMBER_TYPES(u8, isize);
     using Self = string;
 
     union {

@@ -404,8 +404,6 @@ typedef i8 b8;
 typedef i16 b16;
 typedef i32 b32;
 
-typedef char const* ptrcch8;
-
 #if !defined(__cplusplus)
     #if (defined(CX_COMPILER_MSVC) && _MSC_VER < 1800) ||  \
         (!defined(_MSC_VER) && !defined(__STDC_VERSION__))
@@ -498,82 +496,59 @@ typedef char const* ptrcch8;
     #define I64_MAX 0x7fffffffffffffffll         //   9_223_372_036_854_775_807
 
     #if CX_ARCH_32
-        #define USZ_MIN U32_MIN
-        #define USZ_MAX U32_MAX
-        #define ISZ_MIN I32_MIN
-        #define ISZ_MAX I32_MAX
+        #define USIZE_MIN U32_MIN
+        #define USIZE_MAX U32_MAX
+        #define ISIZE_MIN I32_MIN
+        #define ISIZE_MAX I32_MAX
     #endif
     #if CX_ARCH_64
-        #define USZ_MIN U64_MIN
-        #define USZ_MAX U64_MAX
-        #define ISZ_MIN I64_MIN
-        #define ISZ_MAX I64_MAX
+        #define USIZE_MIN U64_MIN
+        #define USIZE_MAX U64_MAX
+        #define ISIZE_MIN I64_MIN
+        #define ISIZE_MAX I64_MAX
     #else
         #error "Unsupported architecture size"
     #endif
 
+    
+    #define F32_MIN 1.17549435e-38f
+    #define F32_MAX 3.40282347e+38f
+
+    #define F64_MIN 2.2250738585072014e-308
+    #define F64_MAX 1.7976931348623157e+308
+
     #if defined(__cplusplus)
-    inline constexpr u8 u8_min = U8_MIN;
-    inline constexpr u8 u8_max = U8_MAX;
-    inline constexpr i8 i8_min = I8_MIN;
-    inline constexpr i8 i8_max = I8_MAX;
+        inline constexpr u8 u8_min = U8_MIN;
+        inline constexpr u8 u8_max = U8_MAX;
+        inline constexpr i8 i8_min = I8_MIN;
+        inline constexpr i8 i8_max = I8_MAX;
 
-    inline constexpr u16 u16_min = U16_MIN;
-    inline constexpr u16 u16_max = U16_MAX;
-    inline constexpr i16 i16_min = I16_MIN;
-    inline constexpr i16 i16_max = I16_MAX;
+        inline constexpr u16 u16_min = U16_MIN;
+        inline constexpr u16 u16_max = U16_MAX;
+        inline constexpr i16 i16_min = I16_MIN;
+        inline constexpr i16 i16_max = I16_MAX;
 
-    inline constexpr u32 u32_min = U32_MIN;
-    inline constexpr u32 u32_max = U32_MAX;
-    inline constexpr i32 i32_min = I32_MIN;
-    inline constexpr i32 i32_max = I32_MAX;
+        inline constexpr u32 u32_min = U32_MIN;
+        inline constexpr u32 u32_max = U32_MAX;
+        inline constexpr i32 i32_min = I32_MIN;
+        inline constexpr i32 i32_max = I32_MAX;
 
-    inline constexpr u64 u64_min = U64_MIN;
-    inline constexpr u64 u64_max = U64_MAX;
-    inline constexpr i64 i64_min = I64_MIN;
-    inline constexpr i64 i64_max = I64_MAX;
+        inline constexpr u64 u64_min = U64_MIN;
+        inline constexpr u64 u64_max = U64_MAX;
+        inline constexpr i64 i64_min = I64_MIN;
+        inline constexpr i64 i64_max = I64_MAX;
 
-    inline constexpr usize usz_min = USZ_MIN;
-    inline constexpr usize usz_max = USZ_MAX;
-    inline constexpr isize isz_min = ISZ_MIN;
-    inline constexpr isize isz_max = ISZ_MAX;
+        inline constexpr usize usz_min = USIZE_MIN;
+        inline constexpr usize usz_max = USIZE_MAX;
+        inline constexpr isize isz_min = ISIZE_MIN;
+        inline constexpr isize isz_max = ISIZE_MAX;
+
+        inline constexpr f32 f32_min = F32_MIN;
+        inline constexpr f32 f32_max = F32_MAX;
+
+        inline constexpr f64 f64_min = F64_MIN;
+        inline constexpr f64 f64_max = F64_MAX;
     #endif
-
-#endif
-
-// =========================================
-// Miscellaneous
-// =========================================
-
-#if not CX_COMPILER_CLANG
-    #define _Nonnull
-    #define _Nullable
-    #define _Null_unspecified
-#endif
-#ifndef cx_non_null
-    #define cx_non_null _Nonnull
-#endif
-#ifndef cx_nullable
-    #define cx_nullable _Nullable
-#endif
-#ifndef cx_null_unspec
-    #define cx_null_unspec _Null_unspecified
-#endif
-
-#if CX_COMPILER_GCC or CX_COMPILER_CLANG
-    #ifndef CX_PRINTF_ARGS
-        #define CX_PRINTF_ARGS(fmt) __attribute__((format(printf, fmt, (fmt + 1))))
-    #endif
-#else // CX_COMPILER_MSVC
-    #define CX_PRINTF_ARGS(fmt)
-#endif
-
-#if CX_COMPILER_MSVC
-    #ifndef cx_restrict
-        #define cx_restrict __restrict
-    #endif
-#else  // CX_COMPILER_GCC or CX_COMPILER_CLANG
-    #define cx_restrict __restrict__
 #endif
 
 #endif  // CX_CONF_HAL_HH

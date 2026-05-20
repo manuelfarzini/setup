@@ -32,7 +32,7 @@ struct InlineArray
 {
     static_assert(Cap > 0, "Array capacity must be greater than zero");
     static_assert(is_zero_initble<Tp>, "Element type `T` must be zero initializable");
-    CX_MEMBER_ALIASES(Tp, Sz);
+    CX_DEFINE_MEMBER_TYPES(Tp, Sz);
     using Self = InlineArray<Elem, Cap, Size>;
 
     inline static cons Size cap{Cap};

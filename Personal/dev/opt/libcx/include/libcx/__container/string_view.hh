@@ -67,7 +67,7 @@ inln onedef cons fn cx_strlen(u8 const* txt) noexce -> isize
 namespace cx {
 
 struct vstring {
-    CX_MEMBER_ALIASES(u8, isize);
+    CX_DEFINE_MEMBER_TYPES(u8, isize);
     using Self = vstring;
 
     u8* ptr;

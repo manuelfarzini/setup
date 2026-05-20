@@ -12,7 +12,7 @@ CX_CONCEPT_GEN_TEMPL(ZeroString, is_zero_string, CZeroString, usize N, N);
 
 /** A zero-terminated character `buf`fer with `len`gth equals to `N`. **/
 template<usize N> struct ZeroString {
-    CX_MEMBER_ALIASES(char, usize);
+    CX_DEFINE_MEMBER_TYPES(char, usize);
     using Self = ZeroString<N>;
 
     char buf[N] = {};

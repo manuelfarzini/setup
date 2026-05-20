@@ -30,7 +30,7 @@ template<typename T, typename U>
 predicate is_implicit_convertible = requires { accept__implicit_convertible<U>(declv<T>()); };
 
 template<typename T, typename U>
-using ternary_res = decltype(false ? declv<T>() : declv<U>());
+using ternary_res = declt(false ? declv<T>() : declv<U>());
 
 }       // namespace cx
 #endif  // CX_TRAITS_RELATION_HH

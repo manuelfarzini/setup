@@ -22,9 +22,12 @@ inline namespace mem {
 
 template<typename T> inln cons fn max(T& x) noexce -> T& { return x; }
 
+/**
+    Computes the maximum element in `head` and `rest.`.
+**/
 template<typename Head, typename... Rest>
 inln cons fn max(Head& head, Rest&... rest) noexce -> Head&
-    where (sizeof...(Rest) > 0 && bvariand<same_as<Head, Rest>...>)
+    where (sizeof...(Rest) > 0 && (same_as<Head, Rest> && ...))
 {
     Head& tail = max(rest...);
     if (head < tail) {

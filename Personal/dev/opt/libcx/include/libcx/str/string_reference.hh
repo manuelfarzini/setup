@@ -13,7 +13,7 @@ CX_CONCEPT_GEN(StringReference, is_string_reference, CStringReference);
 /// Non-owning reference to non-null terminated char buffer.
 /// Maintains a pointer to the underlying char buffer `data` and his `size`.
 struct StringReference {
-  CX_MEMBER_ALIASES(char, usize);
+  CX_DEFINE_MEMBER_TYPES(char, usize);
   using Self = StringReference;
 
   glob cons usize npos = ~usize(0);

@@ -14,7 +14,7 @@ CX_CONCEPT_GEN_TEMPL(StaticString, is_static_string, CStaticString, usize C, C);
 /// and a variable `len`gth indicating current active characters.
 template<u8 C> requires (1 < C && C < 255)
 struct StaticString {
-    CX_MEMBER_ALIASES(char, u8);
+    CX_DEFINE_MEMBER_TYPES(char, u8);
     using Self = StaticString<C>;
 
     /// The capacity of the string.
