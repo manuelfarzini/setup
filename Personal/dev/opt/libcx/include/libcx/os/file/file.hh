@@ -61,9 +61,9 @@ union FileDescriptor {
 #define CX_FILE_OPEN_PROC(name) \
   func name(FileDescriptor* fd, FileOperations* ops, FileMode mode, cstring name) noexce -> FileError
 #define CX_FILE_READ_AT_PROC(name) \
-  func name(FileDescriptor fd, ptrany buf, isize size, i64 off, isize* read) noexce -> i32
+  func name(FileDescriptor fd, ptrany buf, isize size, i64 off, isize* bytes_read) noexce -> i32
 #define CX_FILE_WRITE_AT_PROC(name) \
-  func name(FileDescriptor fd, void const* buf, isize size, i64 off, isize* written) noexce -> i32
+  func name(FileDescriptor fd, void const* buf, isize size, i64 off, isize* bytes_written) noexce -> i32
 #define CX_FILE_SEEK_PROC(name) \
   func name(FileDescriptor fd, i64 cur_off, FileWhence whence, i64* new_off) noexce -> i32
 #define CX_FILE_CLOSE_PROC(name) \
@@ -90,7 +90,7 @@ struct File {
 };
 
 struct FileStandardConfig {
-    b32 are_std_set = 0;
+    b32 are_std_set = false;
     File files[FileStandard_Count]{};
 };
 
@@ -133,20 +133,20 @@ priv fn _posix_file_seek(
 }
 
 priv fn _posix_file_read(
-    FileDescriptor fd, ptrany buf, isize size, i64 off, isize* read
+    FileDescriptor fd, ptrany buf, isize size, i64 off, isize* bytes_read
 ) noexce -> i32 {
     isize res = pread(fd.i, buf, size, off);
     if (res < 0) {
         return false;
     }
-    if (read) {
-        *read = res;
+    if (bytes_read) {
+        *bytes_read = res;
     }
     return true;
 }
 
 priv fn _posix_file_write(
-    FileDescriptor fd, void const* buf, isize size, i64 off, isize* written
+    FileDescriptor fd, void const* buf, isize size, i64 off, isize* bytes_written
 ) noexce -> i32 {
     isize res;
     i64 cur_off = 0;
@@ -159,8 +159,8 @@ priv fn _posix_file_write(
     if (res < 0) {
         return false;
     }
-    if (written) {
-        *written = res;
+    if (bytes_written) {
+        *bytes_written = res;
     }
     return true;
 }
@@ -244,14 +244,14 @@ inln fn file_last_write_time(cstring fpath) noexce -> FileTime
     return res;
 }
 
-inln fn file_copy(cstring src_fname, cstring new_fname, b32 fail_if_exists) noexce -> b32
-{
-
-}
+// inln fn file_copy(cstring src_fname, cstring new_fname, b32 fail_if_exists) noexce -> b32
+// {
+//
+// }
 
 #endif
 
-inln fn get_standard(FileStandard type) noexce -> File* 
+inln fn file_get_standard(FileStandard type) noexce -> File* 
 {
   if (!file_are_standard_streams_set()) {
     set_standard_to_default();
@@ -289,7 +289,7 @@ fn cx_file_close(File *file) noexce -> FileError {
 		return FileError_Invalid;
 	}
 	if (file->name != null) {
-        mem::aligned_free(heap_allocator(), cast(char *, file->name));
+        aligned_free(heap_allocator(), cast(char*, file->name));
     }
 
 #if CX_SYSTEM_WIN
@@ -311,21 +311,21 @@ fn cx_file_close(File *file) noexce -> FileError {
 }
 
 inln fn file_read_at_check(
-    File* file, void* buf, isize size, i64 off, isize* read
+    File* file, void* buf, isize size, i64 off, isize* bytes_read
 ) noexce -> b32 {
     if (!file->ops.read_at) unlike {
         file->ops = default_file_ops();
     }
-    return file->ops.read_at(file->fd, buf, size, off, read);
+    return file->ops.read_at(file->fd, buf, size, off, bytes_read);
 }
 
 inln fn file_write_at_check(
-    File* file, void const* buf, isize size, i64 off, isize* written
+    File* file, void const* buf, isize size, i64 off, isize* bytes_written
 ) noexce -> b32 {
     if (!file->ops.write_at) unlike {
         file->ops = default_file_ops();
     }
-    return file->ops.write_at(file->fd, buf, size, off, written);
+    return file->ops.write_at(file->fd, buf, size, off, bytes_written);
 }
 
 inln fn file_read_at(File* file, void* buf, isize size, i64 off) noexce -> b32 
@@ -368,11 +368,10 @@ inln fn file_seek_skip(File* file, i64 bytes) noexce -> i64
     return new_off;
 }
 
-inln fn file_tell(File* file) noexce -> i64
-{
+inln fn file_tell(File* file) noexce -> i64 {
     i64 new_off = 0;
     if (!file->ops.seek) unlike {
-        set_standard_to_default();
+        file->ops = default_file_ops();
     }
     file->ops.seek(file->fd, 0, FileWhence_Current, &new_off);
     return new_off;
@@ -418,7 +417,6 @@ inln fn file_has_changed(File* file) noexce -> b32
 }       // namespace cx
 #endif  // CX_OS_FILE_FILE_HH
         
-
 // gb_inline isize gb_fprintf_va(struct gbFile* f, char const* fmt, va_list va) {
 //   char buf[4096];
 //   va_list va_save;
@@ -433,7 +431,6 @@ inln fn file_has_changed(File* file) noexce -> b32
 //     n <<= 1;
 //     gb_free(gb_heap_allocator(), new_buf);
 //     new_buf = gb_alloc_array(gb_heap_allocator(), char, n);
-//     ;
 //     len = gb_snprintf_va(new_buf, n, fmt, va_save);
 //   }
 //   if (new_buf != NULL) {

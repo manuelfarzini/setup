@@ -311,7 +311,7 @@ ALIGNED_RESIZE(aligned_resize, HeapAllocator) {
 }
 
 
-glob HeapAllocator HEAP_ALLOCATOR{};
+glob HeapAllocator HEAP_ALLOCATOR{}; // placeholder
 comp fn heap_allocator() noexce -> HeapAllocator& { return HEAP_ALLOCATOR; }
 
 // =========================================

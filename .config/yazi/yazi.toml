@@ -1,7 +1,10 @@
 [mgr]
 ratio = [2, 5, 5]
-linemode = "mtime"
+sort_dir_first = true
+sort_by = "extension"
 show_simlink = true
+show_hidden = true
+linemode = "mtime"
 scrolloff = 10
 
 [preview]
@@ -9,7 +12,7 @@ wrap = "yes"
 tab_size = 2
 max_width = 1000
 max_height = 1000
-image_delay = 0
+image_delay = 30
 image_quality = 50
 
 

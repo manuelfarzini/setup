@@ -1,25 +1,88 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Single cpp backend impulse test.
+# Single C++ backend impulse test.
 # Generates a .cmp file with `filesCompare` comparison
-# and a .dif file with `diff` commparison.
+# and a .dif file with `diff` comparison.
 
-NAME=$1
-FAUST=/Users/manuelfarzini/Personal/dev/repo/faust
+set -u
 
-rm -f tmp/${NAME}.cpp
-rm -f tmp/${NAME}_cpp
-rm -f tmp/${NAME}_cpp.ir
-rm -f tmp/${NAME}_cpp.cmp
-rm -f tmp/${NAME}_cpp.dif
+NAME="${1:?usage: $0 <test-name>}"
+FAUST_HOME="/Users/manuelfarzini/Personal/dev/repo/faust"
 
-/Users/manuelfarzini/Personal/dev/repo/faust/build/bin/faust \
-    -lang cpp -I dsp -double -i -a ${FAUST}/tests/impulse-tests/archs/impulsearch.cpp \
-    ${FAUST}/tests/impulse-tests/dsp/${NAME}.dsp -o tmp/${NAME}.cpp && \
-    g++ -O3 -fwrapv -std=gnu++17 -I${FAUST}/tests/impulse-tests/archs tmp/${NAME}.cpp -o tmp/${NAME}_cpp && \
-    ./tmp/${NAME}_cpp > tmp/${NAME}_cpp.ir 2>&1 && \
-    ${FAUST}/tests/impulse-tests/filesCompare \
-        ${FAUST}/tests/impulse-tests/reference/${NAME}.ir \
-        tmp/${NAME}_cpp.ir \
-    > tmp/${NAME}_cpp.cmp 2>&1 && \
-    diff --width=500000 ${FAUST}/tests/impulse-tests/reference/${NAME}.ir tmp/${NAME}_cpp.ir > tmp/${NAME}_cpp.dif 2>&1
+TMP="tmp"
+ARCH_DIR="${FAUST_HOME}/tests/impulse-tests/archs"
+
+FAUST="${FAUST_HOME}/build/bin/faust"
+ARCH="${ARCH_DIR}/impulsearch.cpp"
+SRC="${FAUST_HOME}/tests/impulse-tests/dsp/${NAME}.dsp"
+REF="${FAUST_HOME}/tests/impulse-tests/reference/${NAME}.ir"
+COMP="${FAUST_HOME}/tests/impulse-tests/filesCompare"
+
+OUT="${TMP}/${NAME}.cpp"
+BIN="${TMP}/${NAME}_cpp"
+IR="${TMP}/${NAME}_cpp.ir"
+CMP="${TMP}/${NAME}_cpp.cmp"
+DIF="${TMP}/${NAME}_cpp.dif"
+
+die() {
+    echo "error: $*" >&2
+    exit 1
+}
+
+clean() {
+    rm -f "$OUT"
+    rm -f "$BIN"
+    rm -f "$IR"
+    rm -f "$CMP"
+    rm -f "$DIF"
+}
+
+mkdir -p "$TMP"
+clean
+
+[[ -x "$FAUST" ]] || die "missing faust binary: $FAUST"
+[[ -d "$ARCH_DIR" ]] || die "missing architecture dir: $ARCH_DIR"
+[[ -f "$SRC" ]] || die "missing dsp file: $SRC"
+[[ -f "$REF" ]] || die "missing reference file: $REF"
+[[ -f "$ARCH" ]] || die "missing architecture file: $ARCH"
+[[ -x "$COMP" ]] || die "missing filesCompare binary: $COMP"
+
+"$FAUST" \
+    -lang cpp \
+    -I "${FAUST_HOME}/tests/impulse-tests/dsp" \
+    -double \
+    -i \
+    -a "$ARCH" \
+    "$SRC" \
+    -o "$OUT" \
+    || die "faust generation failed"
+
+g++ \
+    -O3 \
+    -fwrapv \
+    -std=gnu++17 \
+    -I"$ARCH_DIR" \
+    "$OUT" \
+    -o "$BIN" \
+    || die "C++ build failed"
+
+"$BIN" > "$IR" 2>&1 \
+    || die "generated executable failed"
+
+echo "first file:  $REF"
+echo "second file: $IR"
+
+if ! "$COMP" "$REF" "$IR" > "$CMP" 2>&1; then
+    diff --width=500000 "$REF" "$IR" > "$DIF" 2>&1 || true
+
+    echo "impulse test failed: $NAME" >&2
+    echo "generated source: $OUT" >&2
+    echo "compare output:   $CMP" >&2
+    echo "diff output:      $DIF" >&2
+    exit 1
+fi
+
+diff --width=500000 "$REF" "$IR" > "$DIF" 2>&1 || true
+
+echo "impulse test passed: $NAME"
+echo "generated source: $OUT"
