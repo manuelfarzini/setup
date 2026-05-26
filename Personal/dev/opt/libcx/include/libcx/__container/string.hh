@@ -59,7 +59,7 @@ cons fn make_string(
     }
 
     auto [ptr, err] = mem::cx_mem_alloc(alctor, len);
-    return string{.l{.ptr = ptru8(ptr), .len = len}};
+    return string{.l{.ptr = byteptr(ptr), .len = len}};
 }
 
 /**
@@ -96,14 +96,14 @@ fn test() -> void {
 
     isize len = cx_strlen(txt);
 
-    string str1{.l{.ptr = ptru8("Hello"), .len = len}};
+    string str1{.l{.ptr = byteptr("Hello"), .len = len}};
 
     string str2{.s{"Hello"}};
 
     // str2.s.buf[0] = u8('H');
     str2.l.ptr[0] = u8('H');
 
-    string str3{.l{.ptr = ptru8(txt), .len = 5}};
+    string str3{.l{.ptr = byteptr(txt), .len = 5}};
 
     cx_unused(str1);
     cx_unused(str3);

@@ -7,7 +7,7 @@
 // using Nothrow = std::nothrow_t const&;
 // onedef cons Nothrow No_Throw = std::nothrow;
 
-onedef cons fn u64__mem_set(ptrany data, u8 v, usize n) -> ErrorCode {
+onedef cons fn u64__mem_set(mutaptr data, u8 v, usize n) -> ErrorCode {
 //  NOTE(manu)
 //  u64 splat version, it's faster than gb.h inspired version but it's 
 //  slower than libc ::memset
@@ -18,7 +18,7 @@ onedef cons fn u64__mem_set(ptrany data, u8 v, usize n) -> ErrorCode {
         return Invalid_Arg;
     }
 
-    ptru8 d  = ptru8(data);
+    byteptr d  = byteptr(data);
     u64 v64 = cx_splat_8_64(v);
 
     for (; (iptr(d) & 7) != 0 && n > 0; n -= 1) {
@@ -40,7 +40,7 @@ onedef cons fn u64__mem_set(ptrany data, u8 v, usize n) -> ErrorCode {
         n -= 64;
     }
 
-    d = ptru8(d64);
+    d = byteptr(d64);
     while (n > 0) {
         *d = v;
         d += 1;
@@ -49,7 +49,7 @@ onedef cons fn u64__mem_set(ptrany data, u8 v, usize n) -> ErrorCode {
     return none;
 }
 
-onedef cons fn gb__mem_set(ptrany data, u8 v, usize n) -> ErrorCode {
+onedef cons fn gb__mem_set(mutaptr data, u8 v, usize n) -> ErrorCode {
 //  NOTE(manu) 
 //  gb.h mem_set inspired version
 //  maybe I should use conditional compilation
@@ -61,7 +61,7 @@ onedef cons fn gb__mem_set(ptrany data, u8 v, usize n) -> ErrorCode {
     if (n <= 0) unlike {
         return Invalid_Arg;
     }
-    ptru8 d = ptru8(data);
+    byteptr d = byteptr(data);
 
     d[0] = d[n - 1] = v;
     if (n < 3) unlike {
@@ -124,7 +124,7 @@ onedef cons fn gb__mem_set(ptrany data, u8 v, usize n) -> ErrorCode {
     return none;
 }
 
-onedef cons fn odin__mem_zero_condition(ptrany data, isize size) -> void
+onedef cons fn odin__mem_zero_condition(mutaptr data, isize size) -> void
 //  NOTE(manu)
 //  odin like version
 //  it's slower compared to the gb.h memset inspired one
@@ -139,8 +139,8 @@ onedef cons fn odin__mem_zero_condition(ptrany data, isize size) -> void
     auto words_beg = viewuptr(data);
     auto words_end = viewuptr(data) + words_num;
 
-    auto bytes_beg = ptru8(words_end);
-    auto bytes_end = ptru8(data) + bytes_num;
+    auto bytes_beg = byteptr(words_end);
+    auto bytes_end = byteptr(data) + bytes_num;
 
     for (; words_beg < words_end; words_beg++) {
         if (*words_beg != 0) {

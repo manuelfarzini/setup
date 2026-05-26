@@ -6,23 +6,6 @@
 #include "libcx/uti/utilities.hh"
 #include "libcx/mem/common.hh"
 
-// TODO:
-// - To manage `StaticString` or  StackArray` maybe should use Base<Derived>
-//   pattern with crtp; temp workaround is notifed.
-// - Maybe should use StaticString directly instead of string_view for
-//   `StringLikeC` or create another concept.
-// - Now StringLikeT does a totally different thing that does not fit here.
-//   i want to explicitly pass the buffer types, no conversion.
-/// - should the functions be inlined?
-
-// Policy:
-// - sorted
-// - no duplicates
-// Alternative names:
-// - InlineBuffer
-// - FlexBuffer
-// - FlexArray
-
 namespace cx::arr {
 
 /// Contiguous `buf`fer of `T` objects with a fixed `cap`acity `C`
@@ -148,7 +131,7 @@ cons fn push_back(Arr& arr, Size num, Args&&... args) noexce -> ErrorCode
     if (num == 0) {
         return false;
     }
-    auto [_, err] = mem::init_va<ElemIn<Arr>>(&arr.buf[arr.len], num, args...) or_return Operation_Fail;
+    auto [_, err] = init_varg<ElemIn<Arr>>(&arr.buf[arr.len], num, args...) or_return Operation_Fail;
     arr.len += num;
     return none;
 }
@@ -160,7 +143,7 @@ fn push_back(Arr& arr, initls<Elm> lst) noexce -> bool
     if (lst.size() == 0 && lst.size() + arr.len > arr.cap) {
         return false;
     }
-    mem::init_ls<ElemIn<Arr>>(&arr.buf[arr.len], lst);
+    init_list<ElemIn<Arr>>(&arr.buf[arr.len], lst);
     arr.len += lst.size();
     return true;
 }
@@ -173,35 +156,32 @@ fn pop_back(Arr& arr, Elm& res) noexce -> bool
         return false;
     }
     res = arr[arr.len - 1];
-    mem::deinit_ty<ElemIn<Arr>>(&arr.buf[arr.len - 1]);  // trival dtble → nop
+    deinit_ty<ElemIn<Arr>>(&arr.buf[arr.len - 1]);  // trival dtble → nop
     arr.len--;
     return true;
 }
 
-/// Find operation with `ElemType` and an order comparator provided by `cx::uti::`
-template<
-    SomeInlineArray Arr, typename Elm, OrderType Cmp = Lne
->
+template<SomeInlineArray Arr, typename Elm, OrderType Cmp = Lne>
 cons fn find(Arr& arr, Elm&& elm, Cmp cmp = lne) noexce -> isize
     where is_total_ordered<ElemIn<Arr>> && same_or_cvref<ElemIn<Arr>, Elm>
 {
-    usize i;
-    if constexpr (same_as<declt(cmp), Lne>) {
+    isize i;
+    if constexpr (same_as<Cmp, Lne>) {
         i = 0;
         while (i < arr.len && cmp(arr[i], elm)) {
             i++;
         }
-        if (i < arr.len && !cmp(arr[i], elm) && eq(arr[i], elm)) {
-            return (isize) i;
+        if (i < arr.len && eq(arr[i], elm)) {
+            return i;
         }
 
-    } else if constexpr (same_as<declt(cmp), Gne>) {
+    } else if constexpr (same_as<Cmp, Gne>) {
         i = arr.len;
         while (i > 0 && cmp(arr[i - 1], elm)) {
             i--;
         }
-        if (i > 0 && !cmp(arr[i - 1], elm) && eq(arr[i - 1], elm)) {
-            return (isize) i - 1;
+        if (i > 0 && eq(arr[i - 1], elm)) {
+            return i - 1;
         }
     }
 
@@ -218,7 +198,7 @@ cons fn find(Arr& arr, Elm&& elm, Cmp cmp = lne) noexce -> isize
 template<
     SomeInlineArray Arr, typename Key, typename Cmp
 > 
-cons fn find(Arr& arr, auto&& key, auto&& cmp) noexce -> isize
+cons fn find(Arr& arr, Key&& key, Cmp cmp) noexce -> isize
     where (!SomeComparator<Cmp>
            && is_total_ordered<ElemIn<Arr>>
            && is_total_ordered_w<ElemIn<Arr>, PlainT<Key>>)

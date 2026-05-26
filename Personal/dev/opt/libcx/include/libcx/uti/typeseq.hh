@@ -4,7 +4,6 @@
 #define CX_UTI_TYPESEQ_HH
 
 #include "libcx/conf/macro.hh"
-#include "libcx/traits/qualifier.hh"
 #include "libcx/concept/types.hh"
 
 namespace cx {
@@ -80,7 +79,7 @@ template<typename... Ts> onedef cons usize va_size = ___pack_size<Ts...>::value;
 template<CIntegral Int, Int... Is> 
 struct IntegerSeq {
   using Elem = Int;
-  glob onedef cons Elem size = sizeof...(Is);
+  onedef glob cons Elem size = sizeof...(Is);
 };
 CX_CONCEPT_GEN_TEMPL(IntegerSeq, is_integer_seq, CIntegerSeq,
                      VA_(CIntegral Int, Int... Is), VA_(Int, Is...));

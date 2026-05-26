@@ -3,7 +3,8 @@
 #ifndef CX_CONF_PRELUDE_HH
 #define CX_CONF_PRELUDE_HH
 
-#include <libcx/conf/macro.hh>
+#include "libcx/conf/hal.hh"
+#include "libcx/conf/macro.hh"
 
 namespace cx {
 
@@ -17,8 +18,8 @@ onedef cons i32 Error_None = 0;
 onedef cons i32 Operation_Fail = 1;
 onedef cons i32 Invalid_Ptr = 2;
 onedef cons i32 Invalid_Arg = 3;
-onedef cons i32 Bad_Alloc = 4;
-onedef cons i32 Invalid_Mode = 5;
+onedef cons i32 Alloc_Exhausted = 4;
+onedef cons i32 Alloc_Invalid_Mode = 5;
 
 }
 

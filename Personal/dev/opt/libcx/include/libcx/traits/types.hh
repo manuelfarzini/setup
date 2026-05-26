@@ -4,7 +4,6 @@
 #define CX_TRAITS_TYPES_HH
 
 #include "libcx/traits/qualifier.hh"
-#include "libcx/traits/relation.hh"
 
 namespace cx {
 
@@ -100,7 +99,8 @@ predicate is_callable = is_func_any<T> || is_fntor_type<T>;
 
 // Void
 
-template<typename T> predicate is_void = same_as<rm_cv<T>, void>;
+template<typename T> predicate is_void = false;
+template<> predicate is_void<void> = true;
 
 // TODO:
 // template<typename T> predicate is_smart_ptr = false;

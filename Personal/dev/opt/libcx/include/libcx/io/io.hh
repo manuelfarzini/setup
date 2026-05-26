@@ -8,8 +8,7 @@
 namespace cx::io {
 
 template<typename... Ts>
-inln onedef cons fn printf(fmt::format_string<Ts...> fmts, Ts&&... args) noexce
-    -> void
+inln onedef cons fn printf(fmt::format_string<Ts...> fmts, Ts&&... args) noexce -> void
 {
     fast_io::io::print(fmt::format(fmts, std::forward<Ts>(args)...));
 }

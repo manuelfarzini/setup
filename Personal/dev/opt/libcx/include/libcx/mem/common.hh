@@ -3,7 +3,6 @@
 #ifndef LIBCX_MEM_COMMON_HH
 #define LIBCX_MEM_COMMON_HH
 
-#include <cstdio>
 #include "libcx/config.hh"
 #include "libcx/traits.hh"
 #include "libcx/concepts.hh"
@@ -16,8 +15,8 @@ CX_HIDE_FROM_ABI        cons fn operator delete(void*, void*)  noexce -> void  {
 namespace cx {
 inline namespace mem {
 
-onedef cons isize PTR_SIZE  = size_of(ptrany);
-onedef cons isize PTR_ALIGN = align_of(ptrany);
+onedef cons isize PTR_SIZE  = size_of(mutaptr);
+onedef cons isize PTR_ALIGN = align_of(mutaptr);
 onedef cons isize MAX_SIZE  = size_of(max_align_t);
 onedef cons isize MAX_ALIGN = align_of(max_align_t);
 onedef cons isize DEF_ALIGN = 2 * MAX_ALIGN;
@@ -40,10 +39,10 @@ predicate is_over_aligned =  align_of(Tp) > align_of(max_align_t);
     @pre
     - `src` and `dst` have `size` bytes.
 **/
-cons fn mem_copy(muta<> dst, read<> src, isize size) -> void
+inln cons fn mem_move(void* dst, void const* src, isize size) -> void
 {
     // NOTE(manu)
-    // should i implement mem_copy? libc is already heavily optimized
+    // should i implement mem_move? libc is already heavily optimized
     ::memmove(dst, src, size);
 }
 
@@ -56,9 +55,9 @@ cons fn mem_copy(muta<> dst, read<> src, isize size) -> void
     - `src` and `dst` have `num` elements
 **/
 template<typename T>
-cons fn mem_copy(muta<T> dst, read<T> src, isize num) noexce -> void where (not is_void<T>)
+inln cons fn mem_move(T* dst, T const* src, isize num) noexce -> void where (not is_void<T>)
 {
-    mem_copy(dst, src, num * size_of(T));
+    mem_move(mutaptr(dst), mutaptr(src), num * size_of(T));
 }
 
 /** 
@@ -71,7 +70,7 @@ cons fn mem_copy(muta<T> dst, read<T> src, isize num) noexce -> void where (not 
     - `src` and `dst` have `num` elements
 **/
 template<CpOrMvAsble T>
-cons fn mem_take(muta<T> dst, read<T> src, isize num) noexce -> void where (not is_void<T>)
+cons fn mem_take(T* dst, T const* src, isize num) noexce -> void where (not is_void<T>)
 {
     for (isize i = 0; i < num; i++) {
         dst[i] = take(src[i]);
@@ -87,16 +86,16 @@ cons fn mem_take(muta<T> dst, read<T> src, isize num) noexce -> void where (not 
     @pre
     - `data` has at least `n` bytes.
 **/
-cons fn mem_set(ptrany data, u8 val, isize size) -> ErrorCode
+cons fn mem_set(mutaptr data, u8 val, isize size) -> ErrorCode
 {
     // NOTE(manu)
-    // > libc wrapper, actually is the fastest
-    // > found that is the fastest on my m1 macbook pro
+    // - libc wrapper, actually is the fastest
+    // - found that is the fastest on my m1 macbook pro
     //   since it is implemented in arm64 asm
-    // > maybe on other platoforms I should use another version
+    // - maybe on other platoforms I should use another version
 
     // #if defined(CX_SYSTEM_OSX)
-        ptrany res = ::memset(data, val, size);
+        mutaptr res = ::memset(data, val, size);
         if (!res) {
             return Operation_Fail;
         }
@@ -115,7 +114,7 @@ cons fn mem_set(ptrany data, u8 val, isize size) -> ErrorCode
     - `data` has at least `size` bytes.
     - `data` is not null
 **/
-cons fn mem_zero(ptrany data, isize size) -> ErrorCode
+cons fn mem_zero(mutaptr data, isize size) -> ErrorCode
 {
     return mem_set(data, 0, size);
 }
@@ -133,7 +132,7 @@ cons fn mem_zero(ptrany data, isize size) -> ErrorCode
     - intended to be used when dealing with virtual memory as it
       would be already mapped to a 0 page
 **/
-cons fn mem_zero_condition(ptrany data, isize size) -> ErrorCode
+cons fn mem_zero_condition(mutaptr data, isize size) -> ErrorCode
 {
     // NOTE(manu)
     // gb.h memset inspired version
@@ -141,6 +140,7 @@ cons fn mem_zero_condition(ptrany data, isize size) -> ErrorCode
     // libc ::memset with 0s if the memory is already mapped to a 0 page
     // probably I can improve this even more under certain assumptions,
     // like using a u64 splat directly
+    // TODO:(manu) what about using ::memset call conditionally?
     if (data == null) unlike {
         return Invalid_Ptr;
     }
@@ -157,7 +157,7 @@ cons fn mem_zero_condition(ptrany data, isize size) -> ErrorCode
             return none;      \
         }
 
-    ptru8 d = ptru8(data);
+    byteptr d = byteptr(data);
 
     zero_if_not(d[0]);
     zero_if_not(d[size - 1]);
@@ -183,7 +183,7 @@ cons fn mem_zero_condition(ptrany data, isize size) -> ErrorCode
     d += k;
     size -= k;
     size &= -4;
-    auto d64 = ptru64(d);
+    auto d64 = cast(u64*,d);
     for (; size >= 32 ;) {
         if ((d64[0] | d64[1] | d64[2] | d64[3]) != 0) {
             d64[0] = 0;
@@ -197,7 +197,7 @@ cons fn mem_zero_condition(ptrany data, isize size) -> ErrorCode
     }
 
     for (; size >= 4 ;) {
-        zero_if_not(*ptru32(d));
+        zero_if_not(*cast(u32*, d));
         d += 4;
         size -= 4;
     }
@@ -219,7 +219,7 @@ cons fn mem_zero_condition(ptrany data, isize size) -> ErrorCode
     - sufficient, properly aligned storage at `ptr`.
 **/
 template<ZeroInitble T>
-nodisc inln cons fn init_ty(ptrany ptr, isize num) noexce -> ErrorCode
+nodisc inln cons fn init_type(mutaptr ptr, isize num) noexce -> ErrorCode
 {
     if (num == 0) {
         return Invalid_Arg;
@@ -251,7 +251,7 @@ nodisc inln cons fn init_ty(ptrany ptr, isize num) noexce -> ErrorCode
 **/
 template<ZeroInitble T, typename... Args>
 nodisc cons fn init_va(
-    ptrany ptr, isize num, Args const&... args
+    mutaptr ptr, isize num, Args const&... args
 ) noexce -> Res<T*, ErrorCode>
     where is_ctble<T, Args const&...>
 {
@@ -281,7 +281,7 @@ nodisc cons fn init_va(
     - The elements are copied.
 **/
 template<typename T, typename U>
-cons fn init_ls(ptrany ptr, initls<U> lst) noexce -> ErrorCode
+cons fn init_list(mutaptr ptr, initls<U> lst) noexce -> ErrorCode
     where is_ctble<T, U const&>
 {
     if (ptr == null) {

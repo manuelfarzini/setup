@@ -50,7 +50,7 @@ inln cons fn err_make() noexce -> ErrorPointer
 {
     using ErrMsg = rm_cvref<decltype(err)>;
     auto* res = (IErrorMessage*) malloc(sizeof(ErrMsg));
-    mem::mem_copy(res, &err, sizeof(ErrMsg));
+    mem::mem_move(res, &err, sizeof(ErrMsg));
     res = (ErrMsg*) ((uptr) res | (uptr) Tag);
     return ErrorPointer{res};
 }

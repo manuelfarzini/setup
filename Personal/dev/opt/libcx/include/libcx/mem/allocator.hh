@@ -3,240 +3,370 @@
 #ifndef CX_MEM_ALLOCATOR_HH
 #define CX_MEM_ALLOCATOR_HH
 
+#include "libcx/conf/type.hh"
+#include "libcx/conf/prelude.hh"
+#include "libcx/traits/types.hh"
 #include "libcx/mem/common.hh"
-#include "libcx/mem/heap.hh"
+#include "libcx/mem/pointer.hh"
+
+////////////////////////////////////////////
+// Prelude
 
 namespace cx {
 inline namespace mem {
 
-// -----------------------------------------
-// Common
+onedef cons u32 AllocFlags_None    = 0;
+onedef cons u32 AllocFlags_Zero    = BIT<0>;
+onedef cons u32 AllocFlags_Default = AllocFlags_Zero;
 
-enum AllocatorMode : u8 {
-    Mode_Alloc,
-    Mode_Free,
-    Mode_Resize,
-    Mode_FreeAll,
-    // Mode_AllocTyped,
-    // Mode_ResizeTyped,
-    // Mode_FreeTyped,
+///////////////////////////////////////////
+// Allocator contract
+
+template<typename Alc>
+concept SomeAllocator = requires(
+    Alc&      alc,
+    mutaptr    old_ptr,
+    isize     old_size,
+    isize     new_size,
+    isize     old_align,
+    isize     new_align,
+    u32       flags
+) {
+    { aligned_alloc(alc, new_size, new_align, flags) }
+    noexce -> SameAs<Res<mutaptr, ErrorCode>>;
+
+    { aligned_resize(alc, old_ptr, new_size, old_size, new_align, old_align, flags) }
+    noexce -> SameAs<Res<mutaptr, ErrorCode>>;
+
+    { aligned_free(alc, old_ptr) } noexce -> SameAs<ErrorCode>;
 };
 
-typedef auto AllocatorProc(
-    ptrany           alc_data,
-    AllocatorMode    mode,
-    isize            size,
-    isize            align,
-    ptrany           old_ptr,
-    isize            old_size,
-    b32              zero_mem
-) noexce -> Res<ptrany, ErrorCode>;
+////////////////////////////////////////////
+// Allocator public API
 
-#define CX_ALLOCATOR_PROC(name)                   \
-    onedef auto name(                             \
-        ptrany           alc_data,                \
-        AllocatorMode    mode,                    \
-        isize            size,                    \
-        isize            align       = DEF_ALIGN, \
-        ptrany           old_ptr     = null,      \
-        isize            old_size    = 0,         \
-        b32              zero_mem    = true       \
-    ) noexce -> Res<ptrany, ErrorCode>
+// Static allocator interface.
 
-struct Allocator {
-    AllocatorProc*    call;
-    ptrany            data;
+#define ALIGNED_ALLOC(name, Alc)               \
+    cons fn name(                              \
+        Alc&     alc,                          \
+        isize    size,                         \
+        isize    align  =  DEF_ALIGN,          \
+        u32      flags  =  AllocFlags_Default  \
+    ) noexce -> Res<mutaptr, ErrorCode>
+
+#define ALIGNED_RESIZE(name, Alc)                   \
+    cons fn name(                                   \
+        Alc&      alc,                              \
+        mutaptr    old_ptr,                          \
+        isize     new_size,                         \
+        isize     old_size,                         \
+        isize     new_align  =  DEF_ALIGN,          \
+        isize     old_align  =  DEF_ALIGN,          \
+        u32       flags      =  AllocFlags_Default  \
+    ) noexce -> Res<mutaptr, ErrorCode>
+
+#define ALIGNED_FREE(name, Alc)  \
+    cons fn name(                \
+        Alc& alc, mutaptr ptr     \
+    ) noexce -> ErrorCode
+
+// Runtime allocator interface.
+
+#define ALIGNED_ALLOC_VIEW(name)                \
+    fn name(                                    \
+        mutaptr    alc,                          \
+        isize     size,                         \
+        isize     align  =  DEF_ALIGN,          \
+        u32       flags  =  AllocFlags_Default  \
+    ) noexce -> Res<mutaptr, ErrorCode>
+
+#define ALIGNED_RESIZE_VIEW(name)                   \
+    fn name(                                        \
+        mutaptr    alc,                              \
+        mutaptr    old_ptr,                          \
+        isize     old_size,                         \
+        isize     new_size,                         \
+        isize     old_align  =  DEF_ALIGN,          \
+        isize     new_align  =  DEF_ALIGN,          \
+        u32       flags      =  AllocFlags_Default  \
+    ) noexce -> Res<mutaptr, ErrorCode>
+
+#define ALIGNED_FREE_VIEW(name)  \
+    fn name(                     \
+        mutaptr alc, mutaptr ptr   \
+    ) noexce -> ErrorCode
+
+////////////////////////////////////////////
+// Allocator view runtime adapter
+
+// Allocator view definition.
+
+using AlignedFreeView = func(
+    mutaptr data, mutaptr ptr
+) noexce -> ErrorCode;
+
+using AlignedAllocView = func( 
+    mutaptr    data,
+    isize     size,
+    isize     align,
+    u32       flags
+) noexce -> Res<mutaptr, ErrorCode>;
+
+using AlignedResizeView = func(
+    mutaptr    data, 
+    mutaptr    old_ptr,
+    isize     new_size,
+    isize     old_size,
+    isize     new_align,
+    isize     old_align,
+    u32       flags
+) noexce -> Res<mutaptr, ErrorCode>;
+
+struct AllocatorView
+{
+    mutaptr              data;
+    AlignedAllocView*   alloc;
+    AlignedResizeView*  resize;
+    AlignedFreeView*    free;
 };
 
-fn cx_mem_alloc(
-    Allocator alctor, isize size, isize align = DEF_ALIGN, b32 zero_mem = true
-) noexce -> Res<ptrany, ErrorCode> {
-    if (size == 0) {
+template<SomeAllocator Alc>
+ALIGNED_ALLOC_VIEW(aligned_alloc_view)
+{
+    return aligned_alloc(cast(Alc*, alc)->data, size, align, flags);
+}
+
+template<SomeAllocator Alc>
+ALIGNED_RESIZE_VIEW(aligned_resize_view)
+{
+    return aligned_resize(cast(Alc*, alc)->data, old_ptr, new_size, old_size, new_align, old_align, flags);
+}
+
+template<SomeAllocator Alc>
+ALIGNED_FREE_VIEW(aligned_free_view)
+{
+    return aligned_free(cast(Alc*, alc)->data, ptr);
+}
+
+// Allocator view dispatcher.
+
+ALIGNED_ALLOC(aligned_alloc, AllocatorView)
+{
+    return alc.alloc(alc.data, size, align, flags);
+}
+
+ALIGNED_RESIZE(aligned_resize, AllocatorView)
+{
+    return alc.resize(alc.data, old_ptr, new_size, old_size, new_align, old_align, flags);
+}
+
+ALIGNED_FREE(aligned_free, AllocatorView)
+{
+    return alc.free(alc.data, ptr);
+}
+
+template<SomeAllocator Alc>
+nodisc fn allocator_view(Alc& alc) noexce -> AllocatorView
+{
+    return AllocatorView{
+        mutaptr(&alc),
+        aligned_alloc_view<Alc>,
+        aligned_resize_view<Alc>,
+        aligned_free_view<Alc>
+    };
+}
+
+///////////////////////////////////////////
+// Heap allocator definition
+
+struct HeapAllocator {};
+
+glob HeapAllocator HEAP_ALLOCATOR{};
+comp fn heap_allocator() noexce -> HeapAllocator& { return HEAP_ALLOCATOR; }
+
+ALIGNED_FREE(aligned_free, HeapAllocator)
+{
+    cx_unused(alc);
+    if (ptr != null) {
+        ::free(cast(void** ,ptr)[-1]);
+    }
+    return Error_None;
+}
+
+
+cons fn heap_alloc(isize size, b32 flags = AllocFlags_Default) noexce -> mutaptr
+{
+    if (size <= 0) {
+        return null;
+    }
+
+    if (flags & AllocFlags_Zero) {
+        return ::calloc(1, size);
+    } else {
+        return ::malloc(size);
+    }
+}
+
+cons fn heap_resize(mutaptr ptr, isize new_size) noexce -> mutaptr
+{
+    return ::realloc(ptr, new_size);
+}
+
+cons fn heap_free(mutaptr ptr) noexce -> void
+{
+    return ::free(ptr);
+}
+
+ALIGNED_ALLOC(aligned_alloc, HeapAllocator) {
+    // XXX:(manu)
+    // - Should I impose bytes % align == 0 like std::aligned_alloc?
+    // - What if size < 0? Should I implement some logic?
+    cx_unused(alc);
+    if (size <= 0) {
         return {null, Invalid_Arg};
     }
-    return alctor.call(alctor.data, Mode_Alloc, size, align, null, 0, zero_mem);
-}
-
-inln fn cx_mem_free(Allocator alctor, ptrany ptr) -> Res<ptrany, ErrorCode>
-{
-    return alctor.call(alctor.data, Mode_Free, 0, 0, ptr, 0, true);
-}
-
-inln fn cx_mem_resize(
-    Allocator    alctor, 
-    ptrany       ptr,
-    isize        old_size,
-    isize        new_size,
-    isize        align        = DEF_ALIGN 
-) noexce -> Res<ptrany, ErrorCode> {
-    if (new_size == 0) {
-        if (ptr != null) {
-            return alctor.call(alctor.data, Mode_Free, 0, 0, ptr, old_size, true);
-        }
-        return {null, Invalid_Arg};
-    } else if (ptr == null) {
-        return alctor.call(alctor.data, Mode_Alloc, new_size, align, null, 0, true);
-    } else if (old_size == new_size && uptr(ptr) % uptr(align) == 0) {
-        return alctor.call(alctor.data, Mode_Alloc, new_size, align, null, 0, false);
+    if (align < DEF_ALIGN) {
+        align = DEF_ALIGN;
     }
-    return alctor.call(alctor.data, Mode_Resize, new_size, align, ptr, old_size, true);
+    // assert(is_power_of_two(align) && "`align` must be a power of 2");
+
+    isize space = PTR_SIZE + (align - 1) + size;
+    mutaptr alloced_mem = heap_alloc(space, flags);
+    if (alloced_mem == null) {
+        return {null, Alloc_Exhausted};
+    }
+
+    mutaptr aligned_mem = align_up(ptr_add(alloced_mem, PTR_SIZE), align);
+    (cast(void** ,aligned_mem))[-1] = alloced_mem;
+
+    if (flags & AllocFlags_Zero) {
+        mem_zero(aligned_mem, size);
+    }
+
+    return {aligned_mem, none};
 }
 
-inln fn cx_mem_free_all(Allocator alctor) noexce -> Res<ptrany, ErrorCode>
-{
-    return alctor.call(alctor.data, Mode_FreeAll, 0, 0, null, 0, true);
-}
 
 /**
-    @par
-    - `size`: the size of the memory to be freed [bytes]
+    @ret
+    - `[new_ptr, none]` on success
+    - otherwise `panic`
 **/
-fn cx_mem_free_size(
-    Allocator alctor, ptrany ptr, isize size
-) noexce -> Res<ptrany, ErrorCode> {
-    return alctor.call(alctor.data, Mode_Free, 0, 0, ptr, size, true);
-}
-
-//------------------------------------------
-// Heap
-
-CX_ALLOCATOR_PROC(heap_allocator_proc)
-{
-    cx_unused(alc_data);
-
-    switch (mode) {
-        case Mode_Alloc:
-            return heap_aligned_alloc(size, align, old_ptr, old_size, zero_mem);
-
-        case Mode_Free: 
-            heap_aligned_free(old_ptr);
-            return {null, none};
-
-        case Mode_Resize:
-            return heap_aligned_resize(old_ptr, old_size, size, align, zero_mem);
-
-        case Mode_FreeAll:
-            return {null, Invalid_Mode};
- 
-        // case Mode_AllocTyped:
-        //     return heap_aligned_alloc(size, align, old_ptr, old_size, false);
-
-        // case Mode_FreeTyped:
-        //     heap_aligned_free(old_ptr);
-        //     return {null, none};
-
-        // case Mode_ResizeTyped:
-        //     return heap_aligned_resize(old_ptr, old_size, size, align, false);
-
-        default:
-            // TODO:(manu) Should I use something like cx_panic()?
-            cx_unreachable();
+ALIGNED_RESIZE(aligned_resize, HeapAllocator) {
+    if (new_size <= 0) {
+        aligned_free(alc, old_ptr);
+        return {null, null};
     }
-}
 
-inln priv cons fn heap_allocator() -> Allocator
-{
-    return Allocator{heap_allocator_proc, null};
-}
+    if (old_ptr == null) {
+        return aligned_alloc(alc, new_size, new_align, flags);
+    }
 
-/*                                         *
-* Make                                     *
-*                                         */
+    if (new_align < DEF_ALIGN) {
+        new_align = DEF_ALIGN;
+    }
+    // assert(is_power_of_two(new_align) && "`new_align` must be a power of 2");
 
-/**
-    TODO: write the correct concept
-**/
-template<typename T>
-nodisc fn make_array(
-    isize num, Allocator alctor = heap_allocator(), isize align = size_of(T)
-) noexce -> Res<T*, ErrorCode> {
-    // if constexpr (is_zeroable<T>) {
-    //     auto [ptr, err] = cx_alloc(alctor, num * size_of(T), align);
-    //     if (err) {
-    //         return {null, err};
-    //     }
-    //     return {cast(T*, ptr), err};
-    //} else {
-        auto [ptr, err] = cx_mem_alloc(alctor, num * size_of(T), align, false);
-        if (err) {
-            return {null, err};
+    mutaptr alloced_mem = null;
+    mutaptr aligned_mem = null;
+    b32 force_copy = old_align > DEF_ALIGN || new_align > DEF_ALIGN;
+    isize space = PTR_SIZE + (new_align - 1) + new_size;
+
+    if (force_copy) {
+        alloced_mem = heap_alloc(space, AllocFlags_None);
+        if (alloced_mem == null) {
+            return {null, Alloc_Exhausted};
         }
-        init_type<T>(ptr, num);
-        return {cast(T*, ptr), none};
-    // }
+        aligned_mem = align_up(ptr_add(alloced_mem, PTR_SIZE), new_align);
+        (cast(void** ,aligned_mem))[-1] = alloced_mem;
+        mem_move(aligned_mem, old_ptr, cx_min2(old_size, new_size));
+        aligned_free(alc, old_ptr);
+
+    } else {
+        mutaptr base_ptr = cast(void** ,old_ptr)[-1];
+        alloced_mem = heap_resize(base_ptr, space);
+        if (alloced_mem == null) {
+            return {null, Alloc_Exhausted};
+        }
+        aligned_mem = align_up(ptr_add(alloced_mem, PTR_SIZE), new_align);
+        (cast(void** ,aligned_mem))[-1] = alloced_mem;
+    }
+
+    if ((flags & AllocFlags_Zero) && (new_size > old_size)) {
+        // actually using std malloc and realloc, not os specific primitives, so
+        // the new_region should be zeroed in windows too
+        mutaptr new_region = ptr_add(aligned_mem, old_size);
+        // if not dealing with vm paging plain mem_zero is faster than conditional
+        mem_zero(new_region, new_size - old_size);
+    }
+
+    return {aligned_mem, none};
 }
 
-template<typename T>
-nodisc fn delete_array(
-    T* ptr, isize num, Allocator alctor = heap_allocator()
-) noexce -> Res<ptrany, ErrorCode> {
-    auto [_, err] = deinit_type<T>(ptr, num);
-    if (err) {
-        return {_, err};
-    }
-    return cx_mem_free_size(alctor, ptr, num);
+template<ZeroInitble T>
+cons fn aligned_alloc_type(HeapAllocator alc, isize num) -> Res<T*, ErrorCode>
+{
+    auto [ptr, err] = aligned_alloc(alc, num * size_of(T), align_of(T)) or_return {null, err};
+    return {cast(T*, ptr), err};
 }
+
+////////////////////////////////////////////
+// Arena allocator definition
+
+struct Arena {
+    byteptr  data      {};
+    isize    data_cap  {};
+    isize    curr_off  {};
+    isize    prev_off  {};
+};
+
+struct ArenaAllocator { Arena& arena; };
+static_assert(size_of(ArenaAllocator) == PTR_SIZE);
+
+cons fn arena_init(Arena& arena, isize cap) noexce -> ErrorCode
+{
+    auto [ptr, err] = aligned_alloc(heap_allocator(), cap, DEF_ALIGN, AllocFlags_Default)
+        or_return err;
+    arena.data = byteptr(ptr);
+    arena.data_cap = cap;
+    arena.curr_off = 0;
+    arena.prev_off = 0;
+    return Error_None;
+}
+
+cons fn arena_allocator(Arena& arena) -> ArenaAllocator
+{
+    return ArenaAllocator{arena};
+}
+
+ALIGNED_FREE(aligned_free, ArenaAllocator)
+{
+    cx_unused(alc);
+    cx_unused(ptr);
+    return Alloc_Invalid_Mode;
+}
+
+// NOTE(manu) Actually super basic version, should implement virtual mem allocator too.
+ALIGNED_ALLOC(aligned_alloc, ArenaAllocator)
+{
+    byteptr old_ptr = ptr_add(alc.arena.data, alc.arena.curr_off);
+    isize off = align_up(isize(old_ptr), align) - isize(alc.arena.data);
+    if (off + size <= alc.arena.data_cap) {
+        mutaptr ptr = ptr_add(alc.arena.data, off);
+        alc.arena.prev_off = off;
+        alc.arena.curr_off = off + size;
+        if (flags & AllocFlags_Zero) {
+            mem_zero(ptr, size);
+        }
+        return {ptr, none};
+    }
+    return {null, Alloc_Exhausted};
+}
+
+static_assert(SomeAllocator<HeapAllocator>);
+// static_assert(SomeAllocator<ArenaAllocator>);
+// static_assert(SomeAllocator<AllocatorView>);
 
 }       // namespace mem
 }       // namespace cx
 #endif  // CX_MEM_ALLOCATOR_HH
-
-
-////////////////////////////////////////////////////////////////
-//
-//
-//
-// Unused
-//
-//
-
-// NOTE:(manu) - old
-// We have also the typed version of the allocator modes in
-// to value init non primitive types within the `make_type` fn.
-// This can be further extended with the different init_type procs.
-// Is this is a good idea? Should the non strictly zero init be done
-// explicitly caller side? Is more code actually useful?
-// Consider that typed versions are useful with containers (arrays, maps, ...)
-
-
-// /**
-//   Allocates memory and places `num` contiguous `T` objects using `args`.
-//
-//   @Arguments
-//   - `num`: the number of objects
-//
-//   @Returns
-//   - `null` if the allocation fails or `num == 0`
-//   - `ptr` pointer otherwise
-// **/
-// template<typename T> nodisc onedef fn heap_make_type(isize num) noexce -> Res<T*, ErrorCode> {
-//     auto [ptr, err] = heap_aligned_alloc_type<T>(num);
-//     if (err) {
-//         return {null, err};
-//     }
-//     return init_ls<T>(ptr, num);
-// }
-
-// /**
-//   Deinitializes `num` contiguous `T` objects at `ptr` and frees the memory.
-//
-//   @Parameters
-//   - `ptr`: the pointer to the first element
-//   - `num`: the number of elements to deinitialize
-//
-//   @Returns
-//   - `{null, err}` if `ptr` is `null` or `num` is `0`;
-//   - `{ptr, none}` otherwise
-//
-//   @Requires
-//   - `ptr` is properly aligned
-//   - `ptr` has `num` elements
-// **/
-// template<typename T>
-// onedef fn heap_remove_type(T* ptr, isize num) noexce -> Res<Empty, ErrorCode> {
-//     auto [_, err] = deinit_type<T>(ptr, num);
-//     if (err) {
-//         return {_, uti::take(err)};
-//     }
-//     return heap_aligned_free(ptr);
-// }

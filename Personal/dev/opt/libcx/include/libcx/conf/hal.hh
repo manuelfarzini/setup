@@ -3,10 +3,9 @@
 #ifndef CX_CONF_HAL_HH
 #define CX_CONF_HAL_HH
 
-// =========================================
+///////////////////////////////////////////
 // Architecture
 // Supported: 32 bit and 64 bit
-// =========================================
 
 #ifndef CX_ARCH
     #define CX_ARCH 1
@@ -24,9 +23,8 @@
     #define CX_ARCH_32 1
 #endif
 
-// =========================================
+////////////////////////////////////////////
 // Endianness
-// =========================================
 
 #ifndef CX_IS_BIG_ENDIAN
     #if CX_COMPILER_MSVC
@@ -38,10 +36,9 @@
     #endif
 #endif
 
-// =========================================
+///////////////////////////////////////////
 // Operating System
 // Supported: 32 bit and 64 bit
-// =========================================
 
 #ifndef CX_SYSTEM
     #define CX_SYSTEM 0
@@ -96,10 +93,9 @@
     #endif
 #endif
 
-// =========================================
-//  Compiler
-//  Supported: MSVC, GCC, clang
-// =========================================
+///////////////////////////////////////////
+// Compiler
+// Supported: MSVC, GCC, clang
 
 #ifndef CX_COMPILER
     #define CX_COMPILER 0
@@ -126,10 +122,8 @@
     #error "This compiler is not supported"
 #endif
 
-
-// =========================================
+///////////////////////////////////////////
 // CPU, CACHE, SIMD
-// =========================================
 
 #ifndef CX_CPU
     #define CX_CPU 1
@@ -188,9 +182,8 @@
     #error "Unknown CPU."
 #endif
 
-// =========================================
+///////////////////////////////////////////
 // Headers
-// =========================================
 
 #if not CX_SYSTEM_WIN
     #include <stddef.h>
@@ -311,9 +304,12 @@
     #include <arm_neon.h>
 #endif
 
-// =========================================
+#if CX_TEST
+    #include <stdio.h>
+#endif
+
+////////////////////////////////////////////
 // Primitive types
-// =========================================
 
 #if CX_COMPILER_MSVC
     #if _MSC_VER < 1300
@@ -368,32 +364,9 @@ typedef ptrdiff_t isize;
     typedef intptr_t iptr;
 #endif
 
-typedef void* ptrany;
-typedef void const* readany;
-typedef void** diptrany;
-
-typedef u8* ptru8;
-typedef u8 const* readu8;
-typedef u8** diptru8;
-
-typedef u16* ptru16;
-typedef u16 const* readu16;
-typedef u16** diptru16;
-
-typedef u32* ptru32;
-typedef u32 const* readu32;
-typedef u32** diptru32;
-
-typedef u64* ptru64;
-typedef u64 const* readu64;
-typedef u64** diptru64;
-
-typedef i64* ptri64;
-typedef i64 const* readi64;
-typedef i64** diptri64;
-
-typedef uptr* diuptr;
-typedef iptr* diiptr;
+typedef void* mutaptr;
+typedef void const* readptr;
+typedef u8* byteptr;
 
 typedef float f32;
 typedef double f64;
@@ -423,9 +396,8 @@ typedef i32 b32;
     #endif
 #endif
 
-// =========================================
+///////////////////////////////////////////
 // Extended language types
-// =========================================
 
 #ifndef CX_HAS_CHAR8
     #if defined(__cpp_char8_t)
@@ -472,9 +444,8 @@ typedef i32 b32;
     #endif
 #endif
 
-// =========================================
+////////////////////////////////////////////
 // Limits
-// =========================================
 
 #ifndef CX_LIMIT
     #define CX_LIMIT 1
@@ -553,6 +524,61 @@ typedef i32 b32;
         inline constexpr f64 f64_min = F64_MIN;
         inline constexpr f64 f64_max = F64_MAX;
     #endif
+#endif
+
+////////////////////////////////////////////
+// Assertion handling
+
+#ifndef cx_debug_trap
+    #if CX_COMPILER_MSVC
+        #if _MSC_VER < 1300
+            #define cx_debug_trap() __asm int 3
+        #else
+            #define cx_debug_trap() __debugbreak()
+        #endif
+    #elif CX_COMPILER_CLANG
+        #define cx_debug_trap() __builtin_debugtrap()
+    #elif CX_COMPILER_GCC
+        #define cx_debug_trap() __builtin_trap()
+    #endif
+#endif
+
+#ifndef cx_unreachable
+    #if CX_COMPILER_MSVC
+        #define cx_unreachable       \
+            do {                     \
+                cx_debug_trap();     \
+                __assume(0);         \
+            } while (0)
+    #else
+        #define cx_unreachable           \
+            do {                         \
+                cx_debug_trap();         \
+                __builtin_unreachable(); \
+            } while (0)
+    #endif
+#endif
+
+#ifndef cx_assert_msg
+#define cx_assert_msg(cond, msg, ...)                                             \
+    if (!(cond)) {                                                                \
+        cx_assert_handler("Assertion Failure", STR_(cond), CX_FILE, i64(CX_LINE), \
+                          msg __VA_OPT__(,) __VA_ARGS__);                         \
+        cx_debug_trap;                                                            \
+    }
+#endif
+
+#ifdef CX_DISABLE_ASSERT
+#   define cx_assert(cond) cx_unused(cond)
+#endif
+
+#ifndef cx_assert
+    #define cx_assert(cond) cx_assert_msg(cond, null);
+#endif
+
+#ifndef cx_panic
+    #define cx_panic(msg, ...) \
+        cx_assert_handler("Panic", null, CX_FILE, i64(CX_LINE), msg __VA_OPT__(,) __VA_ARGS__);
 #endif
 
 #endif  // CX_CONF_HAL_HH

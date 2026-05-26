@@ -11,12 +11,12 @@
 namespace cx {
 inline namespace mem {
 
-cons fn heap_free(ptrany ptr) noexce -> void
+cons fn heap_free(mutaptr ptr) noexce -> void
 {
     return ::free(ptr);
 }
 
-cons fn heap_alloc(isize size, b32 zero_mem = true) noexce -> ptrany
+cons fn heap_alloc(isize size, b32 zero_mem = true) noexce -> mutaptr
 {
     if (size <= 0) {
         return null;
@@ -29,25 +29,25 @@ cons fn heap_alloc(isize size, b32 zero_mem = true) noexce -> ptrany
     }
 }
 
-cons fn heap_resize(ptrany ptr, isize new_size) noexce -> ptrany
+cons fn heap_resize(mutaptr ptr, isize new_size) noexce -> mutaptr
 {
     return ::realloc(ptr, new_size);
 }
 
-cons fn heap_aligned_free(ptrany ptr) noexce -> void
+cons fn heap_aligned_free(mutaptr ptr) noexce -> void
 {
     if (ptr != null) {
-        ::free(diptrany(ptr)[-1]);
+        ::free(cast(void** ,ptr)[-1]);
     }
 }
 
 nodisc cons fn heap_aligned_alloc(
     isize     size,
     isize     align       = DEF_ALIGN,
-    ptrany    old_ptr     = null,
+    mutaptr    old_ptr     = null,
     isize     old_size    = 0,
     b32       zero_mem    = true
-) noexce -> Res<ptrany, ErrorCode> {
+) noexce -> Res<mutaptr, ErrorCode> {
     //  NOTE(manu)
     //  should I impose bytes % align == 0 like std::aligned_alloc?
 
@@ -62,9 +62,9 @@ nodisc cons fn heap_aligned_alloc(
     isize space = align - 1 + size + PTR_SIZE;
     b32 force_copy = (old_ptr != null) && (align > PTR_ALIGN);
 
-    ptrany alloced_mem = null;
+    mutaptr alloced_mem = null;
     if (old_ptr != null && !force_copy) {
-        ptrany origin_ptr = diptrany(old_ptr)[-1];
+        mutaptr origin_ptr = cast(void** ,old_ptr)[-1];
         alloced_mem = heap_resize(origin_ptr, space);
     } else {
         alloced_mem = heap_alloc(space, zero_mem);
@@ -73,16 +73,16 @@ nodisc cons fn heap_aligned_alloc(
     if (alloced_mem == null) {
         heap_aligned_free(old_ptr);
         heap_aligned_free(alloced_mem);
-        return {null, Bad_Alloc};
+        return {null, Alloc_Exhausted};
     }
 
-    ptrany aligned_mem = ptr_add(alloced_mem, PTR_SIZE);
+    mutaptr aligned_mem = ptr_add(alloced_mem, PTR_SIZE);
     uptr aligned_ptr = (uptr(aligned_mem) + align - 1) & ~(align - 1);
-    aligned_mem = ptrany(aligned_ptr);
-    (diptrany(aligned_mem))[-1] = alloced_mem;
+    aligned_mem = mutaptr(aligned_ptr);
+    (cast(void** ,aligned_mem))[-1] = alloced_mem;
 
     if (force_copy) {
-        mem_copy(aligned_mem, old_ptr, cx_min2(size, old_size));
+        mem_move(aligned_mem, old_ptr, cx_min2(size, old_size));
         heap_aligned_free(old_ptr);
     }
 
@@ -90,12 +90,12 @@ nodisc cons fn heap_aligned_alloc(
 }
 
 cons fn heap_aligned_resize(
-    ptrany    ptr,
+    mutaptr    ptr,
     isize     size,
     isize     new_size,
     isize     new_align,
     b32       zero_mem    = true
-) noexce -> Res<ptrany, ErrorCode> {
+) noexce -> Res<mutaptr, ErrorCode> {
     if (ptr == null) {
         return heap_aligned_alloc(new_size, new_align, null, size, zero_mem);
     }
@@ -108,7 +108,7 @@ cons fn heap_aligned_resize(
         //  actually using std malloc and realloc, not os specific primitives, so
         //  the new_region should be zeroed in windows too
 
-        ptrany new_region = ptr_add(new_ptr, size);
+        mutaptr new_region = ptr_add(new_ptr, size);
 
         //  if not dealing with vm paging plain mem_zero is faster than conditional
         mem_zero(new_region, new_size - size);
@@ -135,7 +135,7 @@ cons fn heap_aligned_resize(
 // nodisc cons fn heap_aligned_alloc_type(
 //     isize     num        = 1,
 //     isize     align      = align_of(T),
-//     ptrany    old_ptr    = null,
+//     mutaptr    old_ptr    = null,
 //     isize     old_num    = 0
 // ) noexce -> Res<T*, AllocatorError> {
 //     auto [new_ptr, err] = heap_aligned_alloc(

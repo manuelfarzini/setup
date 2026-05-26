@@ -1,8 +1,9 @@
-/** @file libcx/concept/type.hh */
+/** @file libcx/concept/type.hh **/
 
 #ifndef CX_CONCEPTS_TYPES_HH
 #define CX_CONCEPTS_TYPES_HH
 
+#include "libcx/traits/relation.hh"
 #include "libcx/traits/types.hh"
 
 namespace cx {
@@ -23,19 +24,13 @@ template<typename T>
 concept CPlainRawPointer = CRawPointer<T> && !is_cv_qual<T> &&
                            !is_cv_qual<rm_ptr<T>>;
 
-template<typename T, typename U>
-concept SameAs = same_as<T, U>;
-
-// template<typename U> concept CStringLike = is_convertible<U, std::string_view>;
+template<typename T, typename U> concept SameAs = same_as<T, U>;
 
 template<typename U, typename... Ts> 
 concept PlainArithmeticAmong = CPlainArithmetic<U> && one_of<U, Ts...>;
 
 template<typename U, typename... Ts>
 concept PlainRawPointerAmong = CPlainRawPointer<U> && one_of<U, Ts...>;
-
-// template<typename U, typename... Ts>
-// concept StringLikeAmong = CStringLike<U> && one_of<U, Ts...>; // XXX: make a pure version?
 
 }       // namespace cx
 }       // namespace uti

@@ -5,6 +5,7 @@
 
 #include <initializer_list>
 
+#include "libcx/conf/hal.hh"
 #include "libcx/conf/macro.hh"
 #include "libcx/uti/tuple.hh"
 
@@ -14,10 +15,7 @@ using cstring = char const*;
 
 template<typename T>        using Void = void;
 template<typename T>        using initls = std::initializer_list<T>;
-template<typename T = void> using read = T const*;
-template<typename T = void> using muta = T*;
 template<typename... Ts>    using Res = Tuple<Ts...>;
-
 
 struct EmptyType {};
 onedef cons EmptyType Empty_Value;

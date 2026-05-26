@@ -5,9 +5,8 @@
 
 #include "libcx/conf/hal.hh"
 
-// =========================================
+////////////////////////////////////////////
 // Syntax
-// =========================================
 
 #ifndef or_return
     #define or_return ; if (err) return
@@ -24,12 +23,15 @@
 #ifndef or_goto
     #define or_goto ; if (err) goto
 #endif
-  
+
 #ifndef nodisc
     #define nodisc [[nodiscard]]
 #endif
 #ifndef noret
     #define noret [[noreturn]]
+#endif
+#ifndef like
+    #define like [[likely]]
 #endif
 #ifndef unlike
     #define unlike [[unlikely]]
@@ -106,9 +108,8 @@
     #define req(...) , typename = cx::uti::enable_if<(__VA_ARGS__)>
 #endif
 
-// =========================================
+////////////////////////////////////////////
 // Attributes and decorators
-// =========================================
 
 #ifndef CX_HIDE_FROM_ABI
     #if CX_COMPILER_MSVC
@@ -164,7 +165,6 @@
         #define cx_restrict __restrict
     #endif
 #endif
-#endif
 
 #if CX_COMPILER_CLANG
     #ifndef cx_non_null
@@ -197,9 +197,8 @@
     #endif
 #endif
 
-// =========================================
+////////////////////////////////////////////
 // Text manipulation
-// =========================================
 
 #ifndef LIBCX
     #define LIBCX namespace cx
@@ -244,9 +243,8 @@
     #define CX_UNIQ(base) CX__UNIQ(base, __COUNTER__)
 #endif
 
-// =========================================
+////////////////////////////////////////////
 // Function like macros
-// =========================================
 
 // Signed memory operators.
 
@@ -343,7 +341,6 @@
 
 // Probability branch.
 
-// NOTE:(manu) Is this portable?
 #ifndef CX_PROBABILITY_BRANCH
     #define CX_PROBABILITY_BRANCH
     #define cx_rare(_BLK_)                                    \
@@ -356,71 +353,184 @@
         if (b) [[likely]] { [&] inln_clos { _BLK_; }(); }
 #endif
 
-// =========================================
-// Assertion handling
-// =========================================
+////////////////////////////////////////////
+// Testing
 
-#ifndef CX_DEBUG_TRAP
-#if CX_COMPILER_MSVC
-    #if _MSC_VER  < 1300
-        #define CX_DEBUG_TRAP __asm int 3
-    #else
-        #define CX_DEBUG_TRAP __debugbreak()
-    #endif
-#else
-    #define CX_DEBUG_TRAP __builtin_trap()
+#ifndef CX_TEST_DEFINE
+    #define CX_TEST_DEFINE(name) fn test_##name() noexce -> void
+#endif
+#ifndef CX_TEST_CALL
+    #define CX_TEST_CALL(name)                                                                      \
+        puts("\n////////////////////////////////////////////////////////////////////////////////"); \
+        puts("\n>>>>>>> running test `" STR_(name)"`");                                             \
+        cx::test_##name();                                                                          \
+        puts("\n>>>>>>> test " STR_(name) " passed");
 #endif
 
-#ifndef CX__UNREACHABLE
-    #if CX_COMPILER_GCC or CX_COMPILER_CLANG
-        #define CX__UNREACHABLE              \
-            __builtin_unreachable();         \
-            CX_DEBUG_TRAP;                   \
-            for(;;){}
-    #else
-        #define CX__UNREACHABLE              \
-            __assume(0);                     \
-            CX_DEBUG_TRAP;                   \
-            for(;;){}
-    #endif
-        #define cx_unreachable() CX__UNREACHABLE
+////////////////////////////////////////////
+// Foreach macros
+
+#ifndef CX_EXPAND
+    #define CX_EXPAND(x) x
 #endif
 
-#ifndef cx_assert_msg
-#define cx_assert_msg(cond, msg, ...)                                             \
-    if (!(cond)) {                                                                \
-        cx_assert_handler("Assertion Failure", STR_(cond), CX_FILE, i64(CX_LINE), \
-                          msg __VA_OPT__(,) __VA_ARGS__);                         \
-        CX_DEBUG_TRAP;                                                            \
-    }
+#ifndef CX__COUNT_ARGS
+    #define CX__COUNT_ARGS(                                                        \
+        _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16,     \
+        _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30,      \
+        _31, _32, N, ...)                                                          \
+        N
 #endif
 
-#ifdef CX_DISABLE_ASSERT
-#   define cx_assert(cond) cx_unused(cond)
-#endif
+#define CX_COUNT_ARGS(...)                                              \
+    CX_EXPAND(CX__COUNT_ARGS(                                           \
+        __VA_ARGS__,                                                    \
+        32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, \
+        16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1           \
+    ))
 
-#ifndef cx_assert
-    #define cx_assert(cond) cx_assert_msg(cond, null);
-#endif
+// Foreach base macro.
 
-#ifndef cx_assert_msg
-    #define cx_assert_msg(cond, msg, ...)                                             \
-        if (!(cond)) {                                                                \
-            cx_assert_handler("Assertion Failure", STR_(cond), CX_FILE, i64(CX_LINE), \
-                              msg, ##__VA_ARGS__);                                    \
-            CX_DEBUG_TRAP;                                                            \
-        }
-#endif
+#define CX_FOR_EACH_1(M, a) M(a)
+#define CX_FOR_EACH_2(M, a, ...) M(a) CX_FOR_EACH_1(M, __VA_ARGS__)
+#define CX_FOR_EACH_3(M, a, ...) M(a) CX_FOR_EACH_2(M, __VA_ARGS__)
+#define CX_FOR_EACH_4(M, a, ...) M(a) CX_FOR_EACH_3(M, __VA_ARGS__)
+#define CX_FOR_EACH_5(M, a, ...) M(a) CX_FOR_EACH_4(M, __VA_ARGS__)
+#define CX_FOR_EACH_6(M, a, ...) M(a) CX_FOR_EACH_5(M, __VA_ARGS__)
+#define CX_FOR_EACH_7(M, a, ...) M(a) CX_FOR_EACH_6(M, __VA_ARGS__)
+#define CX_FOR_EACH_8(M, a, ...) M(a) CX_FOR_EACH_7(M, __VA_ARGS__)
+#define CX_FOR_EACH_9(M, a, ...) M(a) CX_FOR_EACH_8(M, __VA_ARGS__)
+#define CX_FOR_EACH_10(M, a, ...) M(a) CX_FOR_EACH_9(M, __VA_ARGS__)
+#define CX_FOR_EACH_11(M, a, ...) M(a) CX_FOR_EACH_10(M, __VA_ARGS__)
+#define CX_FOR_EACH_12(M, a, ...) M(a) CX_FOR_EACH_11(M, __VA_ARGS__)
+#define CX_FOR_EACH_13(M, a, ...) M(a) CX_FOR_EACH_12(M, __VA_ARGS__)
+#define CX_FOR_EACH_14(M, a, ...) M(a) CX_FOR_EACH_13(M, __VA_ARGS__)
+#define CX_FOR_EACH_15(M, a, ...) M(a) CX_FOR_EACH_14(M, __VA_ARGS__)
+#define CX_FOR_EACH_16(M, a, ...) M(a) CX_FOR_EACH_15(M, __VA_ARGS__)
+#define CX_FOR_EACH_17(M, a, ...) M(a) CX_FOR_EACH_16(M, __VA_ARGS__)
+#define CX_FOR_EACH_18(M, a, ...) M(a) CX_FOR_EACH_17(M, __VA_ARGS__)
+#define CX_FOR_EACH_19(M, a, ...) M(a) CX_FOR_EACH_18(M, __VA_ARGS__)
+#define CX_FOR_EACH_20(M, a, ...) M(a) CX_FOR_EACH_19(M, __VA_ARGS__)
+#define CX_FOR_EACH_21(M, a, ...) M(a) CX_FOR_EACH_20(M, __VA_ARGS__)
+#define CX_FOR_EACH_22(M, a, ...) M(a) CX_FOR_EACH_21(M, __VA_ARGS__)
+#define CX_FOR_EACH_23(M, a, ...) M(a) CX_FOR_EACH_22(M, __VA_ARGS__)
+#define CX_FOR_EACH_24(M, a, ...) M(a) CX_FOR_EACH_23(M, __VA_ARGS__)
+#define CX_FOR_EACH_25(M, a, ...) M(a) CX_FOR_EACH_24(M, __VA_ARGS__)
+#define CX_FOR_EACH_26(M, a, ...) M(a) CX_FOR_EACH_25(M, __VA_ARGS__)
+#define CX_FOR_EACH_27(M, a, ...) M(a) CX_FOR_EACH_26(M, __VA_ARGS__)
+#define CX_FOR_EACH_28(M, a, ...) M(a) CX_FOR_EACH_27(M, __VA_ARGS__)
+#define CX_FOR_EACH_29(M, a, ...) M(a) CX_FOR_EACH_28(M, __VA_ARGS__)
+#define CX_FOR_EACH_30(M, a, ...) M(a) CX_FOR_EACH_29(M, __VA_ARGS__)
+#define CX_FOR_EACH_31(M, a, ...) M(a) CX_FOR_EACH_30(M, __VA_ARGS__)
+#define CX_FOR_EACH_32(M, a, ...) M(a) CX_FOR_EACH_31(M, __VA_ARGS__)
 
-#ifndef cx_panic
-    #define cx_panic(msg, ...) \
-        cx_assert_handler("Panic", null, CX_FILE, i64(CX_LINE), msg, ##__VA_ARGS__);
-        
-#endif
+#define CX_FOR_EACH_DISPATCH(N) CX_JOIN2(CX_FOR_EACH_, N)
 
-// =========================================
+#define CX_FOR_EACH(M, ...)                                                    \
+    CX_EXPAND(CX_FOR_EACH_DISPATCH(CX_COUNT_ARGS(__VA_ARGS__))(M, __VA_ARGS__))
+
+// Foreach with arg macro.
+
+#define CX_FOR_EACH_WITH_ARG_1(M, arg, a) M(arg, a)
+#define CX_FOR_EACH_WITH_ARG_2(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_1(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_3(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_2(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_4(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_3(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_5(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_4(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_6(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_5(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_7(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_6(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_8(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_7(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_9(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_8(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_10(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_9(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_11(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_10(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_12(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_11(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_13(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_12(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_14(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_13(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_15(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_14(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_16(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_15(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_17(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_16(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_18(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_17(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_19(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_18(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_20(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_19(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_21(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_20(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_22(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_21(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_23(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_22(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_24(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_23(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_25(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_24(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_26(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_25(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_27(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_26(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_28(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_27(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_29(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_28(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_30(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_29(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_31(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_30(M, arg, __VA_ARGS__)
+#define CX_FOR_EACH_WITH_ARG_32(M, arg, a, ...) M(arg, a) CX_FOR_EACH_WITH_ARG_31(M, arg, __VA_ARGS__)
+
+#define CX_FOR_EACH_WITH_ARG_DISPATCH(N) CX_JOIN2(CX_FOR_EACH_WITH_ARG_, N)
+
+#define CX_FOR_EACH_WITH_ARG(M, arg, ...)                                      \
+    CX_EXPAND(CX_FOR_EACH_WITH_ARG_DISPATCH(CX_COUNT_ARGS(__VA_ARGS__))(M, arg, __VA_ARGS__))
+
+// Foreach with comme macro.
+
+#define CX_FOR_EACH_COMMA_1(M, a) M(a)
+#define CX_FOR_EACH_COMMA_2(M, a, ...) M(a), CX_FOR_EACH_COMMA_1(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_3(M, a, ...) M(a), CX_FOR_EACH_COMMA_2(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_4(M, a, ...) M(a), CX_FOR_EACH_COMMA_3(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_5(M, a, ...) M(a), CX_FOR_EACH_COMMA_4(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_6(M, a, ...) M(a), CX_FOR_EACH_COMMA_5(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_7(M, a, ...) M(a), CX_FOR_EACH_COMMA_6(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_8(M, a, ...) M(a), CX_FOR_EACH_COMMA_7(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_9(M, a, ...) M(a), CX_FOR_EACH_COMMA_8(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_10(M, a, ...) M(a), CX_FOR_EACH_COMMA_9(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_11(M, a, ...) M(a), CX_FOR_EACH_COMMA_10(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_12(M, a, ...) M(a), CX_FOR_EACH_COMMA_11(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_13(M, a, ...) M(a), CX_FOR_EACH_COMMA_12(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_14(M, a, ...) M(a), CX_FOR_EACH_COMMA_13(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_15(M, a, ...) M(a), CX_FOR_EACH_COMMA_14(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_16(M, a, ...) M(a), CX_FOR_EACH_COMMA_15(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_17(M, a, ...) M(a), CX_FOR_EACH_COMMA_16(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_18(M, a, ...) M(a), CX_FOR_EACH_COMMA_17(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_19(M, a, ...) M(a), CX_FOR_EACH_COMMA_18(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_20(M, a, ...) M(a), CX_FOR_EACH_COMMA_19(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_21(M, a, ...) M(a), CX_FOR_EACH_COMMA_20(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_22(M, a, ...) M(a), CX_FOR_EACH_COMMA_21(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_23(M, a, ...) M(a), CX_FOR_EACH_COMMA_22(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_24(M, a, ...) M(a), CX_FOR_EACH_COMMA_23(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_25(M, a, ...) M(a), CX_FOR_EACH_COMMA_24(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_26(M, a, ...) M(a), CX_FOR_EACH_COMMA_25(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_27(M, a, ...) M(a), CX_FOR_EACH_COMMA_26(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_28(M, a, ...) M(a), CX_FOR_EACH_COMMA_27(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_29(M, a, ...) M(a), CX_FOR_EACH_COMMA_28(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_30(M, a, ...) M(a), CX_FOR_EACH_COMMA_29(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_31(M, a, ...) M(a), CX_FOR_EACH_COMMA_30(M, __VA_ARGS__)
+#define CX_FOR_EACH_COMMA_32(M, a, ...) M(a), CX_FOR_EACH_COMMA_31(M, __VA_ARGS__)
+
+#define CX_FOR_EACH_COMMA_DISPATCH(N) CX_JOIN2(CX_FOR_EACH_COMMA_, N)
+
+#define CX_FOR_EACH_COMMA(M, ...)                                             \
+    CX_EXPAND(CX_FOR_EACH_COMMA_DISPATCH(CX_COUNT_ARGS(__VA_ARGS__))(M, __VA_ARGS__))
+
+////////////////////////////////////////////
+// Multi
+
+#define CX_MULTI_ROW_TYPE(pair) CX_MULTI_ROW_TYPE_ pair
+#define CX_MULTI_ROW_TYPE_(T, name) T
+
+#define CX_MULTI_ROW_NAME(Name, pair) CX_MULTI_ROW_NAME_(Name, pair)
+#define CX_MULTI_ROW_NAME_(Name, pair) CX_MULTI_ROW_NAME_IMPL(Name, CX_UNPACK pair)
+#define CX_MULTI_ROW_NAME_IMPL(Name, T, name) CX_JOIN3(Name, _, name),
+
+#define CX_UNPACK(...) __VA_ARGS__
+
+#define DEFINE_MULTI_ARRAY(Name, ...)                           \
+    enum {                                                       \
+        CX_FOR_EACH_WITH_ARG(CX_MULTI_ROW_NAME, Name, __VA_ARGS__) \
+    };                                                          \
+    using Name = MultiArray<                                    \
+        CX_FOR_EACH_COMMA(CX_MULTI_ROW_TYPE, __VA_ARGS__)        \
+    >;
+
+////////////////////////////////////////////
 // Type related macros
-// =========================================
 
 // Generators for concepts.
 
@@ -438,8 +548,6 @@
         template<_TPARAMS_> predicate is_type_name<TypeName<_TARGS_>> = true;     \
         template<typename T> concept CConceptName = is_type_name<cx::rm_cvref<T>>
 #endif
-
-// Generators for containers member types.
 
 #ifndef CX_DEFINE_MEMBER_TYPES
     #define CX_DEFINE_MEMBER_TYPES(E, S)     \
@@ -479,9 +587,8 @@
         static_assert(cx::is_triv_dtble<_BODY_>)
 #endif
 
-// =========================================
+////////////////////////////////////////////
 // Miscellaneous
-// =========================================
 
 #ifndef BEG_
     #define BEG_ {
@@ -496,9 +603,8 @@
     #define CX_EMPTY
 #endif
 
-// =========================================
+////////////////////////////////////////////
 // Undefine macros
-// =========================================
 
 #ifndef CX_UNDEF_KEYWORDS
     #define CX_UNDEF_KEYWORDS \

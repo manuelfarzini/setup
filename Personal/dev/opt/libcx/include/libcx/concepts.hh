@@ -3,8 +3,8 @@
 #ifndef CX_CONCEPTS_HH
 #define CX_CONCEPTS_HH
 
-#include <libcx/config.hh>
-#include <libcx/concept/types.hh>
-#include <libcx/concept/lifetime.hh>
+#include "libcx/config.hh"
+#include "libcx/concept/types.hh"
+#include "libcx/concept/lifetime.hh"
 
 #endif // CX_CONCEPTS_HH 

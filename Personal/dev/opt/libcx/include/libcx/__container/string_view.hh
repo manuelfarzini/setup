@@ -110,7 +110,7 @@ inln onedef cons fn slice(u8 const* txt, isize len) noexce -> vstring
     if (len < 0) unlike {
         len = cx_strlen(txt);
     }
-    return {ptru8(txt), len};
+    return {byteptr(txt), len};
 }
 
 template<>
