@@ -15,101 +15,176 @@
 #include "libcx/uti/typeseq.hh"
 #include "libcx/mem/common.hh"
 #include "libcx/mem/allocator.hh"
-#include "libcx/arr/dynamic_array.hh" // XXX: to be removed
 #include "libcx/arr/static_array.hh"
 
 namespace cx {
 inline namespace mem {
 
-template<typename T> inln cons fn max(T& x) noexce -> T& { return x; }
+/** Computes the maximum value in `head` and `rest`. **/
+template<typename Head, typename... Rest>
+inln cons fn max(Head head, Rest... rest) noexce -> Head
+    where (sizeof...(Rest) > 0 && is_homogeneous_va<Head, Rest...> && size_of(Head) <= 8)
+{
+    Head max = head;
+    ((max = max < rest ? rest : max), ...);
+    return max;
+}
 
-/** Computes the maximum element in `head` and `rest.`. **/
+/** Computes the maximum element in `head` and `rest`. **/
 template<typename Head, typename... Rest>
 inln cons fn max(Head& head, Rest&... rest) noexce -> Head&
-    where (sizeof...(Rest) > 0 && (same_as<Head, Rest> && ...))
+    where (sizeof...(Rest) > 0 && is_homogeneous_va<Head, Rest...> && size_of(Head) > 8)
 {
-    Head& tail = max(rest...);
-    if (head < tail) {
-        return tail;
-    }
-    return head;
+    Head const* max = &head;
+    ((max = *max < rest ? &rest : max), ...);
+    return *max;
 }
 
 ////////////////////////////////////////////
 // Utilities
 
 /**
-    Computes the total size of `num` elements of each type in `Ts` with proper
-    alignment per type.
+    Computes the maximum alignment required by `Ts...`.
+    @ret
+    - The maximum alignment in bytes.
+**/
+template<typename... Ts>
+inln cons fn multi_align_of() noexce -> isize
+{
+    isize aln = DEF_ALIGN;
+    ((aln = max(aln, align_of(Ts))), ...);
+    return aln;
+}
+
+/**
+    Computes the total size of `num` elements of each type in `Ts...`,
+    including padding required to align each array.
     @ret
     - The total size in bytes.
 **/
 template<typename... Ts>
 inln cons fn multi_size_of(isize num) noexce -> isize
 {
-    isize tot = 0;
-    ((tot = (align_up(tot, align_of(Ts))), tot += size_of(Ts) * num), ...);
-    return tot;
+    isize off = 0;
+    ((off = align_up(off, align_of(Ts)), off += num * size_of(Ts)), ...);
+    return off;
 }
 
 /**
-    Let `ptr` be the start of the current array of type `T` and length `num`.
-    Computes the address of the first element of the next array of type `U`
-    with proper alignment.
+    Let `off` be the offset of the first element of the current array of type
+    `T` and length `num`. Computes the offset of the first element of the next
+    array of type `U`.
     @ret
-    - A pointer to the first element of the next array.
+    - The offset in bytes of the next array.
 **/
 template<typename T, typename U>
-inln cons fn multi_align_up_next(mutaptr ptr, isize num) noexce -> mutaptr
+inln cons fn multi_next_offset(isize off, isize num) noexce -> isize
 {
-    ptr = mutaptr((isize(ptr) + num * size_of(T)));
-    uptr aln = align_of(U);
-    return mutaptr((isize(ptr) + (aln - 1)) & ~(aln - 1));
+    return align_up(off + num * size_of(T), align_of(U));
 }
 
-/// Copies `num` elements of each type in `Ts...` from `src` to `dst` tuple-wise.
-/// Requires: each pointer in `src` and `dst` refers to `num` elements.
+/**
+    Computes the aligned offset of an array of type `T`.
+    Useful when walking the layout type-by-type.
+    @ret
+    - The aligned offset in bytes.
+**/
+template<typename T>
+inln cons fn multi_align_offset(isize off) noexce -> isize
+{
+    return align_up(off, align_of(T));
+}
+
+/**
+    Computes the end offset after `num` elements of type `T`.
+    Requires: `off` is already aligned for `T`.
+    @ret
+    - The offset immediately after the array.
+**/
+template<typename T>
+inln cons fn multi_end_offset(isize off, isize num) noexce -> isize
+{
+    return off + num * size_of(T);
+}
+
+/**
+    Computes the typed pointer at `off` bytes from `base`.
+    Requires: `off` is correctly aligned for `T`.
+    @ret
+    - A typed pointer to the array of type `T`.
+**/
+template<typename T>
+inln cons fn multi_ptr_at(mutaptr base, isize off) noexce -> T*
+{
+    return cast(T*, ptr_add(base, off));
+}
+
+/**
+    Copies `num` elements of each type in `Ts...` from `src` to `dst`
+    tuple-wise.
+    Requires: each pointer in `src` and `dst` refers to `num` elements.
+**/
 template<CpAsble... Ts>
 fn multi_mem_move(Tuple<Ts*...> const& dst, Tuple<Ts*...> const& src, isize num) -> void
 {
-    [&]<isize... I>(IndexSeq<I...>) inln_clos -> void {
+    [&]<usize... I>(IndexSeq<I...>) inln_clos -> void {
         (mem_move(get<I>(dst), get<I>(src), num * size_of(Ts)), ...);
-    }(index_seq_pack<Ts...>{});
+    }(index_seq_va<Ts...>{});
 }
 
-///
-template<arr::SomeArrayOf<mutaptr> Arr, CpAsble... Ts>
-fn multi_mem_move(Arr& dst, Arr& src, isize num) -> void
+/**
+    Copies `num` elements of each type described by `Arr::Types`
+    from `src` to `dst`.
+    Requires: each pointer in `src` and `dst` refers to `num` elements.
+**/
+template<StaticArrayOf<mutaptr> Arr, typename... Ts>
+fn multi_mem_move(Arr& dst, Arr const& src, isize num) -> void
+    where (type_seq_size<TypeSeq<Ts...>> <= Arr::cap) // TODO: add to other functions
 {
-    isize i = 0;
-    [&]() inln_clos -> void {
-        ((mem_move(dst[i], src[i], num * size_of(Ts)), i++), ...);
-    }();
+    using Seq = TypeSeq<Ts...>;
+    [&]<usize... I>(IndexSeq<I...>) inln_clos -> void {
+        (mem_move(dst[I], src[I], num * size_of(TypeAt<I, Seq>)), ...);
+    }(IndexSeq<type_seq_size<Seq>>{});
 }
+#ifndef cx_multi_mem_move_arr
+    #define cx_multi_mem_move_arr(dst, src, num, ...) \
+        multi_mem_move<declt(dst), __VA_ARGS__>(dst, src, num)
+#endif
 
-/// Moves `num` elements of each type in `Ts...` from `src` to `dst` tuple-wise.
-/// Requires: each pointer in `src` and `dst` refers to `num` elements.
+// TODO: should the functions be inln?
+
+/**
+    Moves `num` elements of each type in `Ts...` from `src` to `dst`
+    tuple-wise.
+    Requires: each pointer in `src` and `dst` refers to `num` elements.
+**/
 template<CpOrMvAsble... Ts>
-fn multi_mem_take(Tuple<Ts*...> const& dst, Tuple<Ts*...> const& src, isize num)
-    -> void
+fn multi_mem_take(Tuple<Ts*...> const& dst, Tuple<Ts*...> const& src, isize num) -> void
 {
-    [&]<isize... I>(IndexSeq<I...>) inln_clos -> void {
-        (mem_take<Ts>(get<I>(dst), get<I>(src), num * size_of(Ts)),
-         ...);
-    }(index_seq_pack<Ts...>{});
+    [&]<usize... I>(IndexSeq<I...>) inln_clos -> void {
+        (mem_take<Ts>(get<I>(dst), get<I>(src), num), ...);
+    }(index_seq_va<Ts...>{});
 }
 
-///
-///
-template<arr::SomeArrayOf<mutaptr> Arr>
+/**
+    Moves `num` elements of each type described by `Arr::Types`
+    from `src` to `dst`.
+    Requires: each pointer in `src` and `dst` refers to `num` elements.
+**/
+template<StaticArrayOf<mutaptr> Arr, typename... Ts>
 fn multi_mem_take(Arr& dst, Arr& src, isize num) -> void
 {
-    using Seq = Arr::Types;
+    using Seq = TypeSeq<Ts...>;
     isize i = 0;
     [&]<isize... I>(IndexSeq<I...>) inln_clos -> void {
         ((mem_take<TypeAt<I, Seq>>(dst[i], src[i], num), i++), ...);
     }(IndexSeq<type_seq_size<Seq>>{});
+    // TODO: simplify with Seq::size
 }
+#ifndef cx_multi_mem_take_arr
+    #define cx_multi_mem_take_arr(dst, src, num, ...) \
+        multi_mem_take<declt(dst), __VA_ARGS__>(dst, src, num)
+#endif
 
 ////////////////////////////////////////////
 // Allocator
@@ -181,6 +256,7 @@ fn multi_init(isize num, mutaptr ptr, initls<Ts>... lists) noexce -> Res<mutaptr
         return {null, Invalid_Arg};
         // return {null, cx_arg_err("`num` cannot be `0`")};
     }
+    // TODO:
     // custom variadic max
     if (num < max({lists.size()...})) {
         return {null, Invalid_Arg};
@@ -261,7 +337,7 @@ inln cons fn _multi_bind_tup(mutaptr ptr, isize new_num) -> Tuple<Ts*...>
 
 ///
 template<typename... Ts>
-inln cons fn _multi_bind_arr(mutaptr ptr, isize new_num) -> arr::StaticArray<mutaptr, sizeof...(Ts)>
+inln cons fn _multi_bind_arr(mutaptr ptr, isize new_num) -> StaticArray<mutaptr, sizeof...(Ts)>
 {
     clos bind_and_advance = [&]<typename T>() inln_clos -> mutaptr {
         ptr = align_up<T>(ptr);

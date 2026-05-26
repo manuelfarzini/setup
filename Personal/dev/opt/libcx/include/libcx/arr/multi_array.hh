@@ -1,39 +1,3 @@
-#define KONST(x) KONST##x
-#define KONST_i8 Ki8
-#define KONST_i16 Ki16
-#define KONST_i32 Ki32
-#define KONST_i64 Ki64
-#define KONST_i128 Ki128
-#define KONST_u8 Ku8
-#define KONST_u16 Ku16
-#define KONST_u32 Ku32
-#define KONST_u64 Ku64
-#define KONST_u128 Ku128
-#define KONST_f16 Kf16
-#define KONST_f32 Kf32
-#define KONST_f64 Kf64
-#define KONST_f80 Kf80
-#define KONST_f128 Kf128
-#define KONST_b8 Kb8
-#define KONST_b16 Kb16
-#define KONST_b32 Kb32
-#define KONST_char Char
-
-#define CX_KONST(T) onedef cons isize CX_JOIN2(K, T) = __COUNTER__;
-
-#define MULTI_ROWS(X) \
-    X(i32)            \
-    X(f64)            \
-    X(u8)
-#define X(T)                                      \
-    onedef cons isize k##T = (isize) __COUNTER__; \
-    MULTI_ROWS(X);
-#undef X
-
-#define DEFINE_MULTI_ARRAY(Name, ...)     \
-    CX_FOR_EACH(CX_KONST, __VA_ARGS__)    \
-    using Name = MultiArray<__VA_ARGS__>;
-
 /** @file libcx/arr/multi_array.hh **/
 
 #ifndef CX_ARR_MULTI_ARRAY_HH
@@ -114,7 +78,7 @@ fn get(Arr& arr, isize col) -> TypeAt<Row, typename Arr::Types>&
 ///
 ///
 template<isize N, SomeLegalType... Ts>
-fn initialize(MultiArray<Ts...>& arr) -> ErrorCode where(N >= 8 && bool(is_power_of_two(N)))
+fn initialize(MultiArray<Ts...>& arr) -> ErrorCode where(N >= 8 && is_pow2<N>)
 {
     auto [ptr, err] = multi_make_zii<Ts...>(N) or_return err;
     arr.ptrs = _multi_bind_arr<Ts...>(ptr, N);
@@ -122,6 +86,8 @@ fn initialize(MultiArray<Ts...>& arr) -> ErrorCode where(N >= 8 && bool(is_power
     arr.cap = N;
     return null;
 }
+
+#define base_ptr(multi_arr) multi_arr.ptrs[0]
 
 ///
 // template<isize N, SomeLegalType... Ts,
@@ -137,8 +103,6 @@ fn initialize(MultiArray<Ts...>& arr) -> ErrorCode where(N >= 8 && bool(is_power
 //   arr.cap = N;
 //   return {cx_empty{}, nullptr};
 // }
-
-    #define base_ptr(multi_arr) multi_arr.ptrs[0]
 
 // template<SomeLegalType... Ts> fn reallocate(MultiArray<Ts...>& arr) -> ErrorCode
 // {
@@ -225,7 +189,7 @@ fn push_back(Arr& arr, Ts&&... els) -> ErrorCode
 
     [&]<isize... I>(IndexSeq<I...>) inln_clos -> void {
         (unfold.template operator()<I>(forward<Ts>(els)), ...);
-    }(index_seq_pack<Ts...>{});
+    }(index_seq_va<Ts...>{});
 
     arr.len += 1;
     return null;
@@ -250,7 +214,7 @@ fn test_multi_array_1() -> void
     cast(First*, arr[0])[0] = 3;
 }
 
-#endif      // CX_TEST
+#endif  // CX_TEST_MULTI_ARRAY
 
 
 //

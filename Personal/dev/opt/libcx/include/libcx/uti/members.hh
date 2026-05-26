@@ -3,7 +3,6 @@
 #ifndef CX_UTI_MEMBERS_HH
 #define CX_UTI_MEMBERS_HH
 
-#include "libcx/config.hh"
 #include "libcx/traits/lifetime.hh"
 
 namespace cx {

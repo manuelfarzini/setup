@@ -57,7 +57,7 @@ nodisc cons fn heap_aligned_alloc(
     while (align < DEF_ALIGN) {
         align = align << 1;
     }
-    assert(uti::is_power_of_two(align) && "`align` must be a power of 2");
+    // assert(uti::is_power_of_two(align) && "`align` must be a power of 2");
 
     isize space = align - 1 + size + PTR_SIZE;
     b32 force_copy = (old_ptr != null) && (align > PTR_ALIGN);

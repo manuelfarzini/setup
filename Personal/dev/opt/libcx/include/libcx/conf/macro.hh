@@ -249,13 +249,10 @@
 // Signed memory operators.
 
 #ifndef size_of
-    #define size_of(x) (isize(sizeof(x)))
+    #define size_of(...) (isize(sizeof(__VA_ARGS__)))
 #endif
 #ifndef offset_of
     #define offset_of(T, elem) (cast(isize) & ((cast(T*) 0)->elem))
-#endif
-#ifndef align_of
-    #define align_of(X) alignof(X)
 #endif
 #ifndef align_of
     #define align_of(X) isize(alignof(X))
@@ -521,12 +518,12 @@
 
 #define CX_UNPACK(...) __VA_ARGS__
 
-#define DEFINE_MULTI_ARRAY(Name, ...)                           \
-    enum {                                                       \
+#define DEFINE_MULTI_ARRAY(Name, ...)                              \
+    enum {                                                         \
         CX_FOR_EACH_WITH_ARG(CX_MULTI_ROW_NAME, Name, __VA_ARGS__) \
-    };                                                          \
-    using Name = MultiArray<                                    \
-        CX_FOR_EACH_COMMA(CX_MULTI_ROW_TYPE, __VA_ARGS__)        \
+    };                                                    \
+    using Name = MultiArray<                              \
+        CX_FOR_EACH_COMMA(CX_MULTI_ROW_TYPE, __VA_ARGS__) \
     >;
 
 ////////////////////////////////////////////
@@ -535,18 +532,18 @@
 // Generators for concepts.
 
 #ifndef CX_CONCEPT_GEN
-    #define CX_CONCEPT_GEN(TypeName, is_type_name, CConceptName)                  \
-        template<typename T> predicate is_type_name = false;                      \
-        template<> predicate is_type_name<TypeName> = true;                       \
-        template<typename T> concept CConceptName = is_type_name<cx::rm_cvref<T>>
+    #define CX_CONCEPT_GEN(TypeName, is_type_name, ConceptName)                  \
+        template<typename T> predicate is_type_name = false;                     \
+        template<> predicate is_type_name<TypeName> = true;                      \
+        template<typename T> concept ConceptName = is_type_name<cx::rm_cvref<T>>
 #endif
-#ifndef CX_CONCEPT_GEN_TEMPL
-    #define CX_CONCEPT_GEN_TEMPL(                                                 \
-            TypeName, is_type_name, CConceptName, _TPARAMS_, _TARGS_              \
-        )                                                                         \
-        template<typename T> predicate is_type_name = false;                      \
-        template<_TPARAMS_> predicate is_type_name<TypeName<_TARGS_>> = true;     \
-        template<typename T> concept CConceptName = is_type_name<cx::rm_cvref<T>>
+#ifndef CX_CONCEPT_GEN_TEMPL  // use VA_ to pass _<ARGS>_ arguments
+    #define CX_CONCEPT_GEN_TEMPL(                                                \
+            TypeName, is_type_name, ConceptName, _TPARAMS_, _TARGS_              \
+        )                                                                        \
+        template<typename T> predicate is_type_name = false;                     \
+        template<_TPARAMS_> predicate is_type_name<TypeName<_TARGS_>> = true;    \
+        template<typename T> concept ConceptName = is_type_name<cx::rm_cvref<T>>
 #endif
 
 #ifndef CX_DEFINE_MEMBER_TYPES

@@ -21,6 +21,36 @@ onedef cons FileMode FileMode_Append    = BIT<2>;
 onedef cons FileMode FileMode_ReadWrite = BIT<3>;
 onedef cons FileMode FileMode_Mask      = FileMode_Read | FileMode_Write | FileMode_Append | FileMode_ReadWrite;
 
+struct EnumName {
+    using Under = T;
+    onedef glob cons Under EnumName_First = enum_beg;
+    onedef glob cons Under EnumName_Second = enum_beg + 1;
+    onedef glob cons Under EnumName_Third = enum_beg + 2;
+    onedef glob cons Under EnumName_Fourth = enum_beg + 3;
+    onedef glob cons Under EnumName_Fifth = enum_beg + 4;
+    onedef glob cons Under EnumName_Sixth = enum_beg + 5;
+    onedef glob cons Under EnumName_Seventh = enum_beg + 6;
+    Under val;
+    EnumName() = delete;
+    cons EnumName(Under val) : val(val) {}
+    cons operator Under() const { return val; }
+    cons bool operator==(EnumName rhs) const { return val == rhs.val; }
+    cons bool operator<=>(EnumName rhs) const { return val <=> rhs.val; }
+
+    cons string to_string() const 
+    {
+        switch (val) {
+            case EnumName_Invalid: return "Invalid";
+            case EnumName_Filename: return "Filename";
+            case EnumName_Exists: return "Exists";
+            case EnumName_DontExists: return "DontExists";
+            case EnumName_Permission: return "Permission";
+            case EnumName_TruncFail: return "TruncFail";
+            default: return "Invalid";
+        }
+    }
+};
+
 enum FileWhence {
     FileWhence_Begin,
     FileWhence_Current,
