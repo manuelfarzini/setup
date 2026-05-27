@@ -1,12 +1,19 @@
 #ifndef CX_CONCEPTS_MULTI_HH
 #define CX_CONCEPTS_MULTI_HH
 
+#include "libcx/concept/types.hh"
 #include "libcx/traits/relation.hh"
+#include "libcx/traits/types.hh"
+
+namespace cx { 
+inline namespace uti {
 
 template<typename U, typename... Ts> 
-concept PlainArithmeticAmong = CPlainArithmetic<U> && one_of<U, Ts...>;
+concept PlainArithmeticAmong = SomePlainArithmetic<U> && one_of<U, Ts...>;
 
 template<typename U, typename... Ts>
-concept PlainRawPointerAmong = CPlainRawPointer<U> && one_of<U, Ts...>;
+concept PlainRawPointerAmong = SomePlainRawPointer<U> && one_of<U, Ts...>;
 
+}       // namespace uti
+}       // namespace cx
 #endif  // CX_CONCEPTS_MULTI_HH

@@ -41,7 +41,7 @@ CX_CONCEPT_GEN_TEMPL(TypeSeq, is_type_seq, SomeTypeSeq, typename... Ts, Ts...);
 template<typename>
 predicate ___always_false = false;
 
-//////
+///////////////////////////////////////////
 // Homogeneous type sequence
 
 template<SomeTypeSeq Seq>
@@ -61,9 +61,9 @@ predicate is_homogeneous = ___typeseq_is_homogeneous<Seq>();
 
 template<typename... Ts>
 predicate is_homogeneous_va = is_homogeneous<TypeSeq<Ts...>>;
-/*                                         *
-* Type at a given index in a type sequence *
-*                                         */
+
+///////////////////////////////////////////
+// Type at a given index in a type sequence
 
 template<usize Idx, SomeTypeSeq Seq, bool Empty = Seq::empty>
 struct ___TypeAt;
@@ -88,9 +88,8 @@ using TypeAt = typename ___TypeAt<Idx, Seq>::Type;
 template<usize Idx, typename... Ts>
 using TypeAtVA = TypeAt<Idx, TypeSeq<Ts...>>;
 
-/*                                         *
-* Index of a given type in a type sequence *
-*                                         */
+////////////////////////////////////////////
+// Index of a given type in a type sequence
 
 template<typename T, SomeTypeSeq Seq>
 comp fn ___type_idx_of() -> usize
@@ -108,9 +107,8 @@ comp fn ___type_idx_of() -> usize
 template<typename T, SomeTypeSeq Seq>
 onedef cons usize type_idx = ___type_idx_of<T, Seq>();
 
-/*                                         *
-* Size of a type sequence                  *
-*                                         */
+////////////////////////////////////////////
+// Size of a type sequence
 
 template<SomeTypeSeq Seq>
 onedef cons usize type_seq_size = Seq::size;
@@ -118,11 +116,10 @@ onedef cons usize type_seq_size = Seq::size;
 template<typename... Ts>
 onedef cons usize va_size = TypeSeq<Ts...>::size;
 
-/*                                         *
-* Integer sequence                         *
-*                                         */
+////////////////////////////////////////////
+// Integer sequence
 
-template<CIntegral Int, Int... Is>
+template<SomeIntegral Int, Int... Is>
 struct IntegerSeq {
     using Elem = Int;
     glob onedef cons usize size = sizeof...(Is);
@@ -131,7 +128,7 @@ struct IntegerSeq {
 CX_CONCEPT_GEN_TEMPL(IntegerSeq, is_integer_seq, CIntegerSeq,
                      VA_(CIntegral Int, Int... Is), VA_(Int, Is...));
 
-template<CIntegral Int, usize N, usize... Is>
+template<SomeIntegral Int, usize N, usize... Is>
 struct ___integer_seq : ___integer_seq<Int, N - 1, N - 1, Is...> {};
 
 template<CIntegral Int, usize... Is>
@@ -139,13 +136,13 @@ struct ___integer_seq<Int, usize{0}, Is...> {
     using Type = IntegerSeq<Int, Int{Is}...>;
 };
 
-template<CIntegral Int, usize N>
+template<SomeIntegral Int, usize N>
 using integer_seq = typename ___integer_seq<Int, N>::Type;
 
-template<CIntegral Int, typename... Ts>
+template<SomeIntegral Int, typename... Ts>
 using integer_seq_va = integer_seq<Int, usize{sizeof...(Ts)}>;
 
-template<CIntegral Int, typename T>
+template<SomeIntegral Int, typename T>
 using integer_seq_for = integer_seq<Int, usize{T::size}>;
 
 template<usize... Is>

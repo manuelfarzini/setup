@@ -1,4 +1,4 @@
-/** @file libcx/concept/type.hh **/
+/** @file libcx/concept/type.hh */
 
 #ifndef CX_CONCEPTS_TYPES_HH
 #define CX_CONCEPTS_TYPES_HH
@@ -9,28 +9,21 @@
 namespace cx {
 inline namespace uti {
   
-template<typename T> concept CSintegral = is_sintegral<T>;
-template<typename T> concept CUintegral = is_uintegral<T>;
-template<typename T> concept CIntegral = is_sintegral<T> || is_uintegral<T>;
+template<typename T> concept SomeSintegral = is_sintegral<T>;
+template<typename T> concept SomeUintegral = is_uintegral<T>;
+template<typename T> concept SomeIntegral = is_sintegral<T> || is_uintegral<T>;
 
 template<typename T> concept SomeFunction = is_func_any<T>;
 template<typename T> concept SomeFunctor = is_fntor_type<T>;
 template<typename T> concept SomeCallable = is_callable<T>;
 
-template<typename T> concept CRawPointer = is_raw_ptr<T>;
-template<typename U> concept CPlainArithmetic = is_arithmetic<U> && !is_cv_qual<U>;
+template<typename T> concept SomeRawPointer = is_raw_ptr<T>;
+template<typename U> concept SomePlainArithmetic = is_arithmetic<U> && !is_cv_qual<U>;
 
 template<typename T>
-concept CPlainRawPointer = CRawPointer<T> && !is_cv_qual<T> &&
-                           !is_cv_qual<rm_ptr<T>>;
+concept SomePlainRawPointer = SomeRawPointer<T> && !is_cv_qual<T> && !is_cv_qual<rm_ptr<T>>;
 
 template<typename T, typename U> concept SameAs = same_as<T, U>;
-
-template<typename U, typename... Ts> 
-concept PlainArithmeticAmong = CPlainArithmetic<U> && one_of<U, Ts...>;
-
-template<typename U, typename... Ts>
-concept PlainRawPointerAmong = CPlainRawPointer<U> && one_of<U, Ts...>;
 
 }       // namespace cx
 }       // namespace uti

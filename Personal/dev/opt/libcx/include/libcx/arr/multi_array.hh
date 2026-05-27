@@ -17,7 +17,7 @@ inline namespace arr {
 ///////////////////////////////////////////
 // Utilities
 
-template<typename U> concept SomeLegalType = CPlainArithmetic<U> || CPlainRawPointer<U>;
+template<typename U> concept SomeLegalType = SomePlainArithmetic<U> || SomePlainRawPointer<U>;
 
 template<typename U, typename... Ts>
 concept LegalTypeAmong = PlainArithmeticAmong<U, Ts...> || PlainRawPointerAmong<U, Ts...>;
@@ -204,15 +204,6 @@ fn push_back(Arr& arr, Ts&&... els) -> ErrorCode
 
 #define CX_TEST_MULTI_ARRAY 1
 #ifdef CX_TEST_MULTI_ARRAY
-
-fn test_multi_array_1() -> void
-{
-    using namespace cx;
-    MultiArray<isize, f32> arr{};
-
-    using First = TypeAt<0, MultiArray<isize, f32>::Types>;
-    cast(First*, arr[0])[0] = 3;
-}
 
 #endif  // CX_TEST_MULTI_ARRAY
 
