@@ -3,7 +3,7 @@ ratio = [2, 5, 5]
 sort_dir_first = true
 sort_by = "extension"
 show_simlink = true
-show_hidden = true
+show_hidden = false
 linemode = "mtime"
 scrolloff = 10
 
