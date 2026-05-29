@@ -6,8 +6,14 @@
  **/
 
 
-// TODO:
-// - documentation (especilly requires)
+// TODO:(manu)
+// - Which functions should should be inln?
+// - Tuple of pointers mem_copy with assume (chat remember this)
+// - Remove few versions of copy,move,take if no more needed.
+//   the tuple of pointers option is the cleaner but maybe is slow.
+// FIX:
+// - After some resoning I think i will pick the single pointer versions
+//   of copy,move,take. I will delete the others.
 
 #ifndef CX_MEM_MULTI_HH
 #define CX_MEM_MULTI_HH
@@ -71,63 +77,87 @@ inln cons fn multi_size_of(isize num) noexce -> isize
 }
 
 /**
-    Let `off` be the offset of the first element of the current array of type
-    `T` and length `num`. Computes the offset of the first element of the next
-    array of type `U`.
+    Computes the beginning offset of the next array in a multi-array layout.
+    @desc
+    - Let `off` be the beginning offset of the current array, containing `num`
+      elements of type `T`. The returned offset is the first valid byte offset
+      for the next array of type `U`.
+    @req
+    - `off` is already aligned for `T`.
+    - The current array contains `num` elements of type `T`.
     @ret
-    - The offset in bytes of the next array.
+    - The aligned beginning offset of the next array.
 **/
 template<typename T, typename U>
-inln cons fn multi_next_offset(isize off, isize num) noexce -> isize
+inln cons fn multi_align_up_next_beg(isize off, isize num) noexce -> isize
 {
     return align_up(off + num * size_of(T), align_of(U));
 }
 
 /**
-    Computes the aligned offset of an array of type `T`.
-    Useful when walking the layout type-by-type.
-    @ret
-    - The aligned offset in bytes.
+    Copies `num` elements for each type in `Ts...` from packed block `src` to
+    packed block `dst`.
+    `dst_num` is the number of elements reserved for each array in `dst`.
+    `src_num` is the number of elements reserved for each array in `src`.
+    @req
+    - `dst` refers to storage valid for `dst_num` elements of each type in `Ts`.
+    - `src` refers to storage valid for `src_num` elements of each type in `Ts`.
+    - `num <= dst_num`.
+    - `num <= src_num`.
+    - Source and destination ranges do not overlap.
 **/
-template<typename T>
-inln cons fn multi_align_offset(isize off) noexce -> isize
-{
-    return align_up(off, align_of(T));
+template<CpAsble... Ts>
+inln fn multi_mem_copy(
+    mutaptr cx_restrict dst, isize dst_num, mutaptr cx_restrict src, isize src_num, isize num
+) -> void {
+    cx_assume(
+        uptr(dst) + multi_size_of<Ts...>(dst_num) <= uptr(src)
+        || uptr(src) + multi_size_of<Ts...>(src_num) <= uptr(dst) 
+    );
+    isize dst_off = 0;
+    isize src_off = 0;
+    clos copy_one = [&]<typename T>() inln_clos -> void {
+        dst_off = align_up<T>(dst_off);
+        src_off = align_up<T>(src_off);
+        mem_copy(
+            cast(T*, ptr_add(dst, dst_off)),
+            cast(T const*, ptr_add(src, src_off)),
+            num
+        );
+        dst_off += dst_num * size_of(T);
+        src_off += src_num * size_of(T);
+    };
+    (copy_one.template operator()<Ts>(), ...);
 }
 
 /**
-    Computes the end offset after `num` elements of type `T`.
-    Requires: `off` is already aligned for `T`.
-    @ret
-    - The offset immediately after the array.
+    Copies `num` elements for each type in `Ts...` between two packed blocks
+    with the same layout.
+    @req
+    - `dst` and `src` refer to storage valid for `num` elements of each type in
+      `Ts...`.
+    - Source and destination ranges do not overlap.
 **/
-template<typename T>
-inln cons fn multi_end_offset(isize off, isize num) noexce -> isize
+template<CpAsble... Ts>
+inln fn multi_mem_copy(mutaptr cx_restrict dst, mutaptr cx_restrict src, isize num) -> void
 {
-    return off + num * size_of(T);
-}
-
-/**
-    Computes the typed pointer at `off` bytes from `base`.
-    Requires: `off` is correctly aligned for `T`.
-    @ret
-    - A typed pointer to the array of type `T`.
-**/
-template<typename T>
-inln cons fn multi_ptr_at(mutaptr base, isize off) noexce -> T*
-{
-    return cast(T*, ptr_add(base, off));
+    cx_assume(
+        uptr(dst) + multi_size_of<Ts...>(num) <= uptr(src)
+        || uptr(src) + multi_size_of<Ts...>(num) <= uptr(dst) 
+    );
+    multi_mem_copy<Ts...>(dst, num, src, num, num);
 }
 
 /**
     Copies `num` elements of each type in `Ts...` from `src` to `dst`
     tuple-wise.
-    Requires: each pointer in `src` and `dst` refers to `num` elements.
+    @req
+    - Each pointer in `src` and `dst` refers to `num` elements.
 **/
 template<CpAsble... Ts>
-fn multi_mem_move(Tuple<Ts*...> const& dst, Tuple<Ts*...> const& src, isize num) -> void
+inln fn multi_mem_move(Tuple<Ts*...> const& dst, Tuple<Ts*...> const& src, isize num) -> void
 {
-    [&]<usize... I>(IndexSeq<I...>) inln_clos -> void {
+    [&]<isize... I>(IndexSeq<I...>) inln_clos -> void {
         (mem_move(get<I>(dst), get<I>(src), num * size_of(Ts)), ...);
     }(index_seq_va<Ts...>{});
 }
@@ -135,56 +165,150 @@ fn multi_mem_move(Tuple<Ts*...> const& dst, Tuple<Ts*...> const& src, isize num)
 /**
     Copies `num` elements of each type described by `Arr::Types`
     from `src` to `dst`.
-    Requires: each pointer in `src` and `dst` refers to `num` elements.
+    @req
+    - Each pointer in `src` and `dst` refers to `num` elements.
 **/
 template<StaticArrayOf<mutaptr> Arr, typename... Ts>
-fn multi_mem_move(Arr& dst, Arr const& src, isize num) -> void
-    where (type_seq_size<TypeSeq<Ts...>> <= Arr::cap) // TODO: add to other functions
+inln fn multi_mem_move(Arr& dst, Arr const& src, isize num) -> void
+    where (TypeSeq<Ts...>::size <= Arr::cap)
 {
-    using Seq = TypeSeq<Ts...>;
-    [&]<usize... I>(IndexSeq<I...>) inln_clos -> void {
-        (mem_move(dst[I], src[I], num * size_of(TypeAt<I, Seq>)), ...);
-    }(IndexSeq<type_seq_size<Seq>>{});
+    using Types = TypeSeq<Ts...>;
+    [&]<isize... I>(IndexSeq<I...>) inln_clos -> void {
+        (mem_move(dst[I], src[I], num * size_of(TypeAt<I, Types>)), ...);
+    }(IndexSeq<Types::size>{});
 }
 #ifndef cx_multi_mem_move_arr
     #define cx_multi_mem_move_arr(dst, src, num, ...) \
         multi_mem_move<declt(dst), __VA_ARGS__>(dst, src, num)
 #endif
 
-// TODO: should the functions be inln?
+/**
+    Moves `num` elements for each type in `Ts...` from packed block `src` to
+    packed block `dst`.
+    `dst_num` is the number of elements reserved for each array in `dst`.
+    `src_num` is the number of elements reserved for each array in `src`.
+    @req
+    - `dst` refers to storage valid for `dst_num` elements of each type in
+      `Ts...`.
+    - `src` refers to storage valid for `src_num` elements of each type in
+      `Ts...`.
+    - `num <= dst_num`.
+    - `num <= src_num`.
+    @nota
+    - Source and destination ranges may overlap.
+**/
+template<CpAsble... Ts>
+inln fn multi_mem_move(mutaptr dst, isize dst_num, mutaptr src, isize src_num, isize num) -> void
+{
+    isize dst_off = 0;
+    isize src_off = 0;
+    clos move_one = [&]<typename T>() inln_clos -> void {
+        dst_off = align_up<T>(dst_off);
+        src_off = align_up<T>(src_off);
+        mem_move(
+            cast(T*, ptr_add(dst, dst_off)),
+            cast(T const*, ptr_add(src, src_off)),
+            num
+        );
+        dst_off += dst_num * size_of(T);
+        src_off += src_num * size_of(T);
+    };
+    (move_one.template operator()<Ts>(), ...);
+}
 
 /**
-    Moves `num` elements of each type in `Ts...` from `src` to `dst`
+    Moves `num` elements for each type in `Ts...` between two packed blocks with
+    the same layout.
+    @req
+    - `dst` and `src` refer to storage valid for `num` elements of each type in `Ts`.
+    @nota
+    - Source and destination ranges may overlap.
+**/
+template<CpAsble... Ts>
+inln fn multi_mem_move(mutaptr dst, mutaptr src, isize num) -> void
+{
+    multi_mem_move<Ts...>(dst, num, src, num, num);
+}
+
+/**
+    Takes `num` elements of each type in `Ts...` from `src` to `dst`
     tuple-wise.
-    Requires: each pointer in `src` and `dst` refers to `num` elements.
+    @req
+    - Each pointer in `src` and `dst` refers to `num` elements.
 **/
 template<CpOrMvAsble... Ts>
-fn multi_mem_take(Tuple<Ts*...> const& dst, Tuple<Ts*...> const& src, isize num) -> void
+inln fn multi_mem_take(Tuple<Ts*...> const& dst, Tuple<Ts*...> const& src, isize num) -> void
 {
-    [&]<usize... I>(IndexSeq<I...>) inln_clos -> void {
+    [&]<isize... I>(IndexSeq<I...>) inln_clos -> void {
         (mem_take<Ts>(get<I>(dst), get<I>(src), num), ...);
     }(index_seq_va<Ts...>{});
 }
 
 /**
-    Moves `num` elements of each type described by `Arr::Types`
-    from `src` to `dst`.
-    Requires: each pointer in `src` and `dst` refers to `num` elements.
+    Takes `num` elements for each type in `Ts...` from `src` to `dst`.
+    @desc
+    - Each slot of `src` and `dst` corresponds, in order, to one type in `Ts`.
+    @req
+    - Each used pointer in `src` and `dst` refers to storage valid for `num`
+      elements of the corresponding type.
+    @nota
+    - Source and destination ranges may overlap.
 **/
 template<StaticArrayOf<mutaptr> Arr, typename... Ts>
-fn multi_mem_take(Arr& dst, Arr& src, isize num) -> void
+inln fn multi_mem_take(Arr& dst, Arr& src, isize num) -> void
 {
-    using Seq = TypeSeq<Ts...>;
+    using Types = TypeSeq<Ts...>;
     isize i = 0;
     [&]<isize... I>(IndexSeq<I...>) inln_clos -> void {
-        ((mem_take<TypeAt<I, Seq>>(dst[i], src[i], num), i++), ...);
-    }(IndexSeq<type_seq_size<Seq>>{});
-    // TODO: simplify with Seq::size
+        ((mem_take<TypeAt<I, Types>>(dst[i], src[i], num), i++), ...);
+    }(IndexSeq<Types::size>{});
 }
 #ifndef cx_multi_mem_take_arr
     #define cx_multi_mem_take_arr(dst, src, num, ...) \
         multi_mem_take<declt(dst), __VA_ARGS__>(dst, src, num)
 #endif
+
+/**
+    Takes `num` elements for each type in `Ts...` from packed block `src` into
+    packed block `dst`.
+    `dst_num` is the number of elements reserved for each array in `dst`.
+    `src_num` is the number of elements reserved for each array in `src`.
+    @req
+    - `dst` refers to storage valid for `dst_num` elements of each type in `Ts`.
+    - `src` refers to storage valid for `src_num` elements of each type in `Ts`.
+    - `num <= dst_num`.
+    - `num <= src_num`.
+**/
+template<CpOrMvAsble... Ts>
+inln fn multi_mem_take(mutaptr dst, isize dst_num, mutaptr src, isize src_num, isize num) -> void
+{
+    isize dst_off = 0;
+    isize src_off = 0;
+    clos take_one = [&]<typename T>() inln_clos -> void {
+        dst_off = align_up<T>(dst_off);
+        src_off = align_up<T>(src_off);
+        mem_take(
+            cast(T*, ptr_add(dst, dst_off)),
+            cast(T const*, ptr_add(src, src_off)),
+            num
+        );
+        dst_off += dst_num * size_of(T);
+        src_off += src_num * size_of(T);
+    };
+    (take_one.template operator()<Ts>(), ...);
+}
+
+/**
+    Takes `num` elements for each type in `Ts...` between two packed blocks with
+    the same layout.
+    @req
+    - `dst` and `src` refer to storage valid for `num` elements of each type in `Ts`.
+**/
+template<CpOrMvAsble... Ts>
+inln fn multi_mem_take(mutaptr dst, mutaptr src, isize num) -> void
+{
+    multi_mem_take<Ts...>(dst, num, src, num, num);
+}
 
 ////////////////////////////////////////////
 // Allocator

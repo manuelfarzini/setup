@@ -38,7 +38,7 @@ term = [
 
 [open]
 prepend_rules = [
-    { name = "*.pdf", use = ["open", "reveal"] },
-    { name = "*.md", use = ["edit", "open", "reveal"] },
-    { name = "*/", use = ["term", "edit", "open" ] },
+    { url = "*.pdf", use = ["open", "reveal"] },
+    { url = "*.md", use = ["edit", "open", "reveal"] },
+    { url = "*/", use = ["term", "edit", "open" ] },
 ]

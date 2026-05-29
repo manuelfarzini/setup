@@ -9,8 +9,8 @@
 #include "libcx/__utils/ownership.hh"
 #include "libcx/uti/tuple.hh"
 
-CX_HIDE_FROM_ABI nodisc cons fn operator new(usize, void* __p) noexce -> void* { return __p; }
-CX_HIDE_FROM_ABI        cons fn operator delete(void*, void*)  noexce -> void  {             }
+CX_HIDE_FROM_ABI nodisc cons fn operator new(usize, mutaptr __p) noexce -> mutaptr { return __p; }
+CX_HIDE_FROM_ABI        cons fn operator delete(mutaptr, mutaptr)  noexce -> void  {             }
 
 namespace cx {
 inline namespace mem {
@@ -25,21 +25,45 @@ static_assert(MAX_ALIGN % PTR_ALIGN == 0, "`MAX_ALIGN` must be a multiple of `pt
 static_assert((MAX_ALIGN & (MAX_ALIGN - 1)) == 0, "`MAX_ALIGN` must be a power of 2");
 static_assert(DEF_ALIGN == 8  || DEF_ALIGN == 16, "`DEF_ALIGN` should be 8 or 16");
 
-/** 
-    Predicate that is `true` if `Tp` requires more alignment than `max_align_t`.
-**/
+/** Predicate that is `true` if `Tp` requires more alignment than `max_align_t`. **/
 template<typename Tp>
 predicate is_over_aligned =  align_of(Tp) > align_of(max_align_t);
+
+/**
+    Copies `size` bytes from `src` to `dst`.
+    @req
+    - `dst` refers to storage valid for `size` bytes.
+    - `src` refers to storage valid for `size` bytes.
+    - Source and destination ranges do not overlap.
+**/
+inln cons fn
+mem_copy(mutaptr cx_restrict dst, readptr cx_restrict src, isize size) noexce -> void
+{
+    ::memcpy(dst, src, size);
+}
+
+/**
+    Copies `num` elements of type `T` from `src` to `dst`.
+    @req
+    - `dst` refers to storage valid for `num` elements of type `T`.
+    - `src` refers to storage valid for `num` elements of type `T`.
+    - Source and destination ranges do not overlap.
+**/
+template<typename T>
+inln cons fn mem_copy(T* dst, T const* src, isize num) noexce -> void where (not is_void<T>)
+{
+    mem_copy(mutaptr(dst), mutaptr(src), num * size_of(T));
+}
 
 /** 
     Copies `size` bytes from `src` to `dst`.
     @para
-    - `dst`: the destination pointer
-    - `src`: the source pointer
+    - `dst`: the destination pointer.
+    - `src`: the source pointer.
     @pre
     - `src` and `dst` have `size` bytes.
 **/
-inln cons fn mem_move(void* dst, void const* src, isize size) -> void
+inln cons fn mem_move(mutaptr dst, readptr src, isize size) -> void
 {
     // NOTE(manu)
     // should i implement mem_move? libc is already heavily optimized
@@ -216,7 +240,7 @@ cons fn mem_zero_condition(mutaptr data, isize size) -> ErrorCode
     - `[null, err]` if `ptr == null` or `num` == `0`;
     - `[ptr, none]` otherwise.
     @pre
-    - sufficient, properly aligned storage at `ptr`.
+    - Sufficient, properly aligned storage at `ptr`.
 **/
 template<ZeroInitble T>
 nodisc inln cons fn init_type(mutaptr ptr, isize num) noexce -> ErrorCode
@@ -281,7 +305,7 @@ nodisc cons fn init_va(
     - The elements are copied.
 **/
 template<typename T, typename U>
-cons fn init_list(mutaptr ptr, initls<U> lst) noexce -> ErrorCode
+cons fn init_ls(mutaptr ptr, initls<U> lst) noexce -> ErrorCode
     where is_ctble<T, U const&>
 {
     if (ptr == null) {

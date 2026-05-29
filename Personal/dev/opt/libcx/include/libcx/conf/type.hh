@@ -13,12 +13,12 @@ namespace cx {
 
 using cstring = char const*;
 
-template<typename T>        using Void = void;
-template<typename T>        using initls = std::initializer_list<T>;
-template<typename... Ts>    using Res = Tuple<Ts...>;
+template<typename T>     using Void = void;
+template<typename T>     using initls = std::initializer_list<T>;
+template<typename... Ts> using Res = Tuple<Ts...>;
 
-struct EmptyType {};
-onedef cons EmptyType Empty_Value;
+struct NoneType {};
+onedef cons NoneType None;
 
 struct ZeroType {
     cons operator isize() const noexce { return 0; }

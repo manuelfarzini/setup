@@ -36,6 +36,9 @@
 #ifndef unlike
     #define unlike [[unlikely]]
 #endif
+#ifndef cx_assume
+    #define cx_assume(...) [[assume(__VA_ARGS__)]]
+#endif
 #ifndef cx_no_uniq_addr
     #if CX_COMPILER_CLANG || CX_COMPILER_GCC
         #define cx_no_uniq_addr [[no_unique_address]]
@@ -257,6 +260,9 @@
 #ifndef align_of
     #define align_of(X) isize(alignof(X))
 #endif
+#ifndef align_as
+    #define align_as(X) alignas(X)
+#endif
 #ifndef count_of
     #define count_of(x) \
         ((size_of(x) / size_of(0 [x])) / (cast(isize, not (size_of(x) % size_of(0 [x])))))
@@ -354,7 +360,7 @@
 // Testing
 
 #ifndef CX_TEST_DEFINE
-    #define CX_TEST_DEFINE(name) fn test_##name() noexce -> void
+    #define CX_TEST_DEFINE(name) inline auto test_##name() noexcept -> void
 #endif
 #ifndef CX_TEST_CALL
     #define CX_TEST_CALL(name)                                                                      \
@@ -605,16 +611,21 @@
 
 #ifndef CX_UNDEF_KEYWORDS
     #define CX_UNDEF_KEYWORDS \
-        #undef cons           \
-        #undef comp           \
-        #undef glob           \
         #undef priv           \
-        #undef noexce         \
-        #undef persist        \
-        #undef predicate      \
-        #undef fn             \
         #undef glob           \
-        #undef onedef
+        #undef persist        \
+        #undef onedef         \
+        #undef fn             \
+        #undef noexce         \
+        #undef where          \
+        #undef proc           \
+        #undef func           \
+        #undef clos           \
+        #undef comp           \
+        #undef cons           \
+        #undef predicate      \
+        #undef cast           \
+        #undef nil            \
 #endif
       
 #endif  // CX_CONF_MACRO

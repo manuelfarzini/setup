@@ -10,7 +10,7 @@ namespace cx::err {
   
 /// A pair of a value and an error. 
 template<
-  typename V = Empty, typename E = ErrorPointer,
+  typename V = NoneType, typename E = ErrorPointer,
   Requires(!is_error_pointer<rm_cvref<V>>)>
 struct ResultPair {
   using Value = V;
@@ -20,7 +20,7 @@ struct ResultPair {
   Error err{null};
 };
 
-ResultPair() -> ResultPair<Empty, ErrorPointer>;
+ResultPair() -> ResultPair<NoneType, ErrorPointer>;
 
 template<typename V>
 ResultPair(V) -> ResultPair<uti::enable_if<!is_error_pointer<rm_cvref<V>>, V>>;
@@ -34,9 +34,9 @@ CX_CONCEPT_GEN_TEMPL(
 #define Result_Pair cx::err::CResultPair auto
 
 
-static_assert(is_def_ctble<ResultPair<Empty>>);
-static_assert(is_mv_ctble<ResultPair<Empty>>);
-static_assert(is_mv_asble<ResultPair<Empty>>);
-static_assert(is_dtble<ResultPair<Empty>>);
+static_assert(is_def_ctble<ResultPair<NoneType>>);
+static_assert(is_mv_ctble<ResultPair<NoneType>>);
+static_assert(is_mv_asble<ResultPair<NoneType>>);
+static_assert(is_dtble<ResultPair<NoneType>>);
 }       // namespace cx::err
 #endif  // CX_ERR_RESULT_PAIR_HH

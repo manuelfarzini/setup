@@ -1,6 +1,6 @@
 [mgr]
 # root
-cwd = { fg = "#8c6142", bold = true }
+cwd = { fg = "#9ea75b", bold = true }
 # find
 find_keyword = { fg = "#ffffff", bg = "#26261c" }
 find_positon = { fg = "#ffffff", bg = "#26261c" }

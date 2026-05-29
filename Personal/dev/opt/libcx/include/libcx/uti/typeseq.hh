@@ -4,27 +4,28 @@
 #define CX_UTI_TYPESEQ_HH
 
 #include "libcx/conf/macro.hh"
-#include "libcx/concept/types.hh"
+#include "libcx/concept/type.hh"
 #include "libcx/uti/members.hh"
 
 namespace cx {
 inline namespace uti {
 
-/*                                         *
-* Type sequence                            *
-*                                         */
+////////////////////////////////////////////
+// Type sequence
 
-struct NullType {};
+namespace ___type_seq_detail {
+struct ___NullType {};
+}
 
 template<typename... Ts> struct TypeSeq;
 
 template<>
 struct TypeSeq<> {
-    using Head = NullType;
+    using Head = ___type_seq_detail::___NullType;
     using Rest = TypeSeq<>;
 
-    glob onedef cons bool empty = true;
-    glob onedef cons usize size = 0;
+    onedef glob cons bool empty = true;
+    onedef glob cons isize size = 0;
 };
 
 template<typename H, typename... Rs>
@@ -32,16 +33,19 @@ struct TypeSeq<H, Rs...> {
     using Head = H;
     using Rest = TypeSeq<Rs...>;
 
-    glob onedef cons bool empty = false;
-    glob onedef cons usize size = 1 + sizeof...(Rs);
+    onedef glob cons bool empty = false;
+    onedef glob cons isize size = 1 + sizeof...(Rs);
 };
+
+template<typename... Ts>
+onedef cons isize va_size = TypeSeq<Ts...>::size;
 
 CX_CONCEPT_GEN_TEMPL(TypeSeq, is_type_seq, SomeTypeSeq, typename... Ts, Ts...);
 
 template<typename>
 predicate ___always_false = false;
 
-///////////////////////////////////////////
+////////////////////////////////////////////
 // Homogeneous type sequence
 
 template<SomeTypeSeq Seq>
@@ -49,10 +53,9 @@ cons fn ___typeseq_is_homogeneous() -> bool
 {
     if constexpr (Seq::empty || Seq::Rest::empty) {
         return true;
-    } else {
-        // XXX: or cvref ???
+    } else { // XXX: or cvref ???
         return same_as<typename Seq::Head, typename Seq::Rest::Head>
-            && ___typeseq_is_homogeneous<typename Seq::Rest>();
+               && ___typeseq_is_homogeneous<typename Seq::Rest>();
     }
 }
 
@@ -62,13 +65,13 @@ predicate is_homogeneous = ___typeseq_is_homogeneous<Seq>();
 template<typename... Ts>
 predicate is_homogeneous_va = is_homogeneous<TypeSeq<Ts...>>;
 
-///////////////////////////////////////////
+////////////////////////////////////////////
 // Type at a given index in a type sequence
 
-template<usize Idx, SomeTypeSeq Seq, bool Empty = Seq::empty>
+template<isize Idx, SomeTypeSeq Seq, bool Empty = Seq::empty>
 struct ___TypeAt;
 
-template<usize Idx, SomeTypeSeq Seq>
+template<isize Idx, SomeTypeSeq Seq>
 struct ___TypeAt<Idx, Seq, false>
     : ___TypeAt<Idx - 1, typename Seq::Rest> {};
 
@@ -77,44 +80,35 @@ struct ___TypeAt<0, Seq, false> {
     using Type = typename Seq::Head;
 };
 
-template<usize Idx, SomeTypeSeq Seq>
+template<isize Idx, SomeTypeSeq Seq>
 struct ___TypeAt<Idx, Seq, true> {
     static_assert(___always_false<Seq>, "TypeAt index out of range");
 };
 
-template<usize Idx, SomeTypeSeq Seq>
+template<isize Idx, SomeTypeSeq Seq>
 using TypeAt = typename ___TypeAt<Idx, Seq>::Type;
 
-template<usize Idx, typename... Ts>
+template<isize Idx, typename... Ts>
 using TypeAtVA = TypeAt<Idx, TypeSeq<Ts...>>;
 
 ////////////////////////////////////////////
 // Index of a given type in a type sequence
 
 template<typename T, SomeTypeSeq Seq>
-comp fn ___type_idx_of() -> usize
+comp fn ___type_idx_of() -> isize
 {
     if constexpr (Seq::empty) {
         static_assert(___always_false<T>, "type_idx type not found in TypeSeq");
-        return usize{0};
+        return isize{0};
     } else if constexpr (same_as<T, typename Seq::Head>) {
-        return usize{0};
+        return isize{0};
     } else {
-        return usize{1} + ___type_idx_of<T, typename Seq::Rest>();
+        return isize{1} + ___type_idx_of<T, typename Seq::Rest>();
     }
 }
 
 template<typename T, SomeTypeSeq Seq>
-onedef cons usize type_idx = ___type_idx_of<T, Seq>();
-
-////////////////////////////////////////////
-// Size of a type sequence
-
-template<SomeTypeSeq Seq>
-onedef cons usize type_seq_size = Seq::size;
-
-template<typename... Ts>
-onedef cons usize va_size = TypeSeq<Ts...>::size;
+onedef cons isize type_idx = ___type_idx_of<T, Seq>();
 
 ////////////////////////////////////////////
 // Integer sequence
@@ -122,40 +116,40 @@ onedef cons usize va_size = TypeSeq<Ts...>::size;
 template<SomeIntegral Int, Int... Is>
 struct IntegerSeq {
     using Elem = Int;
-    glob onedef cons usize size = sizeof...(Is);
+    glob onedef cons isize size = sizeof...(Is);
 };
 
 CX_CONCEPT_GEN_TEMPL(IntegerSeq, is_integer_seq, CIntegerSeq,
-                     VA_(CIntegral Int, Int... Is), VA_(Int, Is...));
+                     VA_(SomeIntegral Int, Int... Is), VA_(Int, Is...));
 
-template<SomeIntegral Int, usize N, usize... Is>
+template<SomeIntegral Int, isize N, isize... Is>
 struct ___integer_seq : ___integer_seq<Int, N - 1, N - 1, Is...> {};
 
-template<CIntegral Int, usize... Is>
-struct ___integer_seq<Int, usize{0}, Is...> {
+template<SomeIntegral Int, isize... Is>
+struct ___integer_seq<Int, isize{0}, Is...> {
     using Type = IntegerSeq<Int, Int{Is}...>;
 };
 
-template<SomeIntegral Int, usize N>
+template<SomeIntegral Int, isize N>
 using integer_seq = typename ___integer_seq<Int, N>::Type;
 
 template<SomeIntegral Int, typename... Ts>
-using integer_seq_va = integer_seq<Int, usize{sizeof...(Ts)}>;
+using integer_seq_va = integer_seq<Int, isize{sizeof...(Ts)}>;
 
 template<SomeIntegral Int, typename T>
-using integer_seq_for = integer_seq<Int, usize{T::size}>;
+using integer_seq_for = integer_seq<Int, isize{T::size}>;
 
-template<usize... Is>
-using IndexSeq = IntegerSeq<usize, Is...>;
+template<isize... Is>
+using IndexSeq = IntegerSeq<isize, Is...>;
 
-template<usize N>
-using index_seq = integer_seq<usize, N>;
+template<isize N>
+using index_seq = integer_seq<isize, N>;
 
 template<typename... Ts>
-using index_seq_va = index_seq<usize{sizeof...(Ts)}>;
+using index_seq_va = index_seq<isize{sizeof...(Ts)}>;
 
 template<typename T>
-using index_seq_for = index_seq<usize{T::size}>;
+using index_seq_for = index_seq<isize{T::size}>;
 
 }       // namespace uti
 }       // namespace cx

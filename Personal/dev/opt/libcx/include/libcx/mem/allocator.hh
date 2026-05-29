@@ -24,13 +24,13 @@ onedef cons u32 AllocFlags_Default = AllocFlags_Zero;
 
 template<typename Alc>
 concept SomeAllocator = requires(
-    Alc&      alc,
+    Alc&       alc,
     mutaptr    old_ptr,
-    isize     old_size,
-    isize     new_size,
-    isize     old_align,
-    isize     new_align,
-    u32       flags
+    isize      old_size,
+    isize      new_size,
+    isize      old_align,
+    isize      new_align,
+    u32        flags
 ) {
     { aligned_alloc(alc, new_size, new_align, flags) }
     noexce -> SameAs<Res<mutaptr, ErrorCode>>;
@@ -46,54 +46,54 @@ concept SomeAllocator = requires(
 
 // Static allocator interface.
 
-#define ALIGNED_ALLOC(name, Alc)               \
-    cons fn name(                              \
-        Alc&     alc,                          \
-        isize    size,                         \
-        isize    align  =  DEF_ALIGN,          \
-        u32      flags  =  AllocFlags_Default  \
+#define ALIGNED_ALLOC(name, Alc)              \
+    cons fn name(                             \
+        Alc&     alc,                         \
+        isize    size,                        \
+        isize    align  =  DEF_ALIGN,         \
+        u32      flags  =  AllocFlags_Default \
     ) noexce -> Res<mutaptr, ErrorCode>
 
 #define ALIGNED_RESIZE(name, Alc)                   \
     cons fn name(                                   \
-        Alc&      alc,                              \
-        mutaptr    old_ptr,                          \
-        isize     new_size,                         \
-        isize     old_size,                         \
-        isize     new_align  =  DEF_ALIGN,          \
-        isize     old_align  =  DEF_ALIGN,          \
-        u32       flags      =  AllocFlags_Default  \
+        Alc&       alc,                             \
+        mutaptr    old_ptr,                         \
+        isize      new_size,                        \
+        isize      old_size,                        \
+        isize      new_align  =  DEF_ALIGN,         \
+        isize      old_align  =  DEF_ALIGN,         \
+        u32        flags      =  AllocFlags_Default \
     ) noexce -> Res<mutaptr, ErrorCode>
 
-#define ALIGNED_FREE(name, Alc)  \
-    cons fn name(                \
-        Alc& alc, mutaptr ptr     \
+#define ALIGNED_FREE(name, Alc) \
+    cons fn name(               \
+        Alc& alc, mutaptr ptr   \
     ) noexce -> ErrorCode
 
 // Runtime allocator interface.
 
 #define ALIGNED_ALLOC_VIEW(name)                \
     fn name(                                    \
-        mutaptr    alc,                          \
-        isize     size,                         \
-        isize     align  =  DEF_ALIGN,          \
-        u32       flags  =  AllocFlags_Default  \
+        mutaptr    alc,                         \
+        isize      size,                        \
+        isize      align  =  DEF_ALIGN,         \
+        u32        flags  =  AllocFlags_Default \
     ) noexce -> Res<mutaptr, ErrorCode>
 
 #define ALIGNED_RESIZE_VIEW(name)                   \
     fn name(                                        \
-        mutaptr    alc,                              \
-        mutaptr    old_ptr,                          \
-        isize     old_size,                         \
-        isize     new_size,                         \
-        isize     old_align  =  DEF_ALIGN,          \
-        isize     new_align  =  DEF_ALIGN,          \
-        u32       flags      =  AllocFlags_Default  \
+        mutaptr    alc,                             \
+        mutaptr    old_ptr,                         \
+        isize      old_size,                        \
+        isize      new_size,                        \
+        isize      old_align  =  DEF_ALIGN,         \
+        isize      new_align  =  DEF_ALIGN,         \
+        u32        flags      =  AllocFlags_Default \
     ) noexce -> Res<mutaptr, ErrorCode>
 
 #define ALIGNED_FREE_VIEW(name)  \
     fn name(                     \
-        mutaptr alc, mutaptr ptr   \
+        mutaptr alc, mutaptr ptr \
     ) noexce -> ErrorCode
 
 ////////////////////////////////////////////

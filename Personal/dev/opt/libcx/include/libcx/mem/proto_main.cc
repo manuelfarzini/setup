@@ -1,10 +1,9 @@
 // #include <libcx/mem/multi.hh>
 
-#include "stdio.h"
-#include "_allocator.hh"
+#include "allocator.hh"
 
 int main() {
-    using namespace cx::mem;
+    using namespace cx;
     i8 arr[10];
 
     init_ls<u8>(arr, {1, 2, 3, 4, 5});

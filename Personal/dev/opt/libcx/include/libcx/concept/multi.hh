@@ -1,7 +1,9 @@
+/** @file libcx/concept/multi.hh **/
+
 #ifndef CX_CONCEPTS_MULTI_HH
 #define CX_CONCEPTS_MULTI_HH
 
-#include "libcx/concept/types.hh"
+#include "libcx/concept/type.hh"
 #include "libcx/traits/relation.hh"
 #include "libcx/traits/types.hh"
 

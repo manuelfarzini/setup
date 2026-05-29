@@ -6,7 +6,8 @@
 #include "libcx/uti/utilities.hh"
 #include "libcx/mem/common.hh"
 
-namespace cx::arr {
+namespace cx {
+inline namespace arr {
 
 /// Contiguous `buf`fer of `T` objects with a fixed `cap`acity `C`
 /// and a `len`gth indicating current active elements.
@@ -264,6 +265,6 @@ fn test_inline_array_compare() -> void
 #endif
 #endif
 
-}  // namespace cx::arr
-
+}       // namespace arr
+}       // namespace cx
 #endif  // CX_ARR_INLINE_ARRAY_HH
