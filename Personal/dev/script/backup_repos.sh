@@ -45,4 +45,4 @@ update_repo() {
 
 update_setup
 update_repo "nvim" "$HOME/.config/nvim"
-update_repo "libcx" "$HOME/Personal/dev/include/libcx"
+update_repo "libcx" "$HOME/Personal/dev/opt/libcx"
