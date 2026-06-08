@@ -1,8 +1,0 @@
-# file: .clangd
-
-Diagnostics:
-  Suppress: [
-      unused-variable,
-      unused-parameter,
-      unused-result
-]
