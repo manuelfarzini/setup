@@ -51,6 +51,7 @@ clean
     -lang mojo \
     -I "${FAUST_HOME}/tests/impulse-tests/dsp" \
     -double \
+    -vec \
     -i \
     -a "$ARCH" \
     "$SRC" \
