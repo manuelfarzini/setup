@@ -1,6 +1,10 @@
 [mgr]
 # root
 cwd = { fg = "#9ea75b", bold = true }
+# sort
+sort_by = "natural"
+sort_sensitive = false
+sort_dir_first = true
 # find
 find_keyword = { fg = "#ffffff", bg = "#26261c" }
 find_positon = { fg = "#ffffff", bg = "#26261c" }
