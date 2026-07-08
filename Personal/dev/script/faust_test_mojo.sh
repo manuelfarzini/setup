@@ -52,7 +52,8 @@ clean
     -I "${FAUST_HOME}/tests/impulse-tests/dsp" \
     -double \
     -vec \
-    -i \
+    -vs 4 \
+    -dfs \
     -a "$ARCH" \
     "$SRC" \
     -o "$OUT" \
