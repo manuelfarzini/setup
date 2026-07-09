@@ -3,6 +3,39 @@ markdown_extensions: +bracketed_spans
 ---
 
 ```
+var ref out del muta read cons priv (init eval)
+```
+
+```
+@inline
+cons proc align_up(
+    $First: Movable,
+    $Second: Movable
+    $Error: type = DefaultError
+) -> (
+    []uint, 
+    Error
+), where:
+    is_power2(align_of(First)),
+    is_power2(align_of(Second))
+{
+    x := get_value();
+    return align_up(ptr, align_of.(T));
+}
+```
+
+```
+Person :: struct {
+    age:     s32
+    name:    string
+}
+
+size_of.(s32)
+size_of.(u8)
+```
+
+
+```
 ptr to single u8          ->  []u8,      only dereferencable
 multi ptr (to n u8s)      ->  [*]u8,     dereferencable and indexable 
 ptr to multi ptr to u8s   ->  [][*]u8,   dereferencable and indexable
@@ -12,6 +45,7 @@ dereferencing             ->  x[]
 indexing                  ->  x[i]
 slicing                   ->  x[i:j]
 static array of n u8s     ->  [u8, n]
+pointer to static array   ->  [][u8, n]
 dynamic of u8s            ->  [u8, ..]
 simd vector of n u8s      ->  [n]u8 ? <u8, n> ? u8<n> ? u8[n] ? <n>u8
 
@@ -23,6 +57,7 @@ Alternative
 [&]u8     -> slice
 [n]u8     -> static array
 [..]u8    -> dynamic array
+[][n]u8   -> pointer to static array
 u8<n>     -> simd
 ```
 
@@ -58,12 +93,14 @@ cons proc generic_test[
 --- good
 @inln @priv 
 cons proc generic_test(
-    $T:    type
-    $n:    sint
-    x:     *[T, n]
+    $T:  type
+    $n:  sint
+    x:   [][n]T
 ) -> T, where:
-    cpyble(T) & dtble(T)
+    T is cpyble & dtble,
     0 < n and n < 100
+{
+}
   
 inln priv cons proc generic_test(
     type       $T
