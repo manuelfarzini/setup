@@ -1,18 +1,27 @@
-# SF Mono
-font-family = SF Mono
-font-family-bold = SF Mono
-font-family-italic = SF Mono
-font-style = Medium
-font-style-bold = Bold
-font-style-italic = SemiBold
-adjust-cell-width = -5%
-adjust-cell-height = 15%
-font-size = 10.5
-adjust-underline-position = 2
-font-thicken = true
-font-thicken-strength=200
+# Font settings
 
-#-----------------------------------------------------------------------------------------------------------------|
+font-family = SF Mono
+font-style = Medium
+
+font-family-bold = SF Mono
+font-style-bold = Bold
+
+font-family-italic = SF Mono
+font-style-italic = SemiBold
+
+adjust-cell-width = 0%
+adjust-underline-position = 2
+adjust-cell-height = 10%
+
+font-size = 8.5
+font-thicken = true
+font-thicken-strength = 200
+
+adjust-cursor-thickness = 2
+adjust-box-thickness = 1
+
+# Test font width                                                                                                115
+#-----------------------------------------------------------------------------------------------------------------|-----------------------------------
 
 title = " "
 
