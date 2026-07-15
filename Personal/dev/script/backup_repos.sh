@@ -32,7 +32,7 @@ update_repo() {
         return
     fi
 
-    git -C "$path" add -u
+    git -C "$path" add .
 
     if git -C "$path" diff --cached --quiet; then
         echo "nothing to commit"
