@@ -43,6 +43,7 @@ export FZF_DEFAULT_OPTS="
   --color=marker:#c78707,spinner:#c78707,header:#c78707"
 
 # Bindings
+
 bindkey -M viins -r '^[k'
 bindkey -M viins -r '^[j'
 bindkey -M vicmd -r '^[k'
