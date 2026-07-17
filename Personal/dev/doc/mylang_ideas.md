@@ -7,58 +7,96 @@ var ref out del muta read cons priv (init eval)
 ```
 
 ```
-@inline
-cons proc align_up(
-    $First: Movable,
-    $Second: Movable
-    $Error: type = DefaultError
+
+Alternative
+@inln @cons
+fn align_up[ $First,
+    Error:   type     =  DefaultError,
+](
+    a:  First,
+) -> (
+    []uint,
+    Error
+), with:
+    is_power2(align_of(First))
+```
+
+```
+Best
+@inln @cons
+fn align_up(
+    $$First,
+    $Error:  type  =  DefaultError,
+    a:       First
 ) -> (
     []uint, 
     Error
-), where:
-    is_power2(align_of(First)),
-    is_power2(align_of(Second))
+), with:
+    is_power2(align_of(First));
+
+Example of usage
+
+{   
+    …
+    x, err := align_up(MemoryError, a)
+    or
+    x, err := align_up(a)
+    …
+}
+```
+
+```
+type Person
 {
-    x := get_value();
-    return align_up(ptr, align_of.(T));
-}
-```
-
-```
-Person :: struct {
-    age:     s32
-    name:    string
+    age  : s32
+    name : string
 }
 
-size_of.(s32)
-size_of.(u8)
+@spec
+type Serializable
+{
+    fn serialize(s: *Serializable, out: *Buffer) -> Error
+    fn deserialize(s: *Serializable, in: *Buffer) -> Error
+}
+
+size_of(s32)
+size_of(u8)
 ```
 
+```
+*u8     -> ptr
+[*]u8   -> multi ptr
+*[*]u8  -> ptr to multi ptr
+x[]     -> dereferencing
+[]u8    -> slice
+[][]u8  -> slice of slices
+[n]u8   -> static array
+*[n]u8  -> pointer to static array
+[..]u8  -> dynamic array
+<n>u8   -> simd
+```
 
 ```
-ptr to single u8          ->  []u8,      only dereferencable
-multi ptr (to n u8s)      ->  [*]u8,     dereferencable and indexable 
-ptr to multi ptr to u8s   ->  [][*]u8,   dereferencable and indexable
-slice of u8(s)            ->  [u8]
-slice of slices of u8s    ->  [[u8]]
-dereferencing             ->  x[]
-indexing                  ->  x[i]
-slicing                   ->  x[i:j]
-static array of n u8s     ->  [u8, n]
-pointer to static array   ->  [][u8, n]
-dynamic of u8s            ->  [u8, ..]
-simd vector of n u8s      ->  [n]u8 ? <u8, n> ? u8<n> ? u8[n] ? <n>u8
+@inln @priv @cons
+fn generic_test(
+    $T:  type
+    $n:  sint
+    x:   *[n]T
+) -> T, with:
+    T is cpyble and T is dtble,
+    0 < n and n < 100
+{
+    return x[][0]
+}
 
-Alternative
-[]u8      -> ptr
-[*]u8     -> multi ptr
-[][*]u8   -> ptr to multi ptr
-[&][&]u8  -> slice of slices
-[&]u8     -> slice
-[n]u8     -> static array
-[..]u8    -> dynamic array
-[][n]u8   -> pointer to static array
-u8<n>     -> simd
+Example of usage
+
+{
+    …
+    arr := [10]u8{};  -- arr: [10]u8 = {}
+    x := generic_test(&arr);
+    …
+}
 ```
 
 # Misc
@@ -74,35 +112,32 @@ u8<n>     -> simd
 ```
 
 ```
---- good
-@inln @priv
-cons proc generic_test[
-    T: type where T is cpyble & dtble,
-    n: sint where n > 0
+@inln @priv @cons
+fn generic_test[
+    T: type with T is cpyble & dtble,
+    n: sint with n > 0
 ](&[T, n] x) -> T
 
 --- good
-@inln @priv
-cons proc generic_test[
+@inln @priv @cons
+fn generic_test[
     T: type
     n: sint
-](&[T, n] x) -> T, where:
-    T is cpyble & dtble,
-    n > 0
+](x: *[n]T) -> T, with:
+    T is cpyble and dtble,
+    0 < n and n < 100
 
 --- good
-@inln @priv 
-cons proc generic_test(
+@inln @priv @cons
+fn generic_test(
     $T:  type
     $n:  sint
-    x:   [][n]T
-) -> T, where:
+    x:   *[n]T
+) -> T, with:
     T is cpyble & dtble,
     0 < n and n < 100
-{
-}
-  
-inln priv cons proc generic_test(
+
+inln priv cons fn generic_test(
     type       $T
     sint       $n
     &[T, n]    x
@@ -111,7 +146,7 @@ inln priv cons proc generic_test(
     n > 0
 
 @inln @priv
-cons proc generic_test[type T, sint n](&[T, n] arr) -> T, where:
+cons fn generic_test[type T, sint n](&[T, n] arr) -> T, where:
     cpyble[T] & dtble[T],
     n > 0
 
@@ -119,7 +154,7 @@ cons proc generic_test[type T, sint n](&[T, n] arr) -> T, where:
 
 ```
 @inln @priv
-proc visit(
+fn visit(
     *DeclareVarInst inst
 ) -> void, where: some_cons_predicate() {
     // if arr_t := dycast(*ArrayTyped, inst.t_info); arr_t:
@@ -185,7 +220,7 @@ Cns Sint64
 Cns Float32
 
 // cpp/rust like
-inline cexpr proc< 
+inline cexpr fn< 
     Movble    First,
     Copble    Second,
     Type      ReturnErr
@@ -204,7 +239,7 @@ where:
 }
 
 // c + odin
-inln cons proc align_up(
+inln cons fn align_up(
     Movable  $First
     Copyable $Second
     Any      $ReturnErr
@@ -340,12 +375,12 @@ from:
   template<typename T, CTupleType Tup, typename L = Tup::Types>
   finline inline constexpr auto get(Tup const& tup) -> auto const&
 to:
-  <T, TupleType Tup> inline cexpr proc get(tup: &const Tup) -> &const auto 
+  <T, TupleType Tup> inline cexpr fn get(tup: &const Tup) -> &const auto 
   {
     return get<get_index<T, Tup.Types>>(tup);
   }
 or:
-  inline cexpr proc get($T, $Tup: TupleType, tup: &cns Tup) -> &cns auto 
+  inline cexpr fn get($T, $Tup: TupleType, tup: &cns Tup) -> &cns auto 
   {
     return get(type_idx(T, Tup.Types), tup);
   }
@@ -353,7 +388,7 @@ or:
 ```
 
 ```
-inline priv proc forward_five_variables(
+inline priv fn forward_five_variables(
     $FirstType, $SecondType, $ThirdType, $FourthType, $FifthType,
     *FirstType a, *SecondType b, *ThirdType c, *FourthType d, *FifthType e
 ) -> (FirstType, SecondType, ThirdType, FourthType, FifthType)
@@ -363,7 +398,7 @@ where
   return *a, *b, *c, *d, *e;
 }
 
-inline priv forward_five_variables :: proc (
+inline priv forward_five_variables :: fn (
     $FirstType, $SecondType, $ThirdType, $FourthType, $FifthType \ Copy,
     a: *FirstType, b:  *SecondType, c: *ThirdType, d: *FourthType, e: *FifthType
 ) -> (FirstType, SecondType, ThirdType, FourthType, FifthType)
@@ -375,7 +410,7 @@ inline priv forward_five_variables :: proc (
 
 ```
 inline private
-proc<FirstType, SecondType, ThirdType, FourthType, FifthType: Copy + Move>
+fn<FirstType, SecondType, ThirdType, FourthType, FifthType: Copy + Move>
 forward_five_variables(a: ^FirstType, b: ^const SecondType, c: ^ThirdType,
                        d: ^const FourthType, e: ^FifthType)
 -> (FirstType, SecondType, ThirdType, FourthType, FifthType)
@@ -383,7 +418,7 @@ forward_five_variables(a: ^FirstType, b: ^const SecondType, c: ^ThirdType,
   return a^^, b^, c^^, d^, e^^; 
 }
 
-inline priv proc<FirstType, SecondType>
+inline priv fn<FirstType, SecondType>
 forward_five_variables(a: ^FirstType, b: ^const SecondType)
   -> (FirstType, SecondType)
 { 
@@ -401,14 +436,14 @@ forward_five_variables(a: ^FirstType, b: ^const SecondType)
 ```
 
 ```
-nodisc inln cons proc at(i: cons u8) -> (&[u8]!IdxErr) {
+nodisc inln cons fn at(i: cons u8) -> (&[u8]!IdxErr) {
   i >= usize_of(Lens) ? "index out of bounds"
   return buf[begs[i] : begs[i + 1]]
 }
 ```
 
 ```
-proc<Ts..: Copy>
+fn<Ts..: Copy>
 memcopy_multi(dst: &[&Ts..], src: &[&Ts..], num: usz) -> void
 {
   for i, T : Ts {
@@ -418,7 +453,7 @@ memcopy_multi(dst: &[&Ts..], src: &[&Ts..], num: usz) -> void
 ```
 
 ```
-const priv proc persist foreign struct enum union
+const priv fn persist foreign struct enum union
 rune void
 u8 f16 i16 …
 usz isz 
@@ -448,19 +483,19 @@ sky := cons Person{42, Skyler}
 
 ```
 // not good
-cons proc<..Type Ts, type K> bool find(*Cons MultiArray<Ts..> arr, Cons K key);
+cons fn<..Type Ts, type K> bool find(*Cons MultiArray<Ts..> arr, Cons K key);
 
-cons proc<Ts: ..type, K: type> 
+cons fn<Ts: ..type, K: type> 
 find(arr: *cons MultiArray<Ts..>, key: cons K) -> bool;
 ``` 
 
 ```
-proc<..Ts> memcopy_multi(dst: const *Ts.., src: const *Ts.., num: usz) -> void
+fn<..Ts> memcopy_multi(dst: const *Ts.., src: const *Ts.., num: usz) -> void
 ```
 
 ```
 inline priv cexpr
-proc<
+fn<
     Ts: ..type,
     I: ..usz,
     J: ..usz,
@@ -478,7 +513,7 @@ proc<
 
 ```
 inline priv cexpr
-proc<
+fn<
     Ts: ..type,
     I: ..usz,
     J: ..usz,
@@ -497,10 +532,10 @@ bind_multi(
 ```
 
 ```
-inline priv cexpr proc<Ts: ..type, I: ..usz>
+inline priv cexpr fn<Ts: ..type, I: ..usz>
 bind_multi(ptr: const *void, new_num: const usz) -> [*void, pack_len(Ts)]
 {
-  bind_and_advance := proc<T>() -> *void {
+  bind_and_advance := fn<T>() -> *void {
     ptr = mem::align_up::<T>(ptr);
     beg := ptr as *T
     ptr = beg + new_num;
@@ -517,7 +552,7 @@ bind_multi(ptr: const *void, new_num: const usz) -> [*void, pack_len(Ts)]
 ### Example 1: ...
 
 ```
-proc Ast!Allocator.Error parse(Allocator gpa, [:0]cons uint8 source, Mode mode){
+fn Ast!Allocator.Error parse(Allocator gpa, [:0]cons uint8 source, Mode mode){
   auto tokens = Ast.TokenList{}
   cons auto toks = Ast.TokenList{}
   auto sum = fn[](i32 a, i32 b) i32 { return a + b }
@@ -528,7 +563,7 @@ proc Ast!Allocator.Error parse(Allocator gpa, [:0]cons uint8 source, Mode mode){
 ### Example 2: ... 
 
 ```
-inln priv cons proc<..type Ts, ..usz I>
+inln priv cons fn<..type Ts, ..usz I>
 void! a_simple_test_proc(std.IndexSequence<I..>, *cons std.Tuple<*Ts..> dst,
                          *cons std.Tuple<*Ts..> src, usz num);
 ```
@@ -536,7 +571,7 @@ void! a_simple_test_proc(std.IndexSequence<I..>, *cons std.Tuple<*Ts..> dst,
 ### Example 3: ...
 
 ```
-inln cons proc *cons char!SomeError test_exampl(*cons char str, uint32 x) {
+inln cons fn *cons char!SomeError test_exampl(*cons char str, uint32 x) {
   test_example_side(str, uint32)!
   return 'c'
 }
@@ -545,7 +580,7 @@ inln cons proc *cons char!SomeError test_exampl(*cons char str, uint32 x) {
 ### Example 4: ...
 
 ```
-inln cons proc<type PtrCharType, type ErrType>
+inln cons fn<type PtrCharType, type ErrType>
 (char, uint32)!ErrType an_example_with_long_name_and_many_args(
     *cons char this_is_a_char_ptr, uint32 this_is_an_unsigned) {
   return str.*, x
@@ -556,7 +591,7 @@ inln cons proc<type PtrCharType, type ErrType>
 
 ```{=latex}
 \monostyle{
-  \kw{proc} (\ty{uint8}, \ty{uint8}) returning\_a\_tuple(\ty{uint8} a, \ty{uint8} b) \{ \\
+  \kw{fn} (\ty{uint8}, \ty{uint8}) returning\_a\_tuple(\ty{uint8} a, \ty{uint8} b) \{ \\
     \tab \kw{return} a + b, a - b \\
   \}
 }
@@ -566,7 +601,7 @@ inln cons proc<type PtrCharType, type ErrType>
 ### Example 6: ...
 
 ```
-proc void main() {
+fn void main() {
   val, err := example.test_example("test", 42)
   //= alternatives =//
   char! val, err = examples.test_example("test", 42);    
@@ -581,7 +616,7 @@ proc void main() {
 
 ```{=latex}
 \monostyle{
-\kw{noinline} \kw{priv} \kw{cons} \kw{proc}\text{<} \\
+\kw{noinline} \kw{priv} \kw{cons} \kw{fn}\text{<} \\
     \tab \ty{SomeLongTraitName} \tp{LongType1}, \ty{TraitName} \tp{LongTypeName}, \ty{type} \tp{T}, \\
     \tab \ty{YetAnotherEvenLongerTraitName} \tp{LongType2}, \ty{type} \tp{U}, \\
     \tab \ty{SomeLongTraitName} \tp{LongType3}\text{>} \\
@@ -596,7 +631,7 @@ proc void main() {
 
 ### Example 8: ...
 ```
-noinline priv cons proc<T: Orderable>
+noinline priv cons fn<T: Orderable>
 (^T rv, ssize ri) largest(cons &[T] list) {
   rv = &list[0]
   for i, x in list {
@@ -613,7 +648,7 @@ noinline priv cons proc<T: Orderable>
 ### Example 1: ...
 
 ```
-proc parse(gpa: Allocator, source: [:0]cons uint8, mode: Mode) -> Ast!Allocator.Error {
+fn parse(gpa: Allocator, source: [:0]cons uint8, mode: Mode) -> Ast!Allocator.Error {
   tokens := Ast.TokenList{}
   toks := cons Ast.TokenList{}
   sum := fn[](i32 a, i32 b) i32 { return a + b }
@@ -624,7 +659,7 @@ proc parse(gpa: Allocator, source: [:0]cons uint8, mode: Mode) -> Ast!Allocator.
 ### Example 2: ... 
 
 ```
-inln priv cons proc<Ts: ..type, I: ..usz>
+inln priv cons fn<Ts: ..type, I: ..usz>
 a_simple_test_proc(std.IndexSequence<I..>, dst: *cons std.Tuple<*Ts..>,
                    src: *cons std.Tuple<*Ts..>, num: usz) -> void!;
 ```
@@ -632,7 +667,7 @@ a_simple_test_proc(std.IndexSequence<I..>, dst: *cons std.Tuple<*Ts..>,
 ### Example 3:
 
 ```
-inln cons proc 
+inln cons fn 
 test_example_side(str: *cons char, x: uint32) -> i32!SomeError {
   if y := do_domething(str, x); == 0 {
     return 0, "error occured"
@@ -640,7 +675,7 @@ test_example_side(str: *cons char, x: uint32) -> i32!SomeError {
   return y
 }
 
-inln cons proc test_example(str: *cons char, x: uint32) -> i32!SomeError {
+inln cons fn test_example(str: *cons char, x: uint32) -> i32!SomeError {
   y := test_example_side(str, x)! // rethrow (as a couple, no maybe type here)
   return y + 1
 }
@@ -649,7 +684,7 @@ inln cons proc test_example(str: *cons char, x: uint32) -> i32!SomeError {
 ### Example 4: ...
 
 ```
-inln cons proc<PtrCharType: type, ErrType: type>
+inln cons fn<PtrCharType: type, ErrType: type>
 an_example_with_long_name_and_many_args(
     *cons char this_is_a_char_ptr, uint32 this_is_an_unsigned)
 -> (char, uint32)!ErrType {
@@ -658,14 +693,14 @@ an_example_with_long_name_and_many_args(
 ```
 
 ```
-inln proc test_function(n: ^usize) -> ssize {
+inln fn test_function(n: ^usize) -> ssize {
   m: ssize = -n
   return -n^
 }
 ```
 
 ```
-inln cons proc<SomeCustomType> 
+inln cons fn<SomeCustomType> 
 simple_identity_function(x: ^cons SomeCustomType) -> SomeCustomType {
   y := x
   return y
@@ -673,7 +708,7 @@ simple_identity_function(x: ^cons SomeCustomType) -> SomeCustomType {
 ```
 
 ```
-noinline cons proc<T: PartialOrder> largest(list: cons &[T]) -> (^T, ssize) {
+noinline cons fn<T: PartialOrder> largest(list: cons &[T]) -> (^T, ssize) {
   rv := &list[0]
   ri := 0sz
   for i, x in list {
@@ -713,7 +748,7 @@ inln cons oper lne(b1: Book, b2: Book) -> bool {
 
 ```{=latex}
 \monostyle{
-\kw{noinline} \kw{priv} \kw{cons} \kw{proc}\textless \\
+\kw{noinline} \kw{priv} \kw{cons} \kw{fn}\textless \\
     \tab \tp{LongType1}: \ty{SomeLongTraitName}, \tp{LongTypeName}: \ty{TraitName}, \tp{T}: \ty{type}, \\
     \tab \tp{LongType2}: \ty{YetAnotherEvenLongerTraitName}, \tp{U}: \ty{type}, \\
     \tab \tp{LongType3}: \ty{SomeLongTraitName}\textgreater \\
@@ -730,7 +765,7 @@ a\_super\_long\_function\_identifier( \\
 ### Example 8: ...
 
 ```
-noinline priv cons proc<T: Orderable>
+noinline priv cons fn<T: Orderable>
 largest(list: cons &[T]) -> (rv: ^T, ri: ssize) {
   rv = &list[0]
   for i, x in list {
@@ -744,7 +779,7 @@ largest(list: cons &[T]) -> (rv: ^T, ri: ssize) {
 
 ```{=latex}
 \monostyle{
-\kw{noinline} \kw{priv} \kw{cons} \kw{proc}\text{<}\tp{T}: \ty{Orderable}\text{>} \\
+\kw{noinline} \kw{priv} \kw{cons} \kw{fn}\text{<}\tp{T}: \ty{Orderable}\text{>} \\
 largest(list: \ty{cons} \&[\tp{T}]) \text{->} (rv: *\tp{T}, ri: \ty{ssize}) \{ \\
   \duo rv = \&list[0] \\
   \duo \kw{for} i, x \kw{in} list \{ \\
