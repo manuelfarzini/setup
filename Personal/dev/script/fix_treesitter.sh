@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CPP_FOLDS="$HOME/.local/share/nvim/lazy/nvim-treesitter/runtime/queries/cpp/folds.scm"
-C_FOLDS="$HOME/.local/share/nvim/lazy/nvim-treesitter/runtime/queries/c/folds.scm"
+C_FOLDS="$HOME/.local/share/nvim-pack/site/pack/core/opt/nvim-treesitter/runtime/queries/c/folds.scm"
+CPP_FOLDS="$HOME/.local/share/nvim-pack/site/pack/core/opt/nvim-treesitter/runtime/queries/cpp/folds.scm"
 
 # Remove the exact line "  (namespace_definition)" from cpp folds.scm
 if [[ -f "$CPP_FOLDS" ]]; then
