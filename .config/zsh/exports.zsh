@@ -16,11 +16,12 @@ export MATLAB_HOME=/Applications/MATLAB_R2024b.app
 
 ### Faust
 export FAUST_HH=/usr/local/include/faust
-export FAUST_TOL=/usr/local/share/faust
+export FAUST_TOOL=/usr/local/share/faust
 export FAUST_DEV=/Users/manuelfarzini/Personal/dev/repo/faust
 export FAUST_BIN=/Users/manuelfarzini/Personal/dev/repo/faust/build/bin/faust
 export FAUST_TEST=/Users/manuelfarzini/Personal/dev/repo/faust/tests/impulse-tests/dsp
 export FAUST_BENCH=/Users/manuelfarzini/Personal/dev/repo/faust/architecture/_bench/src
+export FAUST_MOJO=/Users/manuelfarzini/Personal/dev/repo/faust/architecture/mojo
 
 ### Arduino
 export ARDU_CORES=$HOME/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino
