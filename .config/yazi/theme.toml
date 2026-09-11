@@ -38,7 +38,6 @@ progress_label = { fg = "#26261c", bg = "#e8e8db", bold = false }
 progress_normal = { fg = "#26261c", bg = "#e8e8db", bold = false }
 progress_error = { fg = "#26261c", bg = "#e8e8db", bold = false }
 # permissions
-# perm_t = { fg = "#626246" }
 perm_read = { fg = "#626246" }
 perm_write = { fg = "#626246" }
 perm_exec = { fg = "#626246" }
@@ -49,10 +48,8 @@ mask = { fg = "#9d9d68" }
 
 [filetype]
 rules = [
-	# files
-	{ url = "*", fg = "#26261c" },
-	# directories
-	{ url = "*/", fg = "#626246", bold = true },
+    { url = "*", fg = "#26261c" },
+    { url = "*/", fg = "#626246", bold = true },
 ]
 
 [icon]
@@ -69,36 +66,32 @@ dirs = [
 prepend_conds = [
     { if = "dir", text = "", fg = "#626246" }, 
 ]
-# prepend_dirs = [
-#     { name = "Desktop", text = "", fg = "#626246" }, 
-# ]
 prepend_exts = [
-	{ name = "rs", text = "", fg = "#26261c" },
-	{ name = "lua", text = "", fg = "#26261c" },
-	{ name = "txt", text = "", fg = "#26261c" },
-	{ name = "json", text = "", fg = "#26261c" },
-	{ name = "md", text = "", fg = "#26261c" },
-	{ name = "pdf", text = "", fg = "#26261c" },
-	{ name = "go", text = "󰟓", fg = "#26261c" },
-	{ name = "c", text = "", fg = "#26261c" },
-	{ name = "cc", text = "", fg = "#26261c" },
-	{ name = "cpp", text = "", fg = "#26261c" },
-	{ name = "c++", text = "", fg = "#26261c" },
-	{ name = "js", text = "", fg = "#26261c" },
-	{ name = "py", text = "󰌠", fg = "#26261c" },
-	{ name = "png", text = "", fg = "#26261c" },
-	{ name = "jpg", text = "", fg = "#26261c" },
-	{ name = "ini", text = "", fg = "#26261c" },
-	{ name = "toml", text = "", fg = "#26261c" },
-	{ name = "config", text = "", fg = "#26261c" },
-	{ name = "mp3", text = "", fg = "#26261c" },
-	{ name = "wav", text = "󰥛", fg = "#26261c" },
-	{ name = "zip", text = "", fg = "#26261c" },
-	{ name = "sh", text = "", fg = "#26261c" },
-	{ name = "mov", text = "", fg = "#26261c" },
-	{ name = "mp4", text = "", fg = "#26261c" },
-	# orphan symbolic links
-	{ name = "*", is = "orphan", text = "", fg = "#26261c" },
+    { name = "rs", text = "", fg = "#26261c" },
+    { name = "lua", text = "", fg = "#26261c" },
+    { name = "txt", text = "", fg = "#26261c" },
+    { name = "json", text = "", fg = "#26261c" },
+    { name = "md", text = "", fg = "#26261c" },
+    { name = "pdf", text = "", fg = "#26261c" },
+    { name = "go", text = "󰟓", fg = "#26261c" },
+    { name = "c", text = "", fg = "#26261c" },
+    { name = "cc", text = "", fg = "#26261c" },
+    { name = "cpp", text = "", fg = "#26261c" },
+    { name = "c++", text = "", fg = "#26261c" },
+    { name = "js", text = "", fg = "#26261c" },
+    { name = "py", text = "󰌠", fg = "#26261c" },
+    { name = "png", text = "", fg = "#26261c" },
+    { name = "jpg", text = "", fg = "#26261c" },
+    { name = "ini", text = "", fg = "#26261c" },
+    { name = "toml", text = "", fg = "#26261c" },
+    { name = "config", text = "", fg = "#26261c" },
+    { name = "mp3", text = "", fg = "#26261c" },
+    { name = "wav", text = "󰥛", fg = "#26261c" },
+    { name = "zip", text = "", fg = "#26261c" },
+    { name = "sh", text = "", fg = "#26261c" },
+    { name = "mov", text = "", fg = "#26261c" },
+    { name = "mp4", text = "", fg = "#26261c" },
+    { name = "*", is = "orphan", text = "", fg = "#26261c" },
 ] 
 
 # zfore        = "#000000",

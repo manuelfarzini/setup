@@ -15,30 +15,28 @@ max_height = 1000
 image_delay = 30
 image_quality = 50
 
-
 [opener]
 edit = [
-	# { run = '${EDITOR:-vi} "$@"', desc = "$EDITOR", block = true, for = "unix" },
-	{ run = 'nvim "$@"', desc = "nvim", block = true, for = "unix" },
+    { run = 'nvim %s', desc = "nvim", block = true, for = "unix" },
 ]
+
 open = [
-	{ run = 'open "$@"', desc = "open", for = "macos" },
+    { run = 'open %s', desc = "open", for = "macos" },
 ]
+
 reveal = [
-	{ run = 'xdg-open "$(dirname "$1")"', desc = "reveal", for = "linux" },
-	{ run = 'open -R "$1"', desc = "reveal", for = "macos" },
-	{ run = '''exiftool "$1"; echo "Press enter to exit"; read _''', block = true, desc = "show EXIF", for = "unix" },
+    { run = 'xdg-open %d1', desc = "reveal", for = "linux" },
+    { run = 'open -R %s1', desc = "reveal", for = "macos" },
+    { run = '''exiftool %s1; echo "Press enter to exit"; read _''', block = true, desc = "show EXIF", for = "unix" },
 ]
-# extract = [
-# 	{ run = 'ya pub extract --list "$@"', desc = "extract here", for = "unix" },
-# ]
+
 term = [
-    { run = 'open -na Ghostty --args -e zsh -c "cd "$@"; exec zsh"', desc = "term", for = "macos" },
+    { run = 'open -na Ghostty --args -e zsh -c "cd %s1; exec zsh"', desc = "term", for = "macos" },
 ]
 
 [open]
 prepend_rules = [
     { url = "*.pdf", use = ["open", "reveal"] },
     { url = "*.md", use = ["edit", "open", "reveal"] },
-    { url = "*/", use = ["term", "edit", "open" ] },
+    { url = "*/", use = ["term", "edit", "open"] },
 ]
