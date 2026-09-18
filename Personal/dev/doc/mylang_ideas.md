@@ -10,8 +10,9 @@ var ref out del muta read cons priv (init eval)
 
 Alternative
 @inln @cons
-fn align_up[ $First,
-    Error:   type     =  DefaultError,
+fn align_up[
+    $First,
+    Error: type = DefaultError,
 ](
     a:  First,
 ) -> (
@@ -64,16 +65,19 @@ size_of(u8)
 ```
 
 ```
-*u8     -> ptr
-[*]u8   -> multi ptr
+*u8     -> single ptr       -> references single u8, * allowed, [n] not allowed
+[*]u8   -> multi ptr        -> references multi u8s, * allowed, [n] allowed
 *[*]u8  -> ptr to multi ptr
 x[]     -> dereferencing
-[]u8    -> slice
+[]u8    -> slice,           -> fat pointer, maybe read only
 [][]u8  -> slice of slices
-[n]u8   -> static array
-*[n]u8  -> pointer to static array
-[..]u8  -> dynamic array
+[n]u8   -> fix array
+*[n]u8  -> ptr to fix array -> muta, maybe allow smaller `n` as argument to emulate a mutable slice?
+[..]u8  -> dyn array
 <n>u8   -> simd
+[]*u8   -> slice of pointers
+[*]*u8  -> multi ptr to many single pointers
+[*][*]u8  -> multi ptr to many multi pointers
 ```
 
 ```
