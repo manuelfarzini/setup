@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 set -euo pipefail
 
 C_FOLDS="$HOME/.local/share/nvim-pack/site/pack/core/opt/nvim-treesitter/runtime/queries/c/folds.scm"

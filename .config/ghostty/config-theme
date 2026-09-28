@@ -1,4 +1,4 @@
-# Font settings
+# Font
 
 font-family = SF Mono
 font-style = Regular
@@ -9,31 +9,39 @@ font-style-bold = SemiBold
 font-family-italic = SF Mono
 font-style-italic = Medium
 
-adjust-cell-width = 0%
-adjust-underline-position = 2
-adjust-cell-height = 10%
-
-font-size = 8
+font-size = 10
 font-thicken = true
 font-thicken-strength = 250
 
+adjust-underline-position = 2
+
+# Cell
+
+adjust-cell-width = 0%
+adjust-cell-height = 10%
+
+# Cursor
+
 adjust-cursor-thickness = 2
 adjust-box-thickness = 1
+cursor-style-blink = false
 
 # Test font width                                                                                                115
 #-----------------------------------------------------------------------------------------------------------------|-----------------------------------
 
+# Window
+
 title = " "
+macos-titlebar-style = hidden
+
+# Colors
 
 term = xterm-256color
-cursor-style-blink = false
-macos-titlebar-style = hidden
+bold-color = bright
 
 # Main colors
 foreground = 26261c
 background = f3f3eb
-
-bold-color = bright
 
 # Normal colors
 palette = 0=#b3b390

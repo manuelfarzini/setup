@@ -14,10 +14,10 @@ preset = 'qwerty'
 [gaps]
 inner.horizontal = 8
 inner.vertical = 8
-outer.left = 200
+outer.left = 20
 outer.bottom = 2
 outer.top = 2
-outer.right = 200
+outer.right = 20
 
 [[on-window-detected]]
 if.app-name-regex-substring = 'System Settings'
