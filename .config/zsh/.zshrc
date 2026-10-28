@@ -18,6 +18,23 @@ plug "zap-zsh/zsh-syntax-highlighting"
 plug "zap-zsh/vim"
 plug "zap-zsh/fzf"
 
+# Static cursor
+function zle-keymap-select {
+    case $KEYMAP in
+        vicmd)
+            printf '\e[2 q'
+            ;;
+        viins|main)
+            printf '\e[6 q'
+            ;;
+    esac
+}
+zle -N zle-keymap-select
+function zle-line-init {
+    printf '\e[6 q'
+}
+zle -N zle-line-init
+
 # Syntax Highlighting
 typeset -gA ZSH_HIGHLIGHT_STYLES
 ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=red'
