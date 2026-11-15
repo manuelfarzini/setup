@@ -72,3 +72,7 @@ export PATH=$PATH:/usr/local/share/dotnet
 
 ### Pixi
 export PATH="/Users/manuelfarzini/.pixi/bin:$PATH"
+
+### Opencode
+export EDITOR="nvim"
+export VISUAL="nvim"
